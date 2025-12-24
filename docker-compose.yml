@@ -1,0 +1,35 @@
+# PCG Arena - Docker Compose Configuration
+# Protocol: arena/v0
+# 
+# Usage:
+#   docker compose up --build      # Start backend with persistent DB
+#   docker compose down            # Stop (keeps data)
+#   docker compose down -v         # Stop and remove volumes (DELETES DATA)
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      # Mount host db/local to container /data for SQLite persistence
+      - ./db/local:/data
+      # Mount seed data as read-only for ingestion
+      - ./db/seed:/seed:ro
+      # Mount migrations as read-only
+      - ./db/migrations:/migrations:ro
+    env_file:
+      - ./backend/config/settings.env
+    environment:
+      # Override or extend settings.env here if needed
+      - ARENA_DB_PATH=/data/arena.sqlite
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
