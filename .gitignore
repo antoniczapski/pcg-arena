@@ -1,0 +1,43 @@
+# Local database files (bind-mounted or volume-mounted)
+db/local/
+
+# Client build artifacts
+client-java/dist/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+
+# Java
+*.class
+*.jar
+*.war
+*.ear
+.gradle/
+build/
+out/
+target/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Environment variables
+.env
+.env.local
+
