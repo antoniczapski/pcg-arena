@@ -17,6 +17,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy source code
 COPY src/ ./
 
+# Copy test files (for running tests in container)
+COPY tests/ ./tests/
+COPY pytest.ini ./
+
 # Create data directory (will be overwritten by volume mount)
 RUN mkdir -p /data
 

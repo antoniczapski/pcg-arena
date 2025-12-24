@@ -10,3 +10,7 @@ pydantic>=2.5.0,<3.0.0
 
 # No additional DB drivers needed - sqlite3 is in Python stdlib
 
+# Testing dependencies
+pytest>=8.0.0,<9.0.0
+httpx>=0.27.0,<1.0.0
+

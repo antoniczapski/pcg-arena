@@ -27,6 +27,9 @@ class Config:
     # Paths (inside container)
     migrations_path: str
     seed_path: str
+    
+    # Debug mode (enables debug endpoints)
+    debug: bool
 
 
 def load_config() -> Config:
@@ -39,5 +42,6 @@ def load_config() -> Config:
         k_factor=float(os.environ.get("ARENA_K_FACTOR", "24")),
         migrations_path=os.environ.get("ARENA_MIGRATIONS_PATH", "/migrations"),
         seed_path=os.environ.get("ARENA_SEED_PATH", "/seed"),
+        debug=os.environ.get("ARENA_DEBUG", "false").lower() in ("true", "1", "yes"),
     )
 

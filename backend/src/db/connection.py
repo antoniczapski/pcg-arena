@@ -7,16 +7,18 @@ Provides SQLite connection with proper configuration:
 - WAL mode for better concurrency
 """
 
+from __future__ import annotations
+
 import sqlite3
 import logging
 from pathlib import Path
 from contextlib import contextmanager
-from typing import Generator
+from typing import Generator, Optional
 
 logger = logging.getLogger(__name__)
 
 # Global connection holder (Stage 0: single connection is fine)
-_connection: sqlite3.Connection | None = None
+_connection: Optional[sqlite3.Connection] = None
 
 
 def init_connection(db_path: str) -> sqlite3.Connection:
@@ -45,7 +47,14 @@ def init_connection(db_path: str) -> sqlite3.Connection:
     conn = sqlite3.connect(db_path, check_same_thread=False)
     
     # Enable foreign keys (MUST be done per-connection in SQLite)
+    # Task E2: Foreign keys are enforced for every DB connection
     conn.execute("PRAGMA foreign_keys = ON")
+    
+    # Verify foreign keys are enabled (defensive check)
+    cursor = conn.execute("PRAGMA foreign_keys")
+    fk_enabled = cursor.fetchone()[0]
+    if not fk_enabled:
+        raise RuntimeError("Failed to enable foreign keys - this is required for data integrity")
     
     # Enable WAL mode for better concurrency
     conn.execute("PRAGMA journal_mode = WAL")
@@ -54,7 +63,7 @@ def init_connection(db_path: str) -> sqlite3.Connection:
     conn.row_factory = sqlite3.Row
     
     _connection = conn
-    logger.info("Database connection initialized successfully")
+    logger.info("Database connection initialized successfully (foreign keys enabled)")
     
     return conn
 

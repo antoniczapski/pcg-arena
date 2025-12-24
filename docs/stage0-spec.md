@@ -50,9 +50,10 @@ Stage 0 comprises three components:
 | **Health endpoint** | ✅ Complete | `backend/src/main.py` |
 | **Leaderboard endpoint** | ✅ Complete | `backend/src/main.py` |
 | **HTML leaderboard** | ✅ Complete | `backend/src/main.py` |
-| **Battle creation** | ⏳ Not implemented | See section 5 |
-| **Vote submission** | ⏳ Not implemented | See section 6 |
-| **ELO rating update** | ⏳ Not implemented | See section 11 |
+| **Battle creation** | ✅ Complete | `backend/src/main.py` |
+| **Vote submission** | ✅ Complete | `backend/src/main.py` |
+| **ELO rating update** | ✅ Complete | `backend/src/main.py` |
+| **Debug endpoints** | ✅ Complete | `backend/src/main.py` |
 | **Java client** | ⏳ Not implemented | External component |
 
 **Testing infrastructure:** You can test the implemented components by running `docker compose up --build` and visiting `http://localhost:8080/`.
@@ -483,7 +484,7 @@ Stage 0 does not enforce full playability constraints, but the backend MUST enfo
 
 ### Example level (tiny excerpt for readability)
 
-Below is an illustrative excerpt showing the **shape**. Real payloads must be 150x16.
+Below is an illustrative excerpt showing the **shape**. Seed levels are 200 characters wide; the schema allows any width from 1-250.
 
 Line 1 (top row, mostly air):
 `--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------`
@@ -604,29 +605,29 @@ Database should allow simple queries to answer:
 
 ## 13. Stage 0 acceptance tests (must-pass scenarios)
 
-1. **Happy path** ⏳ *Requires battle/vote endpoints*
+1. **Happy path** ✅ *Implemented*
 
 * client fetches battle
 * plays both
 * submits vote
 * leaderboard changes (for non-skip)
 
-2. **Idempotency** ⏳ *Requires vote endpoint*
+2. **Idempotency** ✅ *Implemented*
 
 * submit the same vote twice due to simulated timeout
 * backend returns accepted and does not double-update rating
 
-3. **Duplicate conflict** ⏳ *Requires vote endpoint*
+3. **Duplicate conflict** ✅ *Implemented*
 
 * submit a different vote for same battle_id
 * backend rejects with `DUPLICATE_VOTE_CONFLICT`
 
-4. **Persistence** ✅ *Testable now*
+4. **Persistence** ✅ *Implemented*
 
 * Import seed data, restart backend container
 * Leaderboard and generator counts remain unchanged
 
-5. **Invalid level ingestion** ✅ *Testable now*
+5. **Invalid level ingestion** ✅ *Implemented*
 
 * Put an invalid character in a level file
 * Backend fails startup with clear validation error message

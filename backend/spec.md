@@ -101,6 +101,11 @@ FastAPI application entry point. Contains:
 | GET | `/health` | Health check, returns protocol version and server time |
 | GET | `/v1/leaderboard` | JSON leaderboard: generators sorted by rating |
 | GET | `/` | HTML leaderboard page for humans |
+| POST | `/v1/battles:next` | Issue a new battle with two random levels |
+| POST | `/v1/votes` | Submit vote for a battle, update ratings |
+| GET | `/debug/db-status` | Database status (requires `ARENA_DEBUG=true`) |
+| GET | `/debug/battles` | List battles (requires `ARENA_DEBUG=true`) |
+| GET | `/debug/votes` | List votes (requires `ARENA_DEBUG=true`) |
 
 ### `src/db/`
 
@@ -204,18 +209,48 @@ CMD ["python", "main.py"]
 | JSON leaderboard | ✅ Complete | `main.py` |
 | HTML leaderboard | ✅ Complete | `main.py` |
 | DB status logging | ✅ Complete | `db/seed.py` |
+| Battle creation | ✅ Complete | `main.py` |
+| Vote submission | ✅ Complete | `main.py` |
+| ELO rating calculation | ✅ Complete | `main.py` |
+| Debug endpoints | ✅ Complete | `main.py` |
+| Foreign key enforcement | ✅ Complete | `db/connection.py` |
 
 ### Not yet implemented (future tasks)
 
 | Feature | Priority | Notes |
 |---------|----------|-------|
-| `POST /v1/battles:next` | High | Matchmaking, battle creation |
-| `POST /v1/votes` | High | Vote submission, rating update |
-| ELO rating calculation | High | Rating delta computation |
-| Battle expiration | Low | Mark old battles as EXPIRED |
-| Admin endpoints | Low | Debug/maintenance |
+| Battle expiration | Low | Mark old battles as EXPIRED (Stage 0 uses NULL expires_at) |
 | OpenAPI spec | Low | Formal API documentation |
-| Unit tests | Medium | Test coverage |
+| Java client | High | External component |
+
+---
+
+## 6) Testing
+
+### Running tests locally
+
+```powershell
+cd backend
+pip install pytest httpx
+$env:PYTHONPATH = "src"
+pytest tests -v
+```
+
+### Running tests in Docker
+
+```bash
+docker compose run --rm backend pytest tests -v
+```
+
+### Test coverage (Stage 0)
+
+The test suite covers:
+
+1. **Migrations and seed import** — Verify DB is populated correctly
+2. **Battle creation** — Verify `/v1/battles:next` returns valid battles
+3. **Rating updates** — Verify votes update ELO ratings correctly
+4. **Idempotency** — Verify repeated identical votes don't double-update
+5. **Conflict detection** — Verify different votes for same battle are rejected
 
 ---
 
@@ -268,6 +303,80 @@ Returns generator rankings.
 ### `GET /`
 
 Returns HTML page with styled leaderboard table.
+
+### `POST /v1/battles:next`
+
+Issues a new battle with two random levels from different generators.
+
+**Request body:**
+```json
+{
+  "client_version": "0.1.0",
+  "session_id": "a3b5c2f0-2c39-4a2a-9fd3-6a8f6dd90e2b",
+  "player_id": null,
+  "preferences": { "mode": "standard" }
+}
+```
+
+**Response 200:**
+```json
+{
+  "protocol_version": "arena/v0",
+  "battle": {
+    "battle_id": "btl_...",
+    "issued_at_utc": "2025-12-24T12:00:00Z",
+    "expires_at_utc": null,
+    "presentation": {
+      "play_order": "LEFT_THEN_RIGHT",
+      "reveal_generator_names_after_vote": true,
+      "suggested_time_limit_seconds": 300
+    },
+    "left": { "level_id": "...", "generator": {...}, "format": {...}, "level_payload": {...} },
+    "right": { "level_id": "...", "generator": {...}, "format": {...}, "level_payload": {...} }
+  }
+}
+```
+
+**Errors:** `NO_BATTLE_AVAILABLE`, `INVALID_PAYLOAD`, `INTERNAL_ERROR`
+
+### `POST /v1/votes`
+
+Submit a vote for a battle. Idempotent with atomic rating update.
+
+**Request body:**
+```json
+{
+  "client_version": "0.1.0",
+  "session_id": "...",
+  "battle_id": "btl_...",
+  "result": "LEFT",
+  "tags": ["fun", "good_flow"],
+  "telemetry": { "left": {...}, "right": {...} }
+}
+```
+
+**Response 200:**
+```json
+{
+  "protocol_version": "arena/v0",
+  "accepted": true,
+  "vote_id": "v_...",
+  "leaderboard_preview": {
+    "updated_at_utc": "...",
+    "generators": [...]
+  }
+}
+```
+
+**Errors:** `BATTLE_NOT_FOUND`, `BATTLE_ALREADY_VOTED`, `DUPLICATE_VOTE_CONFLICT`, `INVALID_TAG`, `INVALID_PAYLOAD`, `INTERNAL_ERROR`
+
+### Debug Endpoints
+
+These require `ARENA_DEBUG=true` environment variable.
+
+- `GET /debug/db-status` — Table counts, last migration, DB file size
+- `GET /debug/battles?status=ISSUED&limit=10` — List battles
+- `GET /debug/votes?limit=10` — List votes
 
 ---
 

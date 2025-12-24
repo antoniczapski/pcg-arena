@@ -11,6 +11,13 @@ This module initializes the application:
 
 import logging
 import sys
+import uuid
+import random
+import json
+import sqlite3
+import hashlib
+import math
+from datetime import datetime, timezone
 
 import uvicorn
 from fastapi import FastAPI
@@ -18,9 +25,14 @@ from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.exceptions import HTTPException
 
 from config import load_config
-from db import init_connection, get_connection, run_migrations, import_generators, init_generator_ratings, import_levels, log_db_status
-from errors import APIError, api_error_handler, http_exception_handler, general_exception_handler
+from db import init_connection, get_connection, run_migrations, import_generators, init_generator_ratings, import_levels, log_db_status, transaction
+from errors import APIError, api_error_handler, http_exception_handler, general_exception_handler, raise_api_error, ErrorCode
 from middleware import RequestLoggingMiddleware
+from models import (
+    BattleRequest, BattleResponse, Battle, BattleSide, GeneratorInfo, LevelFormat, LevelPayload, LevelMetadata, 
+    BattlePresentation, PlayOrder, LevelFormatType, Encoding, VoteRequest, VoteResponse, VoteResult,
+    LeaderboardPreview, LeaderboardGeneratorPreview
+)
 
 # Configure logging
 logging.basicConfig(
@@ -32,6 +44,12 @@ logger = logging.getLogger(__name__)
 
 # Load configuration
 config = load_config()
+
+# Allowed tags vocabulary (Stage 0)
+ALLOWED_TAGS = {
+    "fun", "boring", "good_flow", "creative", "unfair", "confusing",
+    "too_hard", "too_easy", "not_mario_like"
+}
 
 # Create FastAPI app
 app = FastAPI(
@@ -79,6 +97,10 @@ async def startup_event():
         # Log DB status summary
         log_db_status(config.db_path)
         
+        # Task E1: Expired battles cleanup
+        # Stage 0 uses expires_at_utc=NULL (no expiry), so this is skipped.
+        # If needed in future: mark battles with expires_at_utc < now_utc and status=ISSUED as EXPIRED
+        
     except Exception as e:
         logger.error(f"Failed to initialize database: {e}")
         sys.exit(1)
@@ -91,8 +113,6 @@ async def health_check():
     
     Returns server status and protocol version.
     """
-    from datetime import datetime, timezone
-    
     return JSONResponse({
         "protocol_version": "arena/v0",
         "status": "ok",
@@ -101,6 +121,887 @@ async def health_check():
             "backend_version": "0.1.0"
         }
     })
+
+
+@app.post("/v1/battles:next", response_model=BattleResponse)
+async def fetch_next_battle(request: BattleRequest):
+    """
+    Fetch the next battle: two levels from different generators.
+    
+    Creates a persisted battle row and returns both levels with metadata.
+    """
+    conn = get_connection()
+    
+    # 1. Validate session_id is present and looks like a UUID
+    try:
+        uuid.UUID(request.session_id)
+    except (ValueError, AttributeError):
+        raise_api_error(
+            ErrorCode.INVALID_PAYLOAD,
+            f"Invalid session_id format: must be a valid UUID",
+            retryable=False,
+            status_code=400
+        )
+    
+    # 2. Query active generators (is_active = 1)
+    cursor = conn.execute(
+        "SELECT generator_id FROM generators WHERE is_active = 1"
+    )
+    active_generators = [row["generator_id"] for row in cursor.fetchall()]
+    
+    if len(active_generators) < 2:
+        raise_api_error(
+            ErrorCode.NO_BATTLE_AVAILABLE,
+            f"Not enough active generators available (found {len(active_generators)}, need at least 2)",
+            retryable=False,
+            status_code=503
+        )
+    
+    # 3. Sample two distinct generator_ids uniformly
+    selected_generators = random.sample(active_generators, 2)
+    left_generator_id = selected_generators[0]
+    right_generator_id = selected_generators[1]
+    
+    # 4. For each generator, select 1 random level
+    # 
+    # Random level selection strategy (Stage 0):
+    # We use SQLite's RANDOM() function with ORDER BY RANDOM() LIMIT 1.
+    # This approach:
+    # - Works well for Stage 0 scale (typically <100 levels per generator)
+    # - Provides uniform distribution over repeated requests
+    # - Is simple and requires no additional state or precomputation
+    # 
+    # Performance note:
+    # ORDER BY RANDOM() requires sorting all matching rows, which is O(n log n).
+    # For Stage 0 with small datasets (dozens of levels per generator), this is
+    # perfectly acceptable. If we scale to thousands of levels per generator,
+    # we should consider:
+    # - Pre-computing random offsets (SELECT COUNT(*), then random offset)
+    # - Using a more sophisticated sampling algorithm
+    # - Caching level pools per generator
+    # 
+    # Query random level for left generator
+    cursor = conn.execute(
+        """
+        SELECT level_id FROM levels 
+        WHERE generator_id = ? 
+        ORDER BY RANDOM() 
+        LIMIT 1
+        """,
+        (left_generator_id,)
+    )
+    left_level_row = cursor.fetchone()
+    
+    # Query random level for right generator
+    cursor = conn.execute(
+        """
+        SELECT level_id FROM levels 
+        WHERE generator_id = ? 
+        ORDER BY RANDOM() 
+        LIMIT 1
+        """,
+        (right_generator_id,)
+    )
+    right_level_row = cursor.fetchone()
+    
+    # Check if we have levels for both generators
+    if not left_level_row or not right_level_row:
+        # Count how many generators have levels
+        cursor = conn.execute(
+            """
+            SELECT COUNT(DISTINCT generator_id) as count
+            FROM levels
+            WHERE generator_id IN (?, ?)
+            """,
+            (left_generator_id, right_generator_id)
+        )
+        eligible_count = cursor.fetchone()["count"]
+        
+        raise_api_error(
+            ErrorCode.NO_BATTLE_AVAILABLE,
+            f"Not enough generators with levels available (found {eligible_count} eligible generators, need 2)",
+            retryable=False,
+            status_code=503
+        )
+    
+    left_level_id = left_level_row["level_id"]
+    right_level_id = right_level_row["level_id"]
+    
+    # Ensure left and right levels are different (should be guaranteed by different generators, but double-check)
+    if left_level_id == right_level_id:
+        raise_api_error(
+            ErrorCode.INTERNAL_ERROR,
+            "Selected duplicate level for battle (this should not happen)",
+            retryable=True,
+            status_code=500
+        )
+    
+    # 5. Create battle_id (UUID string prefixed with 'btl_')
+    battle_id = f"btl_{uuid.uuid4()}"
+    
+    # 6. Insert into battles table (within a transaction)
+    now_utc = datetime.now(timezone.utc).isoformat()
+    
+    try:
+        with transaction() as cursor:
+            cursor.execute(
+                """
+                INSERT INTO battles (
+                    battle_id, session_id, issued_at_utc, expires_at_utc, status,
+                    left_level_id, right_level_id,
+                    left_generator_id, right_generator_id,
+                    matchmaking_policy, created_at_utc, updated_at_utc
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    battle_id,
+                    request.session_id,
+                    now_utc,
+                    None,  # expires_at_utc = NULL (no expiry for Stage 0)
+                    "ISSUED",
+                    left_level_id,
+                    right_level_id,
+                    left_generator_id,
+                    right_generator_id,
+                    "uniform_v0",
+                    now_utc,
+                    now_utc,
+                )
+            )
+    except sqlite3.IntegrityError as e:
+        logger.error(f"Failed to create battle: {e}")
+        raise_api_error(
+            ErrorCode.INTERNAL_ERROR,
+            "Failed to create battle due to database constraint violation",
+            retryable=True,
+            status_code=500
+        )
+    
+    # 7. Fetch full level and generator data for response
+    # Left side
+    cursor = conn.execute(
+        """
+        SELECT 
+            l.level_id, l.width, l.height, l.tilemap_text, l.content_hash, l.seed, l.controls_json,
+            g.generator_id, g.name, g.version, g.documentation_url
+        FROM levels l
+        JOIN generators g ON l.generator_id = g.generator_id
+        WHERE l.level_id = ?
+        """,
+        (left_level_id,)
+    )
+    left_data = cursor.fetchone()
+    
+    # Right side
+    cursor = conn.execute(
+        """
+        SELECT 
+            l.level_id, l.width, l.height, l.tilemap_text, l.content_hash, l.seed, l.controls_json,
+            g.generator_id, g.name, g.version, g.documentation_url
+        FROM levels l
+        JOIN generators g ON l.generator_id = g.generator_id
+        WHERE l.level_id = ?
+        """,
+        (right_level_id,)
+    )
+    right_data = cursor.fetchone()
+    
+    if not left_data or not right_data:
+        logger.error(f"Failed to fetch level data: left={left_level_id}, right={right_level_id}")
+        raise_api_error(
+            ErrorCode.INTERNAL_ERROR,
+            "Failed to fetch level data after battle creation",
+            retryable=True,
+            status_code=500
+        )
+    
+    # Parse controls_json
+    left_controls = json.loads(left_data["controls_json"]) if left_data["controls_json"] else {}
+    right_controls = json.loads(right_data["controls_json"]) if right_data["controls_json"] else {}
+    
+    # Build response
+    # Presentation config (Stage 0): hardcoded values for stable client UX
+    # - play_order: LEFT_THEN_RIGHT (client presents left level first, then right)
+    # - reveal_generator_names_after_vote: true (generator identities revealed after voting)
+    # - suggested_time_limit_seconds: 300 (5 minutes total for both levels)
+    battle_response = BattleResponse(
+        protocol_version="arena/v0",
+        battle=Battle(
+            battle_id=battle_id,
+            issued_at_utc=now_utc,
+            expires_at_utc=None,
+            presentation=BattlePresentation(
+                play_order=PlayOrder.LEFT_THEN_RIGHT,
+                reveal_generator_names_after_vote=True,
+                suggested_time_limit_seconds=300
+            ),
+            left=BattleSide(
+                level_id=left_data["level_id"],
+                generator=GeneratorInfo(
+                    generator_id=left_data["generator_id"],
+                    name=left_data["name"],
+                    version=left_data["version"],
+                    documentation_url=left_data["documentation_url"]
+                ),
+                format=LevelFormat(
+                    type=LevelFormatType.ASCII_TILEMAP,
+                    width=left_data["width"],
+                    height=left_data["height"],
+                    newline="\n"
+                ),
+                level_payload=LevelPayload(
+                    encoding=Encoding.UTF8,
+                    tilemap=left_data["tilemap_text"]
+                ),
+                content_hash=left_data["content_hash"],
+                metadata=LevelMetadata(
+                    seed=left_data["seed"],
+                    controls=left_controls
+                )
+            ),
+            right=BattleSide(
+                level_id=right_data["level_id"],
+                generator=GeneratorInfo(
+                    generator_id=right_data["generator_id"],
+                    name=right_data["name"],
+                    version=right_data["version"],
+                    documentation_url=right_data["documentation_url"]
+                ),
+                format=LevelFormat(
+                    type=LevelFormatType.ASCII_TILEMAP,
+                    width=right_data["width"],
+                    height=right_data["height"],
+                    newline="\n"
+                ),
+                level_payload=LevelPayload(
+                    encoding=Encoding.UTF8,
+                    tilemap=right_data["tilemap_text"]
+                ),
+                content_hash=right_data["content_hash"],
+                metadata=LevelMetadata(
+                    seed=right_data["seed"],
+                    controls=right_controls
+                )
+            )
+        )
+    )
+    
+    logger.info(
+        f"Battle issued: battle_id={battle_id} "
+        f"left_gen={left_generator_id} right_gen={right_generator_id} "
+        f"left_level={left_level_id} right_level={right_level_id}"
+    )
+    
+    return battle_response
+
+
+def compute_payload_hash(battle_id: str, session_id: str, result: str, tags: list, telemetry: dict) -> str:
+    """
+    Compute canonical payload hash for idempotency checking.
+    
+    Creates a deterministic hash from battle_id, session_id, result, sorted tags, and telemetry.
+    This ensures that identical vote payloads produce the same hash.
+    
+    Args:
+        battle_id: Battle identifier
+        session_id: Session identifier
+        result: Vote result (LEFT, RIGHT, TIE, SKIP)
+        tags: List of tags (will be sorted)
+        telemetry: Telemetry dict (will be serialized as canonical JSON)
+    
+    Returns:
+        SHA256 hash as hex string
+    """
+    # Sort tags for canonical representation
+    sorted_tags = sorted(tags) if tags else []
+    
+    # Serialize telemetry as canonical JSON (sorted keys, no whitespace)
+    telemetry_json = json.dumps(telemetry, sort_keys=True, separators=(',', ':')) if telemetry else '{}'
+    
+    # Create canonical payload string
+    payload_str = json.dumps({
+        "battle_id": battle_id,
+        "session_id": session_id,
+        "result": result,
+        "tags": sorted_tags,
+        "telemetry": json.loads(telemetry_json)  # Parse and re-serialize for consistency
+    }, sort_keys=True, separators=(',', ':'))
+    
+    # Compute SHA256 hash
+    hash_obj = hashlib.sha256(payload_str.encode('utf-8'))
+    return hash_obj.hexdigest()
+
+
+def ensure_ratings_exist(
+    cursor: sqlite3.Cursor,
+    generator_id: str,
+    initial_rating: float,
+    now_utc: str
+) -> None:
+    """
+    Ensure a ratings row exists for a generator (Task D2).
+    
+    If the ratings row doesn't exist, creates it with initial values.
+    This is defensive programming to handle edge cases where a generator
+    might be added without a ratings row.
+    
+    Args:
+        cursor: Database cursor (within transaction)
+        generator_id: Generator ID to check/create
+        initial_rating: Initial rating value (default 1000.0)
+        now_utc: Current UTC timestamp
+    """
+    cursor.execute(
+        "SELECT generator_id FROM ratings WHERE generator_id = ?",
+        (generator_id,)
+    )
+    if cursor.fetchone() is None:
+        logger.warning(f"Ratings row missing for generator {generator_id}, creating with initial rating {initial_rating}")
+        cursor.execute(
+            """
+            INSERT INTO ratings (
+                generator_id, rating_value, games_played,
+                wins, losses, ties, skips, updated_at_utc
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (generator_id, initial_rating, 0, 0, 0, 0, 0, now_utc)
+        )
+
+
+def update_ratings(
+    cursor: sqlite3.Cursor,
+    left_generator_id: str,
+    right_generator_id: str,
+    result: str,
+    k_factor: float,
+    now_utc: str,
+    initial_rating: float = 1000.0
+) -> tuple[float, float]:
+    """
+    Update generator ratings based on vote result using Elo rating system (Task D1).
+    
+    Implements standard Elo rating calculation:
+    - Expected score: E_left = 1 / (1 + 10^((R_right - R_left)/400))
+    - Delta: delta_left = K * (S_left - E_left), delta_right = -delta_left
+    - Updates rating_value and counters (wins, losses, ties, games_played)
+    
+    SKIP semantics (Task C3):
+    - Do NOT change rating_value for either generator
+    - Increment skips counter for BOTH generators
+    - Do NOT increment games_played (games_played is for rating-relevant matches only)
+    - Return (0.0, 0.0) for deltas (no rating change)
+    
+    Args:
+        cursor: Database cursor (within transaction)
+        left_generator_id: Left generator ID
+        right_generator_id: Right generator ID
+        result: Vote result (LEFT, RIGHT, TIE, SKIP)
+        k_factor: ELO K-factor (default 24)
+        now_utc: Current UTC timestamp
+        initial_rating: Initial rating if row doesn't exist (default 1000.0)
+    
+    Returns:
+        Tuple of (delta_left, delta_right) rating changes
+    """
+    # Task D2: Ensure ratings rows exist before updating
+    ensure_ratings_exist(cursor, left_generator_id, initial_rating, now_utc)
+    ensure_ratings_exist(cursor, right_generator_id, initial_rating, now_utc)
+    
+    if result == VoteResult.SKIP.value or result == "SKIP":
+        # SKIP semantics: increment skip counters for both generators, no rating change
+        # Note: games_played is NOT incremented for SKIP (it's for rating-relevant matches only)
+        cursor.execute(
+            """
+            UPDATE ratings 
+            SET skips = skips + 1, updated_at_utc = ?
+            WHERE generator_id = ?
+            """,
+            (now_utc, left_generator_id)
+        )
+        cursor.execute(
+            """
+            UPDATE ratings 
+            SET skips = skips + 1, updated_at_utc = ?
+            WHERE generator_id = ?
+            """,
+            (now_utc, right_generator_id)
+        )
+        logger.info(
+            f"SKIP vote processed: left_gen={left_generator_id} right_gen={right_generator_id} "
+            f"(skip counters incremented, no rating change)"
+        )
+        return (0.0, 0.0)
+    
+    # Task D1: Fetch current ratings
+    cursor.execute(
+        "SELECT rating_value FROM ratings WHERE generator_id = ?",
+        (left_generator_id,)
+    )
+    left_row = cursor.fetchone()
+    R_left = left_row["rating_value"] if left_row else initial_rating
+    
+    cursor.execute(
+        "SELECT rating_value FROM ratings WHERE generator_id = ?",
+        (right_generator_id,)
+    )
+    right_row = cursor.fetchone()
+    R_right = right_row["rating_value"] if right_row else initial_rating
+    
+    # Calculate expected scores (Elo formula)
+    # E_left = 1 / (1 + 10^((R_right - R_left)/400))
+    rating_diff = (R_right - R_left) / 400.0
+    E_left = 1.0 / (1.0 + math.pow(10.0, rating_diff))
+    E_right = 1.0 - E_left
+    
+    # Determine outcome scores based on result
+    if result == VoteResult.LEFT.value or result == "LEFT":
+        S_left = 1.0
+        S_right = 0.0
+    elif result == VoteResult.RIGHT.value or result == "RIGHT":
+        S_left = 0.0
+        S_right = 1.0
+    elif result == VoteResult.TIE.value or result == "TIE":
+        S_left = 0.5
+        S_right = 0.5
+    else:
+        # Should not happen, but handle gracefully
+        logger.error(f"Unexpected vote result: {result}")
+        return (0.0, 0.0)
+    
+    # Calculate rating deltas
+    # delta_left = K * (S_left - E_left)
+    # delta_right = -delta_left (zero-sum: ratings are conserved)
+    delta_left = k_factor * (S_left - E_left)
+    delta_right = -delta_left
+    
+    # Update left generator rating and counters
+    new_rating_left = R_left + delta_left
+    if result == VoteResult.LEFT.value or result == "LEFT":
+        cursor.execute(
+            """
+            UPDATE ratings 
+            SET rating_value = ?, games_played = games_played + 1,
+                wins = wins + 1, updated_at_utc = ?
+            WHERE generator_id = ?
+            """,
+            (new_rating_left, now_utc, left_generator_id)
+        )
+    elif result == VoteResult.RIGHT.value or result == "RIGHT":
+        cursor.execute(
+            """
+            UPDATE ratings 
+            SET rating_value = ?, games_played = games_played + 1,
+                losses = losses + 1, updated_at_utc = ?
+            WHERE generator_id = ?
+            """,
+            (new_rating_left, now_utc, left_generator_id)
+        )
+    elif result == VoteResult.TIE.value or result == "TIE":
+        cursor.execute(
+            """
+            UPDATE ratings 
+            SET rating_value = ?, games_played = games_played + 1,
+                ties = ties + 1, updated_at_utc = ?
+            WHERE generator_id = ?
+            """,
+            (new_rating_left, now_utc, left_generator_id)
+        )
+    
+    # Update right generator rating and counters
+    new_rating_right = R_right + delta_right
+    if result == VoteResult.LEFT.value or result == "LEFT":
+        cursor.execute(
+            """
+            UPDATE ratings 
+            SET rating_value = ?, games_played = games_played + 1,
+                losses = losses + 1, updated_at_utc = ?
+            WHERE generator_id = ?
+            """,
+            (new_rating_right, now_utc, right_generator_id)
+        )
+    elif result == VoteResult.RIGHT.value or result == "RIGHT":
+        cursor.execute(
+            """
+            UPDATE ratings 
+            SET rating_value = ?, games_played = games_played + 1,
+                wins = wins + 1, updated_at_utc = ?
+            WHERE generator_id = ?
+            """,
+            (new_rating_right, now_utc, right_generator_id)
+        )
+    elif result == VoteResult.TIE.value or result == "TIE":
+        cursor.execute(
+            """
+            UPDATE ratings 
+            SET rating_value = ?, games_played = games_played + 1,
+                ties = ties + 1, updated_at_utc = ?
+            WHERE generator_id = ?
+            """,
+            (new_rating_right, now_utc, right_generator_id)
+        )
+    
+    logger.info(
+        f"Elo rating update: left_gen={left_generator_id} right_gen={right_generator_id} "
+        f"result={result} R_left={R_left:.1f}->{new_rating_left:.1f} "
+        f"R_right={R_right:.1f}->{new_rating_right:.1f} "
+        f"delta_left={delta_left:.2f} delta_right={delta_right:.2f}"
+    )
+    
+    return (delta_left, delta_right)
+
+
+def insert_rating_event(
+    cursor: sqlite3.Cursor,
+    vote_id: str,
+    battle_id: str,
+    left_generator_id: str,
+    right_generator_id: str,
+    result: str,
+    delta_left: float,
+    delta_right: float,
+    now_utc: str
+) -> None:
+    """
+    Insert rating event for auditability and debugging.
+    
+    Creates an audit log entry for every vote that affects ratings (or is skipped).
+    This enables reconstructing rating history and debugging rating calculations.
+    
+    Args:
+        cursor: Database cursor (within transaction)
+        vote_id: Vote identifier (must be unique - one event per vote)
+        battle_id: Battle identifier
+        left_generator_id: Left generator ID
+        right_generator_id: Right generator ID
+        result: Vote result (LEFT, RIGHT, TIE, SKIP)
+        delta_left: Rating change for left generator (0.0 for SKIP)
+        delta_right: Rating change for right generator (0.0 for SKIP)
+        now_utc: Current UTC timestamp
+    
+    Note:
+        This function is called within the vote submission transaction, ensuring
+        that rating events are created atomically with votes. For idempotent
+        vote replays, this function is not called (the event already exists).
+    """
+    event_id = f"evt_{uuid.uuid4()}"
+    
+    cursor.execute(
+        """
+        INSERT INTO rating_events (
+            event_id, vote_id, battle_id,
+            left_generator_id, right_generator_id,
+            result, delta_left, delta_right,
+            created_at_utc
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            event_id,
+            vote_id,
+            battle_id,
+            left_generator_id,
+            right_generator_id,
+            result,
+            delta_left,
+            delta_right,
+            now_utc,
+        )
+    )
+
+
+@app.post("/v1/votes", response_model=VoteResponse)
+async def submit_vote(request: VoteRequest):
+    """
+    Submit a vote for a battle.
+    
+    Accepts vote outcome, ensures idempotency, and atomically updates database and ratings.
+    """
+    conn = get_connection()
+    now_utc = datetime.now(timezone.utc).isoformat()
+    
+    # Request validation
+    # session_id and battle_id are required by Pydantic model
+    # result is validated by VoteResult enum
+    
+    # Validate tags vocabulary
+    if request.tags:
+        invalid_tags = [tag for tag in request.tags if tag not in ALLOWED_TAGS]
+        if invalid_tags:
+            raise_api_error(
+                ErrorCode.INVALID_TAG,
+                f"Invalid tags: {', '.join(invalid_tags)}. Allowed tags: {', '.join(sorted(ALLOWED_TAGS))}",
+                retryable=False,
+                status_code=400,
+                details={"invalid_tags": invalid_tags, "allowed_tags": sorted(ALLOWED_TAGS)}
+            )
+    
+    # Prepare telemetry JSON
+    telemetry_dict = request.telemetry.model_dump() if request.telemetry else {}
+    
+    # Compute canonical payload hash for idempotency
+    tags_list = request.tags if request.tags else []
+    payload_hash = compute_payload_hash(
+        request.battle_id,
+        request.session_id,
+        request.result.value,
+        tags_list,
+        telemetry_dict
+    )
+    
+    # Transaction: all operations must be atomic
+    try:
+        with transaction() as cursor:
+            # 1. Load battle by battle_id
+            cursor.execute(
+                "SELECT * FROM battles WHERE battle_id = ?",
+                (request.battle_id,)
+            )
+            battle_row = cursor.fetchone()
+            
+            if not battle_row:
+                raise_api_error(
+                    ErrorCode.BATTLE_NOT_FOUND,
+                    f"Battle with ID '{request.battle_id}' not found",
+                    retryable=False,
+                    status_code=404
+                )
+            
+            battle_status = battle_row["status"]
+            battle_session_id = battle_row["session_id"]
+            left_generator_id = battle_row["left_generator_id"]
+            right_generator_id = battle_row["right_generator_id"]
+            
+            # 2. Check battle status
+            if battle_status != "ISSUED":
+                if battle_status == "COMPLETED":
+                    # Check if vote exists (idempotency path)
+                    cursor.execute(
+                        "SELECT vote_id, payload_hash FROM votes WHERE battle_id = ?",
+                        (request.battle_id,)
+                    )
+                    existing_vote = cursor.fetchone()
+                    
+                    if existing_vote:
+                        stored_hash = existing_vote["payload_hash"]
+                        if stored_hash == payload_hash:
+                            # Idempotent replay: return existing vote
+                            vote_id = existing_vote["vote_id"]
+                            logger.info(f"Idempotent vote replay: battle_id={request.battle_id} vote_id={vote_id}")
+                            
+                            # Fetch leaderboard for response
+                            cursor.execute(
+                                """
+                                SELECT 
+                                    g.generator_id, g.name,
+                                    r.rating_value, r.games_played
+                                FROM generators g
+                                JOIN ratings r ON g.generator_id = r.generator_id
+                                WHERE g.is_active = 1
+                                ORDER BY r.rating_value DESC, g.generator_id ASC
+                                """
+                            )
+                            generators_data = cursor.fetchall()
+                            
+                            leaderboard_generators = [
+                                LeaderboardGeneratorPreview(
+                                    generator_id=row["generator_id"],
+                                    name=row["name"],
+                                    rating=row["rating_value"],
+                                    games_played=row["games_played"]
+                                )
+                                for row in generators_data
+                            ]
+                            
+                            cursor.execute("SELECT MAX(updated_at_utc) as last_update FROM ratings")
+                            last_update_row = cursor.fetchone()
+                            last_update = last_update_row["last_update"] if last_update_row["last_update"] else now_utc
+                            
+                            return VoteResponse(
+                                protocol_version="arena/v0",
+                                accepted=True,
+                                vote_id=vote_id,
+                                leaderboard_preview=LeaderboardPreview(
+                                    updated_at_utc=last_update,
+                                    generators=leaderboard_generators
+                                )
+                            )
+                        else:
+                            # Different payload for same battle
+                            raise_api_error(
+                                ErrorCode.DUPLICATE_VOTE_CONFLICT,
+                                f"Vote already exists for battle '{request.battle_id}' with different payload",
+                                retryable=False,
+                                status_code=409,
+                                details={"battle_id": request.battle_id, "existing_vote_id": existing_vote["vote_id"]}
+                            )
+                    else:
+                        # COMPLETED but no vote? This shouldn't happen, but handle gracefully
+                        raise_api_error(
+                            ErrorCode.BATTLE_ALREADY_VOTED,
+                            f"Battle '{request.battle_id}' is COMPLETED but no vote found (inconsistent state)",
+                            retryable=False,
+                            status_code=409
+                        )
+                else:
+                    # EXPIRED or other status
+                    raise_api_error(
+                        ErrorCode.BATTLE_ALREADY_VOTED,
+                        f"Battle '{request.battle_id}' has status '{battle_status}' and cannot be voted on",
+                        retryable=False,
+                        status_code=409
+                    )
+            
+            # 3. Check session_id matches
+            if battle_session_id != request.session_id:
+                raise_api_error(
+                    ErrorCode.INVALID_PAYLOAD,
+                    f"Session ID mismatch: battle session_id='{battle_session_id}' but request session_id='{request.session_id}'",
+                    retryable=False,
+                    status_code=400
+                )
+            
+            # 4. Payload hash already computed above
+            
+            # 5. Check if vote already exists (shouldn't for ISSUED battle, but check anyway)
+            cursor.execute(
+                "SELECT vote_id, payload_hash FROM votes WHERE battle_id = ?",
+                (request.battle_id,)
+            )
+            existing_vote = cursor.fetchone()
+            
+            if existing_vote:
+                stored_hash = existing_vote["payload_hash"]
+                if stored_hash == payload_hash:
+                    # Idempotent replay
+                    vote_id = existing_vote["vote_id"]
+                    logger.info(f"Idempotent vote replay: battle_id={request.battle_id} vote_id={vote_id}")
+                else:
+                    raise_api_error(
+                        ErrorCode.DUPLICATE_VOTE_CONFLICT,
+                        f"Vote already exists for battle '{request.battle_id}' with different payload",
+                        retryable=False,
+                        status_code=409
+                    )
+            else:
+                # 6. Insert new vote
+                vote_id = f"v_{uuid.uuid4()}"
+                tags_json = json.dumps(sorted(tags_list)) if tags_list else "[]"
+                telemetry_json = json.dumps(telemetry_dict, sort_keys=True) if telemetry_dict else "{}"
+                
+                cursor.execute(
+                    """
+                    INSERT INTO votes (
+                        vote_id, battle_id, session_id,
+                        created_at_utc, result, tags_json, telemetry_json, payload_hash
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        vote_id,
+                        request.battle_id,
+                        request.session_id,
+                        now_utc,
+                        request.result.value,
+                        tags_json,
+                        telemetry_json,
+                        payload_hash,
+                    )
+                )
+                
+                # 7. Update battle status to COMPLETED
+                cursor.execute(
+                    """
+                    UPDATE battles 
+                    SET status = 'COMPLETED', updated_at_utc = ?
+                    WHERE battle_id = ?
+                    """,
+                    (now_utc, request.battle_id)
+                )
+                
+                # 8. Update ratings using Elo rating system
+                delta_left, delta_right = update_ratings(
+                    cursor,
+                    left_generator_id,
+                    right_generator_id,
+                    request.result.value,
+                    config.k_factor,
+                    now_utc,
+                    config.initial_rating
+                )
+                
+                # 9. Insert rating event for auditability
+                insert_rating_event(
+                    cursor,
+                    vote_id,
+                    request.battle_id,
+                    left_generator_id,
+                    right_generator_id,
+                    request.result.value,
+                    delta_left,
+                    delta_right,
+                    now_utc
+                )
+            
+            # Fetch leaderboard for response
+            cursor.execute(
+                """
+                SELECT 
+                    g.generator_id, g.name,
+                    r.rating_value, r.games_played
+                FROM generators g
+                JOIN ratings r ON g.generator_id = r.generator_id
+                WHERE g.is_active = 1
+                ORDER BY r.rating_value DESC, g.generator_id ASC
+                """
+            )
+            generators_data = cursor.fetchall()
+            
+            leaderboard_generators = [
+                LeaderboardGeneratorPreview(
+                    generator_id=row["generator_id"],
+                    name=row["name"],
+                    rating=row["rating_value"],
+                    games_played=row["games_played"]
+                )
+                for row in generators_data
+            ]
+            
+            cursor.execute("SELECT MAX(updated_at_utc) as last_update FROM ratings")
+            last_update_row = cursor.fetchone()
+            last_update = last_update_row["last_update"] if last_update_row["last_update"] else now_utc
+            
+            logger.info(
+                f"Vote accepted: vote_id={vote_id} battle_id={request.battle_id} "
+                f"result={request.result.value} tags={tags_list}"
+            )
+            
+            return VoteResponse(
+                protocol_version="arena/v0",
+                accepted=True,
+                vote_id=vote_id,
+                leaderboard_preview=LeaderboardPreview(
+                    updated_at_utc=last_update,
+                    generators=leaderboard_generators
+                )
+            )
+            
+    except APIError:
+        # Re-raise API errors
+        raise
+    except sqlite3.IntegrityError as e:
+        logger.error(f"Database integrity error during vote submission: {e}")
+        raise_api_error(
+            ErrorCode.INTERNAL_ERROR,
+            "Failed to submit vote due to database constraint violation",
+            retryable=True,
+            status_code=500
+        )
+    except Exception as e:
+        logger.exception(f"Unexpected error during vote submission: {e}")
+        raise_api_error(
+            ErrorCode.INTERNAL_ERROR,
+            "An internal error occurred while processing vote",
+            retryable=True,
+            status_code=500
+        )
 
 
 @app.get("/test/error/{error_code}")
@@ -413,6 +1314,206 @@ async def leaderboard_page():
     """
     
     return HTMLResponse(content=html)
+
+
+# Task E3: Debug endpoints (only available when ARENA_DEBUG=true)
+# These endpoints help inspect database state without opening SQLite directly.
+# For Stage 0 local-only, no auth needed. For hosted stages, guard behind ARENA_DEBUG.
+
+@app.get("/debug/db-status")
+async def debug_db_status():
+    """
+    Get database status and metadata (Task E3).
+    
+    Returns counts of tables, last migration applied, and database file size.
+    Only available when ARENA_DEBUG=true.
+    """
+    if not config.debug:
+        raise_api_error(
+            ErrorCode.INTERNAL_ERROR,
+            "Debug endpoints are disabled. Set ARENA_DEBUG=true to enable.",
+            retryable=False,
+            status_code=403
+        )
+    
+    import os
+    from pathlib import Path
+    
+    conn = get_connection()
+    
+    # Get table counts (using whitelist for safety)
+    table_names = [
+        "generators", "levels", "battles", "votes", 
+        "ratings", "rating_events", "schema_migrations"
+    ]
+    tables = {}
+    
+    for table_name in table_names:
+        # Safe: table_name is from whitelist, not user input
+        cursor = conn.execute(f"SELECT COUNT(*) as count FROM {table_name}")
+        tables[table_name] = cursor.fetchone()["count"]
+    
+    # Get last migration
+    cursor = conn.execute(
+        "SELECT version, applied_at_utc FROM schema_migrations ORDER BY version DESC LIMIT 1"
+    )
+    last_migration_row = cursor.fetchone()
+    last_migration = {
+        "version": last_migration_row["version"] if last_migration_row else None,
+        "applied_at_utc": last_migration_row["applied_at_utc"] if last_migration_row else None,
+    }
+    
+    # Get database file size
+    db_path = Path(config.db_path)
+    db_size_bytes = db_path.stat().st_size if db_path.exists() else 0
+    db_size_mb = db_size_bytes / (1024 * 1024)
+    
+    # Get foreign keys status
+    cursor = conn.execute("PRAGMA foreign_keys")
+    foreign_keys_enabled = bool(cursor.fetchone()[0])
+    
+    return JSONResponse({
+        "protocol_version": "arena/v0",
+        "database": {
+            "path": config.db_path,
+            "size_bytes": db_size_bytes,
+            "size_mb": round(db_size_mb, 2),
+            "foreign_keys_enabled": foreign_keys_enabled,
+        },
+        "table_counts": tables,
+        "last_migration": last_migration,
+    })
+
+
+@app.get("/debug/battles")
+async def debug_battles(status: str = None, limit: int = 10):
+    """
+    Get battle records for debugging (Task E3).
+    
+    Query parameters:
+    - status: Filter by status (ISSUED, COMPLETED, EXPIRED). If not provided, returns all.
+    - limit: Maximum number of records to return (default: 10, max: 100)
+    
+    Only available when ARENA_DEBUG=true.
+    """
+    if not config.debug:
+        raise_api_error(
+            ErrorCode.INTERNAL_ERROR,
+            "Debug endpoints are disabled. Set ARENA_DEBUG=true to enable.",
+            retryable=False,
+            status_code=403
+        )
+    
+    if limit > 100:
+        limit = 100
+    
+    conn = get_connection()
+    
+    if status:
+        # Validate status
+        if status not in ("ISSUED", "COMPLETED", "EXPIRED"):
+            raise_api_error(
+                ErrorCode.INVALID_PAYLOAD,
+                f"Invalid status: {status}. Must be one of: ISSUED, COMPLETED, EXPIRED",
+                retryable=False,
+                status_code=400
+            )
+        cursor = conn.execute(
+            """
+            SELECT * FROM battles 
+            WHERE status = ?
+            ORDER BY created_at_utc DESC
+            LIMIT ?
+            """,
+            (status, limit)
+        )
+    else:
+        cursor = conn.execute(
+            """
+            SELECT * FROM battles 
+            ORDER BY created_at_utc DESC
+            LIMIT ?
+            """,
+            (limit,)
+        )
+    
+    battles = []
+    for row in cursor.fetchall():
+        battles.append({
+            "battle_id": row["battle_id"],
+            "session_id": row["session_id"],
+            "status": row["status"],
+            "issued_at_utc": row["issued_at_utc"],
+            "expires_at_utc": row["expires_at_utc"],
+            "left_level_id": row["left_level_id"],
+            "right_level_id": row["right_level_id"],
+            "left_generator_id": row["left_generator_id"],
+            "right_generator_id": row["right_generator_id"],
+            "matchmaking_policy": row["matchmaking_policy"],
+            "created_at_utc": row["created_at_utc"],
+            "updated_at_utc": row["updated_at_utc"],
+        })
+    
+    return JSONResponse({
+        "protocol_version": "arena/v0",
+        "battles": battles,
+        "count": len(battles),
+        "status_filter": status,
+        "limit": limit,
+    })
+
+
+@app.get("/debug/votes")
+async def debug_votes(limit: int = 10):
+    """
+    Get vote records for debugging (Task E3).
+    
+    Query parameters:
+    - limit: Maximum number of records to return (default: 10, max: 100)
+    
+    Only available when ARENA_DEBUG=true.
+    """
+    if not config.debug:
+        raise_api_error(
+            ErrorCode.INTERNAL_ERROR,
+            "Debug endpoints are disabled. Set ARENA_DEBUG=true to enable.",
+            retryable=False,
+            status_code=403
+        )
+    
+    if limit > 100:
+        limit = 100
+    
+    conn = get_connection()
+    
+    cursor = conn.execute(
+        """
+        SELECT * FROM votes 
+        ORDER BY created_at_utc DESC
+        LIMIT ?
+        """,
+        (limit,)
+    )
+    
+    votes = []
+    for row in cursor.fetchall():
+        votes.append({
+            "vote_id": row["vote_id"],
+            "battle_id": row["battle_id"],
+            "session_id": row["session_id"],
+            "result": row["result"],
+            "tags": json.loads(row["tags_json"]) if row["tags_json"] else [],
+            "telemetry": json.loads(row["telemetry_json"]) if row["telemetry_json"] else {},
+            "payload_hash": row["payload_hash"],
+            "created_at_utc": row["created_at_utc"],
+        })
+    
+    return JSONResponse({
+        "protocol_version": "arena/v0",
+        "votes": votes,
+        "count": len(votes),
+        "limit": limit,
+    })
 
 
 def main():
