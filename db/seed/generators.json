@@ -1,0 +1,29 @@
+{
+  "generators": [
+    {
+      "generator_id": "markov_v1",
+      "name": "Markov Chain Generator",
+      "version": "1.0.0",
+      "description": "Generates levels using Markov chain transitions learned from original Mario levels.",
+      "tags": ["markov", "statistical", "learned"],
+      "documentation_url": "https://example.com/generators/markov"
+    },
+    {
+      "generator_id": "ga_v1",
+      "name": "Genetic Algorithm Generator",
+      "version": "1.0.0",
+      "description": "Evolves level segments using genetic algorithms with playability fitness.",
+      "tags": ["evolutionary", "genetic-algorithm", "fitness-based"],
+      "documentation_url": "https://example.com/generators/ga"
+    },
+    {
+      "generator_id": "random_v1",
+      "name": "Random Baseline Generator",
+      "version": "1.0.0",
+      "description": "Baseline generator using random tile placement with basic structural rules.",
+      "tags": ["baseline", "random", "procedural"],
+      "documentation_url": "https://example.com/generators/random"
+    }
+  ]
+}
+

@@ -1,0 +1,3 @@
+-- PLACEHOLDER: Replace this file with a valid 150x16 ASCII tilemap --
+-- See docs/stage0-spec.md section 8 for the level format specification --
+
