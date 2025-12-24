@@ -7,7 +7,8 @@ This document is the **single source of truth** for Stage 0 implementation. It d
 - invariants and failure modes so the backend, DB, and Java client can be developed independently.
 
 **Protocol version:** `arena/v0`  
-**Scope:** local-only Stage 0 (Docker backend + persistent local DB + Java client)
+**Scope:** local-only Stage 0 (Docker backend + persistent local DB + Java client)  
+**Implementation:** Backend infrastructure complete (database, migrations, seed import, leaderboard). Battle/vote endpoints and Java client are pending.
 
 ---
 
@@ -34,6 +35,27 @@ Stage 0 comprises three components:
   - battle IDs cannot be voted twice
   - vote submission is idempotent
   - backend rejects malformed levels/unknown generator IDs
+
+### Implementation status (as of current commit)
+
+| Feature | Status | Location |
+|---------|--------|----------|
+| **Database schema** | ✅ Complete | `db/migrations/001_init.sql` |
+| **Database indexes** | ✅ Complete | `db/migrations/002_indexes.sql` |
+| **Migration runner** | ✅ Complete | `backend/src/db/migrations.py` |
+| **SQLite persistence** | ✅ Complete | `db/local/arena.sqlite` |
+| **Generator import** | ✅ Complete | `backend/src/db/seed.py` |
+| **Level validation + import** | ✅ Complete | `backend/src/db/seed.py` |
+| **Rating initialization** | ✅ Complete | `backend/src/db/seed.py` |
+| **Health endpoint** | ✅ Complete | `backend/src/main.py` |
+| **Leaderboard endpoint** | ✅ Complete | `backend/src/main.py` |
+| **HTML leaderboard** | ✅ Complete | `backend/src/main.py` |
+| **Battle creation** | ⏳ Not implemented | See section 5 |
+| **Vote submission** | ⏳ Not implemented | See section 6 |
+| **ELO rating update** | ⏳ Not implemented | See section 11 |
+| **Java client** | ⏳ Not implemented | External component |
+
+**Testing infrastructure:** You can test the implemented components by running `docker compose up --build` and visiting `http://localhost:8080/`.
 
 ---
 
@@ -582,30 +604,29 @@ Database should allow simple queries to answer:
 
 ## 13. Stage 0 acceptance tests (must-pass scenarios)
 
-1. **Happy path**
+1. **Happy path** ⏳ *Requires battle/vote endpoints*
 
 * client fetches battle
 * plays both
 * submits vote
 * leaderboard changes (for non-skip)
 
-2. **Idempotency**
+2. **Idempotency** ⏳ *Requires vote endpoint*
 
 * submit the same vote twice due to simulated timeout
 * backend returns accepted and does not double-update rating
 
-3. **Duplicate conflict**
+3. **Duplicate conflict** ⏳ *Requires vote endpoint*
 
 * submit a different vote for same battle_id
 * backend rejects with `DUPLICATE_VOTE_CONFLICT`
 
-4. **Persistence**
+4. **Persistence** ✅ *Testable now*
 
-* issue a battle, submit vote
-* restart backend container
-* leaderboard and vote counts remain unchanged
+* Import seed data, restart backend container
+* Leaderboard and generator counts remain unchanged
 
-5. **Invalid level ingestion**
+5. **Invalid level ingestion** ✅ *Testable now*
 
-* put an invalid character in a level file
-* backend fails startup with a clear message
+* Put an invalid character in a level file
+* Backend fails startup with clear validation error message

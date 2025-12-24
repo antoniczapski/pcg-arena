@@ -104,47 +104,71 @@ Stage 0 is three components with **hard boundaries** so each can be developed in
 
 ## Repository layout
 
-A simple structure that keeps boundaries clean:
+### Current structure (Stage 0)
 
 ```
 pcg-arena/
   README.md
+  docker-compose.yml       # ✅ One-command setup (docker compose up)
+  .gitignore               # ✅ Excludes db/local/, client-java/dist/
 
-  backend/                 # Dockerized API + rating logic
-    Dockerfile
-    src/
-    tests/
+  backend/                 # ✅ Dockerized Python/FastAPI backend
+    spec.md                # ✅ Backend implementation documentation
+    Dockerfile             # ✅ Container build instructions
+    requirements.txt       # ✅ Python dependencies (FastAPI, Uvicorn)
     config/
-    openapi/               # OpenAPI spec (recommended)
-    scripts/               # local dev scripts (seed db, etc.)
+      settings.env         # ✅ Environment variable defaults
+    src/
+      __init__.py          # ✅ Package metadata
+      config.py            # ✅ Configuration loader
+      main.py              # ✅ FastAPI app + endpoints
+      db/
+        __init__.py        # ✅ Module exports
+        connection.py      # ✅ SQLite connection management
+        migrations.py      # ✅ Migration runner
+        seed.py            # ✅ Seed importer + validation
+    tests/                 # ⏳ Placeholder
+    openapi/               # ⏳ Placeholder
+    scripts/               # ⏳ Placeholder
 
   db/
-    migrations/            # schema migrations
-    seed/                  # initial dataset: generators + levels
-    local/                 # (gitignored) local db files if bind-mounted
+    spec.md                # ✅ Database specification
+    migrations/            # ✅ SQL migration scripts
+      001_init.sql         # ✅ Core tables (7 tables)
+      002_indexes.sql      # ✅ Performance indexes
+    seed/                  # ✅ Initial dataset
+      generators.json      # ✅ 3 generators (hopper, genetic, notch)
+      levels/              # ✅ 30 level files (10 per generator)
+        genetic/
+        hopper/
+        notch/
+    local/                 # ✅ Runtime storage (gitignored)
+      arena.sqlite         # ✅ SQLite database (created on first run)
 
-  client-java/
-    gradle/ or maven/
+  client-java/             # ⏳ Not yet implemented
     src/
     assets/
-      levels/              # optional: cached levels for offline dev
-    dist/                  # built runnable artifacts (gitignored)
+      levels/
+    dist/                  # (gitignored)
 
-  shared/
-    schemas/               # shared JSON schemas for payload validation
-    level-format/          # definition + examples for level encoding
+  shared/                  # ⏳ Placeholder
+    schemas/
+    level-format/
 
   docs/
-    stage0-spec.md         # detailed spec (API, data model, UX flow)
-    rating.md              # rating algorithm rationale
-    threat-model-lite.md   # local abuse assumptions + future notes
-    decisions.md           # ADR-style decisions (short)
+    stage0-spec.md         # ✅ Detailed technical specification
+    future-notes.md        # ✅ Future roadmap notes
 ```
 
-Notes:
+**Legend:**  
+✅ Implemented | ⏳ Placeholder / Not yet implemented
 
-* If you prefer **one-command local run**, add a `docker-compose.yml` at repo root to run backend + DB volume.
-* Keep `db/local/` and `client-java/dist/` **gitignored**.
+### Notes
+
+* `docker-compose.yml` orchestrates backend + volume mounts
+* `db/local/` and `client-java/dist/` are gitignored
+* Backend serves HTTP API on `localhost:8080`
+* Database persists across container restarts
 
 ---
 
@@ -264,50 +288,139 @@ Stage 0 can be simple but should avoid obvious bias:
 
 ---
 
-## Local persistence (non-negotiable requirement)
+## Local persistence ✅
 
-The database must outlive the container, which means:
+**Implemented:** Database persists via bind-mount.
 
-* Use a Docker volume (recommended), or
-* Bind-mount a local directory into the container.
+The database file `db/local/arena.sqlite` survives:
+- Container restarts (`docker compose down && docker compose up`)
+- Container rebuilds (`docker compose up --build`)
+- Host system reboots
 
-Stage 0 success criteria explicitly depends on stable persistence across restarts.
+**How it works:**
+- Host directory `./db/local` is mounted to `/data` in container
+- Backend writes to `/data/arena.sqlite`
+- File remains on host filesystem even when container is removed
+
+**Verify persistence:**
+1. Start backend, check leaderboard
+2. Stop container: `docker compose down`
+3. Restart: `docker compose up`
+4. Leaderboard shows same data (generators still at rating 1000.0)
 
 ---
 
 ## Quickstart (local)
 
-> The exact commands depend on backend tech choice. This is a “shape” that the repo should converge to.
-
-### Prereqs
+### Prerequisites
 
 * Docker + Docker Compose
-* Java 17+ (or whatever your client framework requires)
+* (Optional) Python 3.12+ for local development without Docker
+* (Future) Java 17+ for client
 
-### Run backend + DB locally
+### Run backend + database
 
 ```bash
+# From repository root
 docker compose up --build
 ```
 
-### Run the Java client
+Backend starts on `http://localhost:8080`
 
+### Test the implemented features
+
+**View leaderboard:**
 ```bash
-cd client-java
-./gradlew run
+# Open in browser
+http://localhost:8080/
+
+# Or fetch JSON
+curl http://localhost:8080/v1/leaderboard
 ```
 
-### Sanity test flow
+**Check health:**
+```bash
+curl http://localhost:8080/health
+```
 
-1. Client requests a battle
-2. You play left level, then right level
-3. You vote
-4. You fetch leaderboard and see rating changes
-5. You restart backend container and confirm the state persists
+**View logs:**
+```bash
+docker compose logs backend
+```
+
+You should see:
+- 3 generators imported
+- 30 levels imported
+- Database ready message with counts
+
+### Persistence test
+
+```bash
+# Stop backend
+docker compose down
+
+# Restart
+docker compose up
+
+# Leaderboard data persists (check http://localhost:8080/)
+```
+
+### Reset database
+
+```bash
+# Stop and remove volumes
+docker compose down
+
+# Delete database file
+rm db/local/arena.sqlite
+
+# Restart (recreates from scratch)
+docker compose up --build
+```
 
 ---
 
-## Stage 0 definition of done (what “finished” means)
+## Current implementation status
+
+### Completed (Stage 0 - Infrastructure)
+
+| Component | Status | Description |
+|-----------|--------|-------------|
+| **Database** | ✅ Complete | SQLite with 7 tables, migrations, indexes |
+| **Migrations** | ✅ Complete | Auto-apply on startup, tracked in DB |
+| **Seed import** | ✅ Complete | Generators + levels with validation |
+| **Docker setup** | ✅ Complete | docker-compose.yml, volume mounts |
+| **Backend skeleton** | ✅ Complete | FastAPI app, config, connection mgmt |
+| **Health endpoint** | ✅ Complete | `GET /health` |
+| **Leaderboard (JSON)** | ✅ Complete | `GET /v1/leaderboard` |
+| **Leaderboard (HTML)** | ✅ Complete | `GET /` - human-readable view |
+
+### In progress / Next steps
+
+| Component | Status | Priority |
+|-----------|--------|----------|
+| **Battle creation** | ⏳ Not started | High - `POST /v1/battles:next` |
+| **Vote submission** | ⏳ Not started | High - `POST /v1/votes` |
+| **ELO rating logic** | ⏳ Not started | High - rating delta calculation |
+| **Java client** | ⏳ Not started | High - gameplay + vote UI |
+
+### Quick demo
+
+You can already test the backend infrastructure:
+
+```bash
+# Start backend + database
+docker compose up --build
+
+# View leaderboard
+# Open http://localhost:8080/ in browser
+```
+
+You should see 3 generators with rating 1000.0 and 30 levels imported.
+
+---
+
+## Stage 0 definition of done (what "finished" means)
 
 A Stage 0 release is “done” when:
 
