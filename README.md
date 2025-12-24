@@ -343,6 +343,15 @@ curl http://localhost:8080/v1/leaderboard
 curl http://localhost:8080/health
 ```
 
+**Run demo script (10 battles + votes):**
+```bash
+# Bash (Linux/Mac/Docker)
+./backend/scripts/demo.sh
+
+# PowerShell (Windows)
+.\backend\scripts\demo.ps1
+```
+
 **View logs:**
 ```bash
 docker compose logs backend

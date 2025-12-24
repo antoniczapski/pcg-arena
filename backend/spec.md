@@ -242,6 +242,28 @@ pytest tests -v
 docker compose run --rm backend pytest tests -v
 ```
 
+### Demo script
+
+A scripted demo is available to test the complete battle/vote flow:
+
+```bash
+# Bash (Linux/Mac/Docker)
+./backend/scripts/demo.sh
+
+# PowerShell (Windows)
+.\backend\scripts\demo.ps1
+```
+
+The demo script:
+- Creates a session
+- Fetches 10 battles (`POST /v1/battles:next`)
+- Submits votes for each battle (`POST /v1/votes`)
+- Shows leaderboard changes after each vote
+- Waits 2 seconds between each iteration
+- Demonstrates data persistence
+
+See `backend/scripts/README.md` for details.
+
 ### Test coverage (Stage 0)
 
 The test suite covers:
