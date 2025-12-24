@@ -11,14 +11,13 @@ This module initializes the application:
 
 import logging
 import sys
-from pathlib import Path
 
 import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
 from config import load_config
-from db import init_connection, run_migrations
+from db import init_connection, run_migrations, import_generators, init_generator_ratings
 
 # Configure logging
 logging.basicConfig(
@@ -53,13 +52,14 @@ async def startup_event():
         applied = run_migrations(config.migrations_path)
         logger.info(f"Database ready (applied {applied} new migrations)")
         
-        # Check for seed data
-        seed_path = Path(config.seed_path)
-        generators_file = seed_path / "generators.json"
-        if generators_file.exists():
-            logger.info(f"Found generators.json at {generators_file}")
-        else:
-            logger.warning(f"generators.json not found at {generators_file}")
+        # Import seed data
+        imported = import_generators(config.seed_path)
+        logger.info(f"Generators ready ({imported} imported/updated)")
+        
+        # Initialize ratings for new generators
+        ratings_init = init_generator_ratings(config.initial_rating)
+        if ratings_init > 0:
+            logger.info(f"Initialized ratings for {ratings_init} new generator(s)")
         
     except Exception as e:
         logger.error(f"Failed to initialize database: {e}")

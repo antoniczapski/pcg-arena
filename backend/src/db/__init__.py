@@ -2,6 +2,13 @@
 
 from .connection import get_connection, init_connection
 from .migrations import run_migrations
+from .seed import import_generators, init_generator_ratings
 
-__all__ = ["get_connection", "init_connection", "run_migrations"]
+__all__ = [
+    "get_connection",
+    "init_connection",
+    "run_migrations",
+    "import_generators",
+    "init_generator_ratings",
+]
 
