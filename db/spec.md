@@ -42,46 +42,80 @@ In Stage 0, we assume the backend container mounts a host directory (for example
 
 ---
 
-## 3) Folder responsibilities (`./db`)
+## 3) Directory structure and file responsibilities
 
-Current structure:
-
-```
-
-migrations/
-seed/
+### Current tree (Stage 0 implementation)
 
 ```
+db/
+├── spec.md                     # This file - database specification
+├── local/                      # Runtime database storage (gitignored)
+│   └── arena.sqlite            # SQLite database file
+├── migrations/                 # Ordered SQL migration scripts
+│   ├── 001_init.sql            # Core tables: generators, levels, battles, votes, ratings, rating_events
+│   └── 002_indexes.sql         # Performance indexes for all tables
+└── seed/                       # Initial data for fresh database
+    ├── generators.json         # Generator metadata (id, name, version, description, tags, url)
+    └── levels/                 # Level files organized by generator
+        ├── genetic/            # Levels for "genetic" generator
+        │   ├── lvl-1.txt       # ASCII tilemap file (variable width x 16 lines)
+        │   ├── lvl-2.txt
+        │   └── ...
+        ├── hopper/             # Levels for "hopper" generator
+        │   └── ...
+        └── notch/              # Levels for "notch" generator
+            └── ...
+```
 
-We will treat these directories as:
+### File descriptions
 
-### `./db/migrations`
+| Path | Purpose | Managed by |
+|------|---------|------------|
+| `spec.md` | Database schema specification and requirements | Human/docs |
+| `local/` | Runtime SQLite storage, persists across container restarts | Backend (write), Docker volume mount |
+| `local/arena.sqlite` | SQLite database file with all tables | Backend runtime |
+| `migrations/` | SQL scripts applied in lexicographic order on startup | Backend migration runner |
+| `migrations/001_init.sql` | Creates all 7 core tables with constraints | Backend migration runner |
+| `migrations/002_indexes.sql` | Creates performance indexes | Backend migration runner |
+| `seed/generators.json` | JSON array of generator metadata for upsert on startup | Backend seed importer |
+| `seed/levels/<gen_id>/*.txt` | ASCII tilemap files, one level per file | Backend seed importer |
+
+### `./db/migrations/`
+
 Contains ordered, versioned migration scripts.
-Functional requirements:
-- Migrations must be runnable from scratch on an empty DB.
-- Migrations must be runnable incrementally on an existing DB.
-- A migration must be **idempotent** when applied once (i.e., cannot be reapplied accidentally).
-- Each migration should be small and reversible in concept (down migrations optional for Stage 0).
 
-Recommended naming convention:
-- `001_init.sql`
-- `002_indexes.sql`
-- `003_add_vote_tags.sql`
-(Exact naming is up to you; what matters is deterministic ordering.)
+**Current migrations:**
+- `001_init.sql` — Creates tables: `schema_migrations`, `generators`, `levels`, `battles`, `votes`, `ratings`, `rating_events`
+- `002_indexes.sql` — Creates indexes for: `generators.is_active`, `levels.generator_id`, `levels.content_hash`, `battles.status`, `battles.session_id`, `battles.generator_pair`, `votes.created_at_utc`, `votes.session_id`
 
-### `./db/seed`
+**Functional requirements:**
+- Migrations run from scratch on empty DB
+- Migrations run incrementally on existing DB
+- Each migration is idempotent (uses `CREATE TABLE IF NOT EXISTS`, `CREATE INDEX IF NOT EXISTS`)
+- Backend tracks applied migrations in `schema_migrations` table
+
+**Naming convention:** `NNN_description.sql` where NNN is a 3-digit sequence number.
+
+### `./db/seed/`
+
 Contains initial data (not code) to populate a fresh DB.
-Functional requirements:
-- Seed must define at least:
-  - generator metadata
-  - level bundles per generator
-- Seed format must be stable and validated by backend import code.
-- Seeding must be safe to run repeatedly (upsert behavior): do not duplicate generators or levels.
 
-Recommended seed structure:
-- `seed/generators.json`
-- `seed/levels/<generator_id>/<level_id>.txt` (ASCII tilemaps)
-- optional: `seed/levels/<generator_id>/manifest.json`
+**Current structure:**
+- `generators.json` — Defines 3 generators (hopper, genetic, notch)
+- `levels/<generator_id>/lvl-N.txt` — 10 levels per generator (30 total)
+
+**Functional requirements:**
+- Seed import uses upsert logic (safe to run repeatedly)
+- Generators must be imported before levels (foreign key constraint)
+- Level files must pass validation (16 lines, width ≤ 250, valid tile alphabet)
+
+### `./db/local/`
+
+Runtime storage for the SQLite database file.
+
+**Important:** This directory is gitignored. Only the `.gitkeep` placeholder is tracked.
+
+**Docker mount:** `./db/local` → `/data` (read-write)
 
 ---
 
