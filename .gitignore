@@ -1,5 +1,9 @@
 # Local database files (bind-mounted or volume-mounted)
-db/local/
+# Keep the directory but ignore all database files
+db/local/*.sqlite
+db/local/*.sqlite-journal
+db/local/*.sqlite-wal
+db/local/*.sqlite-shm
 
 # Client build artifacts
 client-java/dist/
