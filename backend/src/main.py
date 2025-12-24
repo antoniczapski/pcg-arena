@@ -15,9 +15,12 @@ import sys
 import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse, HTMLResponse
+from fastapi.exceptions import HTTPException
 
 from config import load_config
 from db import init_connection, get_connection, run_migrations, import_generators, init_generator_ratings, import_levels, log_db_status
+from errors import APIError, api_error_handler, http_exception_handler, general_exception_handler
+from middleware import RequestLoggingMiddleware
 
 # Configure logging
 logging.basicConfig(
@@ -36,6 +39,14 @@ app = FastAPI(
     description="Pairwise rating platform for Mario PCG generators",
     version="0.1.0",
 )
+
+# Register exception handlers for consistent error responses
+app.add_exception_handler(APIError, api_error_handler)
+app.add_exception_handler(HTTPException, http_exception_handler)
+app.add_exception_handler(Exception, general_exception_handler)
+
+# Register request logging middleware
+app.add_middleware(RequestLoggingMiddleware)
 
 
 @app.on_event("startup")
@@ -90,6 +101,88 @@ async def health_check():
             "backend_version": "0.1.0"
         }
     })
+
+
+@app.get("/test/error/{error_code}")
+async def test_error(error_code: str):
+    """
+    Test endpoint to demonstrate error handling.
+    
+    This endpoint allows testing different error codes and responses.
+    Not part of the production API - for development/testing only.
+    """
+    from errors import raise_api_error, ErrorCode
+    
+    # Map error codes to test scenarios
+    error_tests = {
+        "NO_BATTLE_AVAILABLE": {
+            "code": ErrorCode.NO_BATTLE_AVAILABLE,
+            "message": "No battle available - not enough generators or levels loaded",
+            "retryable": True,
+            "status_code": 503
+        },
+        "INVALID_PAYLOAD": {
+            "code": ErrorCode.INVALID_PAYLOAD,
+            "message": "Invalid request payload",
+            "retryable": False,
+            "status_code": 400
+        },
+        "INVALID_TAG": {
+            "code": ErrorCode.INVALID_TAG,
+            "message": "Invalid tag 'invalid_tag' - not in allowed vocabulary",
+            "retryable": False,
+            "status_code": 400,
+            "details": {"invalid_tag": "invalid_tag", "allowed_tags": ["fun", "boring", "good_flow"]}
+        },
+        "BATTLE_NOT_FOUND": {
+            "code": ErrorCode.BATTLE_NOT_FOUND,
+            "message": "Battle with ID 'btl_123' not found",
+            "retryable": False,
+            "status_code": 404
+        },
+        "BATTLE_ALREADY_VOTED": {
+            "code": ErrorCode.BATTLE_ALREADY_VOTED,
+            "message": "Battle 'btl_123' has already been voted on",
+            "retryable": False,
+            "status_code": 409
+        },
+        "DUPLICATE_VOTE_CONFLICT": {
+            "code": ErrorCode.DUPLICATE_VOTE_CONFLICT,
+            "message": "Duplicate vote with conflicting payload",
+            "retryable": False,
+            "status_code": 409
+        },
+        "INTERNAL_ERROR": {
+            "code": ErrorCode.INTERNAL_ERROR,
+            "message": "An internal server error occurred",
+            "retryable": True,
+            "status_code": 500
+        },
+        "UNSUPPORTED_CLIENT_VERSION": {
+            "code": ErrorCode.UNSUPPORTED_CLIENT_VERSION,
+            "message": "Client version '0.0.0' is not supported",
+            "retryable": False,
+            "status_code": 400
+        }
+    }
+    
+    if error_code not in error_tests:
+        raise_api_error(
+            ErrorCode.INVALID_PAYLOAD,
+            f"Unknown test error code: {error_code}",
+            retryable=False,
+            status_code=400,
+            details={"available_codes": list(error_tests.keys())}
+        )
+    
+    test_config = error_tests[error_code]
+    raise_api_error(
+        code=test_config["code"],
+        message=test_config["message"],
+        retryable=test_config["retryable"],
+        status_code=test_config["status_code"],
+        details=test_config.get("details")
+    )
 
 
 @app.get("/v1/leaderboard")
