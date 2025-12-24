@@ -124,11 +124,14 @@ async def health_check():
 
 
 @app.post("/v1/battles:next", response_model=BattleResponse)
+@app.post("/v1/battles%3Anext", response_model=BattleResponse)  # Handle URL-encoded version for PowerShell
 async def fetch_next_battle(request: BattleRequest):
     """
     Fetch the next battle: two levels from different generators.
     
     Creates a persisted battle row and returns both levels with metadata.
+    
+    Note: Registered with both `:` and `%3A` to handle PowerShell Invoke-RestMethod URL encoding.
     """
     conn = get_connection()
     
