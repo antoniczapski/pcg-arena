@@ -17,7 +17,8 @@ from .connection import get_connection
 logger = logging.getLogger(__name__)
 
 # Level format constants (Stage 0)
-LEVEL_WIDTH = 150
+MAX_LEVEL_WIDTH = 250
+MIN_LEVEL_WIDTH = 1
 LEVEL_HEIGHT = 16
 
 # Allowed tile characters (Stage 0 strict alphabet from spec)
@@ -199,16 +200,16 @@ class LevelValidationError(Exception):
     pass
 
 
-def validate_level(content: str, filename: str) -> str:
+def validate_level(content: str, filename: str) -> tuple[str, int]:
     """
-    Validate a level file and return the canonical tilemap.
+    Validate a level file and return the canonical tilemap with its width.
     
     Args:
         content: Raw file content (may have \\r\\n newlines).
         filename: Filename for error messages.
         
     Returns:
-        Canonical tilemap with \\n newlines.
+        Tuple of (canonical tilemap with \\n newlines, width).
         
     Raises:
         LevelValidationError: If validation fails.
@@ -229,14 +230,27 @@ def validate_level(content: str, filename: str) -> str:
             f"{filename}: Expected {LEVEL_HEIGHT} lines, got {len(lines)}"
         )
     
+    # Determine width from first line
+    width = len(lines[0])
+    
+    # Check width bounds
+    if width < MIN_LEVEL_WIDTH:
+        raise LevelValidationError(
+            f"{filename}: Width {width} is below minimum {MIN_LEVEL_WIDTH}"
+        )
+    if width > MAX_LEVEL_WIDTH:
+        raise LevelValidationError(
+            f"{filename}: Width {width} exceeds maximum {MAX_LEVEL_WIDTH}"
+        )
+    
     # Check each line
     for i, line in enumerate(lines):
         line_num = i + 1
         
-        # Check line length
-        if len(line) != LEVEL_WIDTH:
+        # Check line length matches first line (all lines must be same width)
+        if len(line) != width:
             raise LevelValidationError(
-                f"{filename} line {line_num}: Expected {LEVEL_WIDTH} chars, got {len(line)}"
+                f"{filename} line {line_num}: Expected {width} chars (matching line 1), got {len(line)}"
             )
         
         # Check allowed characters
@@ -253,7 +267,7 @@ def validate_level(content: str, filename: str) -> str:
             f"{filename}: Level must contain at least one 'X' (ground block)"
         )
     
-    return full_content
+    return full_content, width
 
 
 def compute_content_hash(tilemap: str) -> str:
@@ -330,8 +344,8 @@ def import_levels(seed_path: str) -> int:
                 # Read file content
                 raw_content = level_file.read_text(encoding="utf-8")
                 
-                # Validate and normalize
-                tilemap = validate_level(raw_content, level_file.name)
+                # Validate and normalize (returns tilemap and detected width)
+                tilemap, width = validate_level(raw_content, level_file.name)
                 
                 # Compute hash
                 content_hash = compute_content_hash(tilemap)
@@ -348,9 +362,10 @@ def import_levels(seed_path: str) -> int:
                     ) VALUES (?, ?, 'ASCII_TILEMAP', ?, ?, ?, ?, NULL, '{}', ?)
                     ON CONFLICT(level_id) DO UPDATE SET
                         tilemap_text = excluded.tilemap_text,
-                        content_hash = excluded.content_hash
+                        content_hash = excluded.content_hash,
+                        width = excluded.width
                     """,
-                    (level_id, generator_id, LEVEL_WIDTH, LEVEL_HEIGHT,
+                    (level_id, generator_id, width, LEVEL_HEIGHT,
                      tilemap, content_hash, now)
                 )
                 

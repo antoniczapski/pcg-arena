@@ -147,7 +147,7 @@ Required columns:
 - `content_format` (TEXT, NOT NULL)  
   Must be `'ASCII_TILEMAP'` in Stage 0.
 - `width` (INTEGER, NOT NULL)  
-  Must be 150.
+  Variable width, up to 250.
 - `height` (INTEGER, NOT NULL)  
   Must be 16.
 - `tilemap_text` (TEXT, NOT NULL)  
@@ -162,7 +162,7 @@ Required columns:
 
 Constraints:
 - FK `generator_id` must exist.
-- `(width,height)` must equal `(150,16)` for Stage 0.
+- `width` must be between 1 and 250, `height` must be 16.
 - `content_format` must be `ASCII_TILEMAP`.
 - `content_hash` should be unique *per generator* (recommended) or globally unique (optional stricter).
 

@@ -202,7 +202,7 @@ Stage 0 only needs a format that:
 
 We will use **ASCII grid / tilemap** (easy, transparent)
 
-It will always be a rectangel of size 150 (LEVEL_WIDTH) by 16 (LEVEL_HEIGHT) consisting of ASCII characters. E.g. `-` denotes air, `X` ground, `t` pipe or `o` coin.
+It will always be a rectangle of variable width (up to 250) by 16 (LEVEL_HEIGHT) lines, consisting of ASCII characters. E.g. `-` denotes air, `X` ground, `t` pipe or `o` coin.
 
 ---
 

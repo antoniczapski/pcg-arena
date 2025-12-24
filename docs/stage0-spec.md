@@ -402,10 +402,10 @@ Stage 0 additionally requires a simple human-readable view:
 
 Each level is a rectangle:
 
-* `WIDTH = 150`
+* `WIDTH`: variable, up to 250 characters (all lines must have the same width)
 * `HEIGHT = 16`
 * Exactly 16 lines separated by `\n`
-* Each line has exactly 150 characters
+* Each line has the same number of characters (1 to 250)
 * No trailing spaces
 * Final newline at end is optional but recommended
 
