@@ -145,11 +145,21 @@ pcg-arena/
     local/                 # ✅ Runtime storage (gitignored)
       arena.sqlite         # ✅ SQLite database (created on first run)
 
-  client-java/             # ⏳ Not yet implemented
+  client-java/             # ✅ Java client (validation prototype)
+    spec.md                # ✅ Client specification
+    build.gradle           # ✅ Gradle build configuration
     src/
-    assets/
-      levels/
-    dist/                  # (gitignored)
+      main/java/arena/
+        api/               # ✅ HTTP client + models
+        config/            # ✅ Configuration loader
+        game/              # ✅ Mario game engine (ported from Framework)
+        ui/                # ✅ Swing UI (gameplay panels, voting)
+        util/              # ✅ JSON, logging, time utilities
+      main/resources/
+        img/               # ✅ Mario sprite sheets
+        logback.xml        # ✅ Logging configuration
+    logs/                  # Runtime logs (gitignored)
+    build/                 # Build artifacts (gitignored)
 
   shared/                  # ⏳ Placeholder
     schemas/
@@ -157,7 +167,13 @@ pcg-arena/
 
   docs/
     stage0-spec.md         # ✅ Detailed technical specification
+    stage1-spec.md         # ✅ Stage 1 deployment specification
     future-notes.md        # ✅ Future roadmap notes
+  
+  Mario-AI-Framework-PCG/  # ✅ Source of game engine and levels
+    src/engine/            # ✅ Mario physics (ported to client-java)
+    levels/                # ✅ 9000+ generated levels (not imported yet)
+    img/                   # ✅ Sprite sheets (copied to client-java)
 ```
 
 **Legend:**  
@@ -316,7 +332,7 @@ The database file `db/local/arena.sqlite` survives:
 
 * Docker + Docker Compose
 * (Optional) Python 3.12+ for local development without Docker
-* (Future) Java 17+ for client
+* (Optional) Java 11+ for Java client validation
 
 ### Run backend + database
 
@@ -391,55 +407,104 @@ docker compose up --build
 
 ## Current implementation status
 
-### Completed (Stage 0 - Infrastructure)
+### Stage 0: ✅ COMPLETE
+
+All core components have been implemented and tested.
+
+#### Backend API (Complete)
+
+| Endpoint | Status | Description |
+|----------|--------|-------------|
+| `GET /health` | ✅ | Health check with protocol version |
+| `GET /` | ✅ | HTML leaderboard for browsers |
+| `GET /v1/leaderboard` | ✅ | JSON leaderboard API |
+| `POST /v1/battles:next` | ✅ | Issue new battle with two levels |
+| `POST /v1/votes` | ✅ | Submit vote, update ELO ratings atomically |
+| `GET /debug/db-status` | ✅ | Database statistics (debug mode) |
+| `GET /debug/battles` | ✅ | List battles (debug mode) |
+| `GET /debug/votes` | ✅ | List votes (debug mode) |
+
+#### Infrastructure (Complete)
 
 | Component | Status | Description |
 |-----------|--------|-------------|
-| **Database** | ✅ Complete | SQLite with 7 tables, migrations, indexes |
-| **Migrations** | ✅ Complete | Auto-apply on startup, tracked in DB |
-| **Seed import** | ✅ Complete | Generators + levels with validation |
-| **Docker setup** | ✅ Complete | docker-compose.yml, volume mounts |
-| **Backend skeleton** | ✅ Complete | FastAPI app, config, connection mgmt |
-| **Health endpoint** | ✅ Complete | `GET /health` |
-| **Leaderboard (JSON)** | ✅ Complete | `GET /v1/leaderboard` |
-| **Leaderboard (HTML)** | ✅ Complete | `GET /` - human-readable view |
+| **Database** | ✅ | SQLite with 7 tables, migrations, indexes |
+| **Persistence** | ✅ | Docker volume mount, survives restarts |
+| **Seed data** | ✅ | 3 generators, 30 levels |
+| **ELO ratings** | ✅ | Atomic updates, audit trail |
+| **Migrations** | ✅ | Auto-apply on startup |
 
-### In progress / Next steps
+#### Java Client (Validation Prototype - Complete)
 
-| Component | Status | Priority |
-|-----------|--------|----------|
-| **Battle creation** | ⏳ Not started | High - `POST /v1/battles:next` |
-| **Vote submission** | ⏳ Not started | High - `POST /v1/votes` |
-| **ELO rating logic** | ⏳ Not started | High - rating delta calculation |
-| **Java client** | ⏳ Not started | High - gameplay + vote UI |
+| Component | Status | Description |
+|-----------|--------|-------------|
+| **Phase 1: Static viewer** | ✅ | Battle fetching, tilemap rendering, voting |
+| **Phase 2: Gameplay** | ✅ | Full Mario physics, telemetry collection |
+| **API integration** | ✅ | Protocol validation, error handling |
+| **Game engine** | ✅ | Ported from Mario AI Framework |
+| **UI/UX** | ✅ | Sequential play (left then right), vote submission |
 
-### Quick demo
+**Note:** The Java client was built as a validation prototype to prove the end-to-end loop. Future Stage 1+ will use a browser-based frontend (no download required).
 
-You can already test the backend infrastructure:
+### Demo validation
 
-```bash
-# Start backend + database
-docker compose up --build
+Run the demo script to validate the complete flow:
 
-# View leaderboard
-# Open http://localhost:8080/ in browser
+```powershell
+# Windows
+.\backend\scripts\demo.ps1
+
+# Runs 10 battles with random votes
+# Verifies: battle creation, vote submission, rating updates, persistence
 ```
 
-You should see 3 generators with rating 1000.0 and 30 levels imported.
+### Running the Java client (optional validation)
+
+The Java client validates the full gameplay loop locally:
+
+```bash
+# Terminal 1: Start backend
+docker compose up --build
+
+# Terminal 2: Run Java client
+cd client-java
+./gradlew run
+# Or on Windows: gradlew.bat run
+```
+
+**Gameplay flow:**
+1. Click "Next Battle" to fetch two levels
+2. Press SPACE in left panel to play left level
+3. Press SPACE in right panel to play right level
+4. Vote (Left Better / Right Better / Tie / Skip)
+5. Repeat
+
+**Controls:**
+- Arrow keys: Move
+- S: Jump
+- A: Run/Fire
+
+See `client-java/README.md` and `client-java/GAMEPLAY.md` for details.
 
 ---
 
-## Stage 0 definition of done (what "finished" means)
+## Stage 0 completion status
 
-A Stage 0 release is “done” when:
+**Status: ✅ COMPLETE**
 
-* You can run **10 battles end-to-end** without manual DB fiddling.
-* Ratings update after every vote and remain consistent after restart.
-* Adding a new generator requires **only**:
+All Stage 0 acceptance criteria have been met:
 
-  * adding generator metadata,
-  * dropping a bundle of levels into `db/seed/…`,
-  * running a seed/import script.
+- ✅ **10+ battles end-to-end**: Demo script validates full loop
+- ✅ **Ratings update correctly**: ELO calculation implemented and tested
+- ✅ **Persistence works**: SQLite survives container restarts
+- ✅ **Audit trail**: All votes and rating changes logged
+- ✅ **Gameplay validated**: Java client proves level playability
+
+Adding a new generator requires:
+1. Add entry to `db/seed/generators.json`
+2. Create directory `db/seed/levels/{generator_id}/`
+3. Add level files (ASCII tilemap format, 16 lines × variable width)
+4. Restart backend: `docker compose up --build`
 
 ---
 
@@ -453,11 +518,39 @@ This repo sits at the intersection of:
 
 Long-term, this can complement purely automated metrics (e.g., playability via A* agents) by providing the thing that is often missing: **human preference data at scale**.
 
-## Roadmap (beyond Stage 0)
+## Roadmap (next stages)
 
-* **Stage 1 (MVP hosted)**: deploy backend, basic web leaderboard, downloadable client.
-* **Stage 2 (research utility)**: better matchmaking, generator versioning, exportable preference dataset.
-* **Stage 3 (community platform)**: browser play, accounts, moderation, sandboxed generator submissions.
+### Stage 1 (MVP hosted) — Planning complete ✅
+
+Deploy backend to cloud hosting for remote testing:
+
+* **Target:** Small tester group (~10-50 users)
+* **Backend:** Single VM with Docker (GCP e2-micro free tier recommended)
+* **Database:** SQLite on VM persistent disk
+* **Frontend:** Browser-based client (no download required)
+* **Backups:** Automated daily backups
+* **Cost:** $0-10/month (free tier or cheap VPS)
+
+See `docs/stage1-spec.md` for:
+- Cloud platform cost comparison (GCP, AWS, Azure, DigitalOcean, Fly.io, Hetzner)
+- Complete deployment guide (GCP step-by-step)
+- Implementation tasks (backend changes, web portal, admin tools)
+- Backup and monitoring setup
+
+### Stage 2 (Research utility)
+
+* Advanced matchmaking (skill-based, diversity-promoting)
+* Generator versioning and A/B testing
+* Exportable preference dataset for publications
+* Data visualization and analysis tools
+
+### Stage 3 (Community platform)
+
+* User accounts and authentication
+* Browser-playable Mario (JavaScript/WebGL)
+* Moderation and anti-abuse systems
+* Sandboxed generator submissions
+* API for external researchers
 
 Stage 0 is intentionally narrow: it exists to prove the loop, not to build a community platform immediately.
 
