@@ -16,22 +16,22 @@ public class VoteRequest {
     
     private String result;
     
-    @JsonProperty("top_tags")
-    private List<String> topTags;
+    @JsonProperty("left_tags")
+    private List<String> leftTags;
     
-    @JsonProperty("bottom_tags")
-    private List<String> bottomTags;
+    @JsonProperty("right_tags")
+    private List<String> rightTags;
     
     private Map<String, Object> telemetry;
     
     public VoteRequest(String clientVersion, String sessionId, String battleId, 
-                      String result, List<String> topTags, List<String> bottomTags, Map<String, Object> telemetry) {
+                      String result, List<String> leftTags, List<String> rightTags, Map<String, Object> telemetry) {
         this.clientVersion = clientVersion;
         this.sessionId = sessionId;
         this.battleId = battleId;
         this.result = result;
-        this.topTags = topTags;
-        this.bottomTags = bottomTags;
+        this.leftTags = leftTags;
+        this.rightTags = rightTags;
         this.telemetry = telemetry;
     }
     
@@ -43,11 +43,10 @@ public class VoteRequest {
     public void setBattleId(String battleId) { this.battleId = battleId; }
     public String getResult() { return result; }
     public void setResult(String result) { this.result = result; }
-    public List<String> getTopTags() { return topTags; }
-    public void setTopTags(List<String> topTags) { this.topTags = topTags; }
-    public List<String> getBottomTags() { return bottomTags; }
-    public void setBottomTags(List<String> bottomTags) { this.bottomTags = bottomTags; }
+    public List<String> getLeftTags() { return leftTags; }
+    public void setLeftTags(List<String> leftTags) { this.leftTags = leftTags; }
+    public List<String> getRightTags() { return rightTags; }
+    public void setRightTags(List<String> rightTags) { this.rightTags = rightTags; }
     public Map<String, Object> getTelemetry() { return telemetry; }
     public void setTelemetry(Map<String, Object> telemetry) { this.telemetry = telemetry; }
 }
-

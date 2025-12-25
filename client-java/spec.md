@@ -15,8 +15,8 @@ Phase 2 (gameplay integration) is described only at a high level and will be for
 Build a **local Java executable** that can:
 
 1. Call the backend to request a battle (`POST /v1/battles:next`)
-2. **Render two levels** (top/bottom) as static visualizations
-3. Collect a basic **vote** (TOP/BOTTOM/TIE/SKIP) without gameplay
+2. **Render two levels** (left/right) as static visualizations
+3. Collect a basic **vote** (LEFT/RIGHT/TIE/SKIP) without gameplay
 4. Submit the vote (`POST /v1/votes`)
 5. Fetch and show leaderboard (`GET /v1/leaderboard`)
 
@@ -54,7 +54,7 @@ The Java client has three internal layers:
 
 2. **Battle Viewer UI**
 
-   * Displays *two* levels side-by-side (left and right).
+   * Displays *two* levels side-by-side (left and right) horizontally.
    * Shows minimal battle metadata (battle_id).
    * Offers voting controls and displays responses.
 
@@ -147,9 +147,9 @@ Client performs:
 
 **Response:**
 
-* `battle.left.level_payload.tilemap` is the authoritative level text.
+* `battle.left.level_payload.tilemap` is the authoritative level text for the left level.
 * `battle.left.format.width` and `.height` describe dimensions.
-* Same for right.
+* Same structure for `battle.right`.
 
 ### 4.2 Submit vote
 
@@ -162,9 +162,9 @@ Client performs:
   "client_version": "0.1.0",
   "session_id": "<uuid>",
   "battle_id": "<battle_id>",
-  "result": "TOP",
-  "top_tags": [],
-  "bottom_tags": [],
+  "result": "LEFT",
+  "left_tags": [],
+  "right_tags": [],
   "telemetry": {}
 }
 ```
@@ -212,17 +212,17 @@ Single main window:
   * battle_id
 * Main content:
 
-  * Top panel: rendered tilemap
-  * Bottom panel: rendered tilemap
+  * Left panel: rendered tilemap
+  * Right panel: rendered tilemap (side by side horizontally)
 * Under each panel:
 
   * generator name + id + version (revealed after vote)
 * Bottom bar:
 
-  * voting buttons: **Top Better**, **Bottom Better**, **Tie**, **Skip**
+  * voting buttons: **Left Better**, **Right Better**, **Tie**, **Skip**
   * optional tag toggles (checkboxes)
-  * status text: “Vote submitted”, “Error: …”
-  * button: “Next battle” (enabled only when no pending battle)
+  * status text: "Vote submitted", "Error: …"
+  * button: "Next battle" (enabled only when no pending battle)
 
 ### 5.2 Rendering approach
 
@@ -386,8 +386,8 @@ Phase 2 replaces the static viewer with a gameplay loop while keeping the **same
 ### Phase 2 UI flow
 
 1. Fetch battle
-2. Play TOP level (engine)
-3. Play BOTTOM level (engine)
+2. Play LEFT level (engine)
+3. Play RIGHT level (engine)
 4. Vote screen (same 4 outcomes + per-level tags)
 5. Submit vote with telemetry
 6. Show leaderboard summary (optional)
@@ -422,4 +422,4 @@ That interface lets you plug in your existing engine without rewriting the Arena
 
   * user can play both levels and vote
   * telemetry is populated and stored
-  * client enforces `LEFT_THEN_RIGHT` play order
+  * client enforces LEFT_THEN_RIGHT play order

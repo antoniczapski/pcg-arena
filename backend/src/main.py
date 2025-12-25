@@ -162,8 +162,8 @@ async def fetch_next_battle(request: BattleRequest):
     
     # 3. Sample two distinct generator_ids uniformly
     selected_generators = random.sample(active_generators, 2)
-    top_generator_id = selected_generators[0]
-    bottom_generator_id = selected_generators[1]
+    left_generator_id = selected_generators[0]
+    right_generator_id = selected_generators[1]
     
     # 4. For each generator, select 1 random level
     # 
@@ -183,7 +183,7 @@ async def fetch_next_battle(request: BattleRequest):
     # - Using a more sophisticated sampling algorithm
     # - Caching level pools per generator
     # 
-    # Query random level for top generator
+    # Query random level for left generator
     cursor = conn.execute(
         """
         SELECT level_id FROM levels 
@@ -191,11 +191,11 @@ async def fetch_next_battle(request: BattleRequest):
         ORDER BY RANDOM() 
         LIMIT 1
         """,
-        (top_generator_id,)
+        (left_generator_id,)
     )
-    top_level_row = cursor.fetchone()
+    left_level_row = cursor.fetchone()
     
-    # Query random level for bottom generator
+    # Query random level for right generator
     cursor = conn.execute(
         """
         SELECT level_id FROM levels 
@@ -203,12 +203,12 @@ async def fetch_next_battle(request: BattleRequest):
         ORDER BY RANDOM() 
         LIMIT 1
         """,
-        (bottom_generator_id,)
+        (right_generator_id,)
     )
-    bottom_level_row = cursor.fetchone()
+    right_level_row = cursor.fetchone()
     
     # Check if we have levels for both generators
-    if not top_level_row or not bottom_level_row:
+    if not left_level_row or not right_level_row:
         # Count how many generators have levels
         cursor = conn.execute(
             """
@@ -216,7 +216,7 @@ async def fetch_next_battle(request: BattleRequest):
             FROM levels
             WHERE generator_id IN (?, ?)
             """,
-            (top_generator_id, bottom_generator_id)
+            (left_generator_id, right_generator_id)
         )
         eligible_count = cursor.fetchone()["count"]
         
@@ -227,11 +227,11 @@ async def fetch_next_battle(request: BattleRequest):
             status_code=503
         )
     
-    top_level_id = top_level_row["level_id"]
-    bottom_level_id = bottom_level_row["level_id"]
+    left_level_id = left_level_row["level_id"]
+    right_level_id = right_level_row["level_id"]
     
-    # Ensure top and bottom levels are different (should be guaranteed by different generators, but double-check)
-    if top_level_id == bottom_level_id:
+    # Ensure left and right levels are different (should be guaranteed by different generators, but double-check)
+    if left_level_id == right_level_id:
         raise_api_error(
             ErrorCode.INTERNAL_ERROR,
             "Selected duplicate level for battle (this should not happen)",
@@ -251,8 +251,8 @@ async def fetch_next_battle(request: BattleRequest):
                 """
                 INSERT INTO battles (
                     battle_id, session_id, issued_at_utc, expires_at_utc, status,
-                    top_level_id, bottom_level_id,
-                    top_generator_id, bottom_generator_id,
+                    left_level_id, right_level_id,
+                    left_generator_id, right_generator_id,
                     matchmaking_policy, created_at_utc, updated_at_utc
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
@@ -262,10 +262,10 @@ async def fetch_next_battle(request: BattleRequest):
                     now_utc,
                     None,  # expires_at_utc = NULL (no expiry for Stage 0)
                     "ISSUED",
-                    top_level_id,
-                    bottom_level_id,
-                    top_generator_id,
-                    bottom_generator_id,
+                    left_level_id,
+                    right_level_id,
+                    left_generator_id,
+                    right_generator_id,
                     "uniform_v0",
                     now_utc,
                     now_utc,
@@ -281,7 +281,7 @@ async def fetch_next_battle(request: BattleRequest):
         )
     
     # 7. Fetch full level and generator data for response
-    # Top side
+    # Left side
     cursor = conn.execute(
         """
         SELECT 
@@ -291,11 +291,11 @@ async def fetch_next_battle(request: BattleRequest):
         JOIN generators g ON l.generator_id = g.generator_id
         WHERE l.level_id = ?
         """,
-        (top_level_id,)
+        (left_level_id,)
     )
-    top_data = cursor.fetchone()
+    left_data = cursor.fetchone()
     
-    # Bottom side
+    # Right side
     cursor = conn.execute(
         """
         SELECT 
@@ -305,12 +305,12 @@ async def fetch_next_battle(request: BattleRequest):
         JOIN generators g ON l.generator_id = g.generator_id
         WHERE l.level_id = ?
         """,
-        (bottom_level_id,)
+        (right_level_id,)
     )
-    bottom_data = cursor.fetchone()
+    right_data = cursor.fetchone()
     
-    if not top_data or not bottom_data:
-        logger.error(f"Failed to fetch level data: top={top_level_id}, bottom={bottom_level_id}")
+    if not left_data or not right_data:
+        logger.error(f"Failed to fetch level data: left={left_level_id}, right={right_level_id}")
         raise_api_error(
             ErrorCode.INTERNAL_ERROR,
             "Failed to fetch level data after battle creation",
@@ -319,12 +319,12 @@ async def fetch_next_battle(request: BattleRequest):
         )
     
     # Parse controls_json
-    top_controls = json.loads(top_data["controls_json"]) if top_data["controls_json"] else {}
-    bottom_controls = json.loads(bottom_data["controls_json"]) if bottom_data["controls_json"] else {}
+    left_controls = json.loads(left_data["controls_json"]) if left_data["controls_json"] else {}
+    right_controls = json.loads(right_data["controls_json"]) if right_data["controls_json"] else {}
     
     # Build response
     # Presentation config (Stage 0): hardcoded values for stable client UX
-    # - play_order: TOP_THEN_BOTTOM (client presents top level first, then bottom)
+    # - play_order: LEFT_THEN_RIGHT (client presents left level first, then right)
     # - reveal_generator_names_after_vote: true (generator identities revealed after voting)
     # - suggested_time_limit_seconds: 300 (5 minutes total for both levels)
     battle_response = BattleResponse(
@@ -334,56 +334,56 @@ async def fetch_next_battle(request: BattleRequest):
             issued_at_utc=now_utc,
             expires_at_utc=None,
             presentation=BattlePresentation(
-                play_order=PlayOrder.TOP_THEN_BOTTOM,
+                play_order=PlayOrder.LEFT_THEN_RIGHT,
                 reveal_generator_names_after_vote=True,
                 suggested_time_limit_seconds=300
             ),
-            top=BattleSide(
-                level_id=top_data["level_id"],
+            left=BattleSide(
+                level_id=left_data["level_id"],
                 generator=GeneratorInfo(
-                    generator_id=top_data["generator_id"],
-                    name=top_data["name"],
-                    version=top_data["version"],
-                    documentation_url=top_data["documentation_url"]
+                    generator_id=left_data["generator_id"],
+                    name=left_data["name"],
+                    version=left_data["version"],
+                    documentation_url=left_data["documentation_url"]
                 ),
                 format=LevelFormat(
                     type=LevelFormatType.ASCII_TILEMAP,
-                    width=top_data["width"],
-                    height=top_data["height"],
+                    width=left_data["width"],
+                    height=left_data["height"],
                     newline="\n"
                 ),
                 level_payload=LevelPayload(
                     encoding=Encoding.UTF8,
-                    tilemap=top_data["tilemap_text"]
+                    tilemap=left_data["tilemap_text"]
                 ),
-                content_hash=top_data["content_hash"],
+                content_hash=left_data["content_hash"],
                 metadata=LevelMetadata(
-                    seed=top_data["seed"],
-                    controls=top_controls
+                    seed=left_data["seed"],
+                    controls=left_controls
                 )
             ),
-            bottom=BattleSide(
-                level_id=bottom_data["level_id"],
+            right=BattleSide(
+                level_id=right_data["level_id"],
                 generator=GeneratorInfo(
-                    generator_id=bottom_data["generator_id"],
-                    name=bottom_data["name"],
-                    version=bottom_data["version"],
-                    documentation_url=bottom_data["documentation_url"]
+                    generator_id=right_data["generator_id"],
+                    name=right_data["name"],
+                    version=right_data["version"],
+                    documentation_url=right_data["documentation_url"]
                 ),
                 format=LevelFormat(
                     type=LevelFormatType.ASCII_TILEMAP,
-                    width=bottom_data["width"],
-                    height=bottom_data["height"],
+                    width=right_data["width"],
+                    height=right_data["height"],
                     newline="\n"
                 ),
                 level_payload=LevelPayload(
                     encoding=Encoding.UTF8,
-                    tilemap=bottom_data["tilemap_text"]
+                    tilemap=right_data["tilemap_text"]
                 ),
-                content_hash=bottom_data["content_hash"],
+                content_hash=right_data["content_hash"],
                 metadata=LevelMetadata(
-                    seed=bottom_data["seed"],
-                    controls=bottom_controls
+                    seed=right_data["seed"],
+                    controls=right_controls
                 )
             )
         )
@@ -391,14 +391,14 @@ async def fetch_next_battle(request: BattleRequest):
     
     logger.info(
         f"Battle issued: battle_id={battle_id} "
-        f"top_gen={top_generator_id} bottom_gen={bottom_generator_id} "
-        f"top_level={top_level_id} bottom_level={bottom_level_id}"
+        f"left_gen={left_generator_id} right_gen={right_generator_id} "
+        f"left_level={left_level_id} right_level={right_level_id}"
     )
     
     return battle_response
 
 
-def compute_payload_hash(battle_id: str, session_id: str, result: str, top_tags: list, bottom_tags: list, telemetry: dict) -> str:
+def compute_payload_hash(battle_id: str, session_id: str, result: str, left_tags: list, right_tags: list, telemetry: dict) -> str:
     """
     Compute canonical payload hash for idempotency checking.
     
@@ -408,17 +408,17 @@ def compute_payload_hash(battle_id: str, session_id: str, result: str, top_tags:
     Args:
         battle_id: Battle identifier
         session_id: Session identifier
-        result: Vote result (TOP, BOTTOM, TIE, SKIP)
-        top_tags: List of tags for top level (will be sorted)
-        bottom_tags: List of tags for bottom level (will be sorted)
+        result: Vote result (LEFT, RIGHT, TIE, SKIP)
+        left_tags: List of tags for left level (will be sorted)
+        right_tags: List of tags for right level (will be sorted)
         telemetry: Telemetry dict (will be serialized as canonical JSON)
     
     Returns:
         SHA256 hash as hex string
     """
     # Sort tags for canonical representation
-    sorted_top_tags = sorted(top_tags) if top_tags else []
-    sorted_bottom_tags = sorted(bottom_tags) if bottom_tags else []
+    sorted_left_tags = sorted(left_tags) if left_tags else []
+    sorted_right_tags = sorted(right_tags) if right_tags else []
     
     # Serialize telemetry as canonical JSON (sorted keys, no whitespace)
     telemetry_json = json.dumps(telemetry, sort_keys=True, separators=(',', ':')) if telemetry else '{}'
@@ -428,8 +428,8 @@ def compute_payload_hash(battle_id: str, session_id: str, result: str, top_tags:
         "battle_id": battle_id,
         "session_id": session_id,
         "result": result,
-        "top_tags": sorted_top_tags,
-        "bottom_tags": sorted_bottom_tags,
+        "left_tags": sorted_left_tags,
+        "right_tags": sorted_right_tags,
         "telemetry": json.loads(telemetry_json)  # Parse and re-serialize for consistency
     }, sort_keys=True, separators=(',', ':'))
     
@@ -476,8 +476,8 @@ def ensure_ratings_exist(
 
 def update_ratings(
     cursor: sqlite3.Cursor,
-    top_generator_id: str,
-    bottom_generator_id: str,
+    left_generator_id: str,
+    right_generator_id: str,
     result: str,
     k_factor: float,
     now_utc: str,
@@ -487,8 +487,8 @@ def update_ratings(
     Update generator ratings based on vote result using Elo rating system (Task D1).
     
     Implements standard Elo rating calculation:
-    - Expected score: E_top = 1 / (1 + 10^((R_bottom - R_top)/400))
-    - Delta: delta_top = K * (S_top - E_top), delta_bottom = -delta_top
+    - Expected score: E_left = 1 / (1 + 10^((R_right - R_left)/400))
+    - Delta: delta_left = K * (S_left - E_left), delta_right = -delta_left
     - Updates rating_value and counters (wins, losses, ties, games_played)
     
     SKIP semantics (Task C3):
@@ -499,19 +499,19 @@ def update_ratings(
     
     Args:
         cursor: Database cursor (within transaction)
-        top_generator_id: Top generator ID
-        bottom_generator_id: Bottom generator ID
-        result: Vote result (TOP, BOTTOM, TIE, SKIP)
+        left_generator_id: Left generator ID
+        right_generator_id: Right generator ID
+        result: Vote result (LEFT, RIGHT, TIE, SKIP)
         k_factor: ELO K-factor (default 24)
         now_utc: Current UTC timestamp
         initial_rating: Initial rating if row doesn't exist (default 1000.0)
     
     Returns:
-        Tuple of (delta_top, delta_bottom) rating changes
+        Tuple of (delta_left, delta_right) rating changes
     """
     # Task D2: Ensure ratings rows exist before updating
-    ensure_ratings_exist(cursor, top_generator_id, initial_rating, now_utc)
-    ensure_ratings_exist(cursor, bottom_generator_id, initial_rating, now_utc)
+    ensure_ratings_exist(cursor, left_generator_id, initial_rating, now_utc)
+    ensure_ratings_exist(cursor, right_generator_id, initial_rating, now_utc)
     
     if result == VoteResult.SKIP.value or result == "SKIP":
         # SKIP semantics: increment skip counters for both generators, no rating change
@@ -522,7 +522,7 @@ def update_ratings(
             SET skips = skips + 1, updated_at_utc = ?
             WHERE generator_id = ?
             """,
-            (now_utc, top_generator_id)
+            (now_utc, left_generator_id)
         )
         cursor.execute(
             """
@@ -530,10 +530,10 @@ def update_ratings(
             SET skips = skips + 1, updated_at_utc = ?
             WHERE generator_id = ?
             """,
-            (now_utc, bottom_generator_id)
+            (now_utc, right_generator_id)
         )
         logger.info(
-            f"SKIP vote processed: top_gen={top_generator_id} bottom_gen={bottom_generator_id} "
+            f"SKIP vote processed: left_gen={left_generator_id} right_gen={right_generator_id} "
             f"(skip counters incremented, no rating change)"
         )
         return (0.0, 0.0)
@@ -541,48 +541,48 @@ def update_ratings(
     # Task D1: Fetch current ratings
     cursor.execute(
         "SELECT rating_value FROM ratings WHERE generator_id = ?",
-        (top_generator_id,)
+        (left_generator_id,)
     )
-    top_row = cursor.fetchone()
-    R_top = top_row["rating_value"] if top_row else initial_rating
+    left_row = cursor.fetchone()
+    R_left = left_row["rating_value"] if left_row else initial_rating
     
     cursor.execute(
         "SELECT rating_value FROM ratings WHERE generator_id = ?",
-        (bottom_generator_id,)
+        (right_generator_id,)
     )
-    bottom_row = cursor.fetchone()
-    R_bottom = bottom_row["rating_value"] if bottom_row else initial_rating
+    right_row = cursor.fetchone()
+    R_right = right_row["rating_value"] if right_row else initial_rating
     
     # Calculate expected scores (Elo formula)
-    # E_top = 1 / (1 + 10^((R_bottom - R_top)/400))
-    rating_diff = (R_bottom - R_top) / 400.0
-    E_top = 1.0 / (1.0 + math.pow(10.0, rating_diff))
-    E_bottom = 1.0 - E_top
+    # E_left = 1 / (1 + 10^((R_right - R_left)/400))
+    rating_diff = (R_right - R_left) / 400.0
+    E_left = 1.0 / (1.0 + math.pow(10.0, rating_diff))
+    E_right = 1.0 - E_left
     
     # Determine outcome scores based on result
-    if result == VoteResult.TOP.value or result == "TOP":
-        S_top = 1.0
-        S_bottom = 0.0
-    elif result == VoteResult.BOTTOM.value or result == "BOTTOM":
-        S_top = 0.0
-        S_bottom = 1.0
+    if result == VoteResult.LEFT.value or result == "LEFT":
+        S_left = 1.0
+        S_right = 0.0
+    elif result == VoteResult.RIGHT.value or result == "RIGHT":
+        S_left = 0.0
+        S_right = 1.0
     elif result == VoteResult.TIE.value or result == "TIE":
-        S_top = 0.5
-        S_bottom = 0.5
+        S_left = 0.5
+        S_right = 0.5
     else:
         # Should not happen, but handle gracefully
         logger.error(f"Unexpected vote result: {result}")
         return (0.0, 0.0)
     
     # Calculate rating deltas
-    # delta_top = K * (S_top - E_top)
-    # delta_bottom = -delta_top (zero-sum: ratings are conserved)
-    delta_top = k_factor * (S_top - E_top)
-    delta_bottom = -delta_top
+    # delta_left = K * (S_left - E_left)
+    # delta_right = -delta_left (zero-sum: ratings are conserved)
+    delta_left = k_factor * (S_left - E_left)
+    delta_right = -delta_left
     
-    # Update top generator rating and counters
-    new_rating_top = R_top + delta_top
-    if result == VoteResult.TOP.value or result == "TOP":
+    # Update left generator rating and counters
+    new_rating_left = R_left + delta_left
+    if result == VoteResult.LEFT.value or result == "LEFT":
         cursor.execute(
             """
             UPDATE ratings 
@@ -590,9 +590,9 @@ def update_ratings(
                 wins = wins + 1, updated_at_utc = ?
             WHERE generator_id = ?
             """,
-            (new_rating_top, now_utc, top_generator_id)
+            (new_rating_left, now_utc, left_generator_id)
         )
-    elif result == VoteResult.BOTTOM.value or result == "BOTTOM":
+    elif result == VoteResult.RIGHT.value or result == "RIGHT":
         cursor.execute(
             """
             UPDATE ratings 
@@ -600,7 +600,7 @@ def update_ratings(
                 losses = losses + 1, updated_at_utc = ?
             WHERE generator_id = ?
             """,
-            (new_rating_top, now_utc, top_generator_id)
+            (new_rating_left, now_utc, left_generator_id)
         )
     elif result == VoteResult.TIE.value or result == "TIE":
         cursor.execute(
@@ -610,12 +610,12 @@ def update_ratings(
                 ties = ties + 1, updated_at_utc = ?
             WHERE generator_id = ?
             """,
-            (new_rating_top, now_utc, top_generator_id)
+            (new_rating_left, now_utc, left_generator_id)
         )
     
-    # Update bottom generator rating and counters
-    new_rating_bottom = R_bottom + delta_bottom
-    if result == VoteResult.TOP.value or result == "TOP":
+    # Update right generator rating and counters
+    new_rating_right = R_right + delta_right
+    if result == VoteResult.LEFT.value or result == "LEFT":
         cursor.execute(
             """
             UPDATE ratings 
@@ -623,9 +623,9 @@ def update_ratings(
                 losses = losses + 1, updated_at_utc = ?
             WHERE generator_id = ?
             """,
-            (new_rating_bottom, now_utc, bottom_generator_id)
+            (new_rating_right, now_utc, right_generator_id)
         )
-    elif result == VoteResult.BOTTOM.value or result == "BOTTOM":
+    elif result == VoteResult.RIGHT.value or result == "RIGHT":
         cursor.execute(
             """
             UPDATE ratings 
@@ -633,7 +633,7 @@ def update_ratings(
                 wins = wins + 1, updated_at_utc = ?
             WHERE generator_id = ?
             """,
-            (new_rating_bottom, now_utc, bottom_generator_id)
+            (new_rating_right, now_utc, right_generator_id)
         )
     elif result == VoteResult.TIE.value or result == "TIE":
         cursor.execute(
@@ -643,28 +643,28 @@ def update_ratings(
                 ties = ties + 1, updated_at_utc = ?
             WHERE generator_id = ?
             """,
-            (new_rating_bottom, now_utc, bottom_generator_id)
+            (new_rating_right, now_utc, right_generator_id)
         )
     
     logger.info(
-        f"Elo rating update: top_gen={top_generator_id} bottom_gen={bottom_generator_id} "
-        f"result={result} R_top={R_top:.1f}->{new_rating_top:.1f} "
-        f"R_bottom={R_bottom:.1f}->{new_rating_bottom:.1f} "
-        f"delta_top={delta_top:.2f} delta_bottom={delta_bottom:.2f}"
+        f"Elo rating update: left_gen={left_generator_id} right_gen={right_generator_id} "
+        f"result={result} R_left={R_left:.1f}->{new_rating_left:.1f} "
+        f"R_right={R_right:.1f}->{new_rating_right:.1f} "
+        f"delta_left={delta_left:.2f} delta_right={delta_right:.2f}"
     )
     
-    return (delta_top, delta_bottom)
+    return (delta_left, delta_right)
 
 
 def insert_rating_event(
     cursor: sqlite3.Cursor,
     vote_id: str,
     battle_id: str,
-    top_generator_id: str,
-    bottom_generator_id: str,
+    left_generator_id: str,
+    right_generator_id: str,
     result: str,
-    delta_top: float,
-    delta_bottom: float,
+    delta_left: float,
+    delta_right: float,
     now_utc: str
 ) -> None:
     """
@@ -677,11 +677,11 @@ def insert_rating_event(
         cursor: Database cursor (within transaction)
         vote_id: Vote identifier (must be unique - one event per vote)
         battle_id: Battle identifier
-        top_generator_id: Top generator ID
-        bottom_generator_id: Bottom generator ID
-        result: Vote result (TOP, BOTTOM, TIE, SKIP)
-        delta_top: Rating change for top generator (0.0 for SKIP)
-        delta_bottom: Rating change for bottom generator (0.0 for SKIP)
+        left_generator_id: Left generator ID
+        right_generator_id: Right generator ID
+        result: Vote result (LEFT, RIGHT, TIE, SKIP)
+        delta_left: Rating change for left generator (0.0 for SKIP)
+        delta_right: Rating change for right generator (0.0 for SKIP)
         now_utc: Current UTC timestamp
     
     Note:
@@ -695,8 +695,8 @@ def insert_rating_event(
         """
         INSERT INTO rating_events (
             event_id, vote_id, battle_id,
-            top_generator_id, bottom_generator_id,
-            result, delta_top, delta_bottom,
+            left_generator_id, right_generator_id,
+            result, delta_left, delta_right,
             created_at_utc
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
@@ -704,11 +704,11 @@ def insert_rating_event(
             event_id,
             vote_id,
             battle_id,
-            top_generator_id,
-            bottom_generator_id,
+            left_generator_id,
+            right_generator_id,
             result,
-            delta_top,
-            delta_bottom,
+            delta_left,
+            delta_right,
             now_utc,
         )
     )
@@ -728,25 +728,25 @@ async def submit_vote(request: VoteRequest):
     # session_id and battle_id are required by Pydantic model
     # result is validated by VoteResult enum
     
-    # Validate tags vocabulary for top level
-    if request.top_tags:
-        invalid_tags = [tag for tag in request.top_tags if tag not in ALLOWED_TAGS]
+    # Validate tags vocabulary for left level
+    if request.left_tags:
+        invalid_tags = [tag for tag in request.left_tags if tag not in ALLOWED_TAGS]
         if invalid_tags:
             raise_api_error(
                 ErrorCode.INVALID_TAG,
-                f"Invalid top tags: {', '.join(invalid_tags)}. Allowed tags: {', '.join(sorted(ALLOWED_TAGS))}",
+                f"Invalid left tags: {', '.join(invalid_tags)}. Allowed tags: {', '.join(sorted(ALLOWED_TAGS))}",
                 retryable=False,
                 status_code=400,
                 details={"invalid_tags": invalid_tags, "allowed_tags": sorted(ALLOWED_TAGS)}
             )
     
-    # Validate tags vocabulary for bottom level
-    if request.bottom_tags:
-        invalid_tags = [tag for tag in request.bottom_tags if tag not in ALLOWED_TAGS]
+    # Validate tags vocabulary for right level
+    if request.right_tags:
+        invalid_tags = [tag for tag in request.right_tags if tag not in ALLOWED_TAGS]
         if invalid_tags:
             raise_api_error(
                 ErrorCode.INVALID_TAG,
-                f"Invalid bottom tags: {', '.join(invalid_tags)}. Allowed tags: {', '.join(sorted(ALLOWED_TAGS))}",
+                f"Invalid right tags: {', '.join(invalid_tags)}. Allowed tags: {', '.join(sorted(ALLOWED_TAGS))}",
                 retryable=False,
                 status_code=400,
                 details={"invalid_tags": invalid_tags, "allowed_tags": sorted(ALLOWED_TAGS)}
@@ -756,14 +756,14 @@ async def submit_vote(request: VoteRequest):
     telemetry_dict = request.telemetry.model_dump() if request.telemetry else {}
     
     # Compute canonical payload hash for idempotency
-    top_tags_list = request.top_tags if request.top_tags else []
-    bottom_tags_list = request.bottom_tags if request.bottom_tags else []
+    left_tags_list = request.left_tags if request.left_tags else []
+    right_tags_list = request.right_tags if request.right_tags else []
     payload_hash = compute_payload_hash(
         request.battle_id,
         request.session_id,
         request.result.value,
-        top_tags_list,
-        bottom_tags_list,
+        left_tags_list,
+        right_tags_list,
         telemetry_dict
     )
     
@@ -787,8 +787,8 @@ async def submit_vote(request: VoteRequest):
             
             battle_status = battle_row["status"]
             battle_session_id = battle_row["session_id"]
-            top_generator_id = battle_row["top_generator_id"]
-            bottom_generator_id = battle_row["bottom_generator_id"]
+            left_generator_id = battle_row["left_generator_id"]
+            right_generator_id = battle_row["right_generator_id"]
             
             # 2. Check battle status
             if battle_status != "ISSUED":
@@ -904,15 +904,15 @@ async def submit_vote(request: VoteRequest):
             else:
                 # 6. Insert new vote
                 vote_id = f"v_{uuid.uuid4()}"
-                top_tags_json = json.dumps(sorted(top_tags_list)) if top_tags_list else "[]"
-                bottom_tags_json = json.dumps(sorted(bottom_tags_list)) if bottom_tags_list else "[]"
+                left_tags_json = json.dumps(sorted(left_tags_list)) if left_tags_list else "[]"
+                right_tags_json = json.dumps(sorted(right_tags_list)) if right_tags_list else "[]"
                 telemetry_json = json.dumps(telemetry_dict, sort_keys=True) if telemetry_dict else "{}"
                 
                 cursor.execute(
                     """
                     INSERT INTO votes (
                         vote_id, battle_id, session_id,
-                        created_at_utc, result, top_tags_json, bottom_tags_json, telemetry_json, payload_hash
+                        created_at_utc, result, left_tags_json, right_tags_json, telemetry_json, payload_hash
                     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                     (
@@ -921,8 +921,8 @@ async def submit_vote(request: VoteRequest):
                         request.session_id,
                         now_utc,
                         request.result.value,
-                        top_tags_json,
-                        bottom_tags_json,
+                        left_tags_json,
+                        right_tags_json,
                         telemetry_json,
                         payload_hash,
                     )
@@ -939,10 +939,10 @@ async def submit_vote(request: VoteRequest):
                 )
                 
                 # 8. Update ratings using Elo rating system
-                delta_top, delta_bottom = update_ratings(
+                delta_left, delta_right = update_ratings(
                     cursor,
-                    top_generator_id,
-                    bottom_generator_id,
+                    left_generator_id,
+                    right_generator_id,
                     request.result.value,
                     config.k_factor,
                     now_utc,
@@ -954,11 +954,11 @@ async def submit_vote(request: VoteRequest):
                     cursor,
                     vote_id,
                     request.battle_id,
-                    top_generator_id,
-                    bottom_generator_id,
+                    left_generator_id,
+                    right_generator_id,
                     request.result.value,
-                    delta_top,
-                    delta_bottom,
+                    delta_left,
+                    delta_right,
                     now_utc
                 )
             
@@ -992,7 +992,7 @@ async def submit_vote(request: VoteRequest):
             
             logger.info(
                 f"Vote accepted: vote_id={vote_id} battle_id={request.battle_id} "
-                f"result={request.result.value} top_tags={top_tags_list} bottom_tags={bottom_tags_list}"
+                f"result={request.result.value} left_tags={left_tags_list} right_tags={right_tags_list}"
             )
             
             return VoteResponse(
@@ -1467,10 +1467,10 @@ async def debug_battles(status: str = None, limit: int = 10):
             "status": row["status"],
             "issued_at_utc": row["issued_at_utc"],
             "expires_at_utc": row["expires_at_utc"],
-            "top_level_id": row["top_level_id"],
-            "bottom_level_id": row["bottom_level_id"],
-            "top_generator_id": row["top_generator_id"],
-            "bottom_generator_id": row["bottom_generator_id"],
+            "left_level_id": row["left_level_id"],
+            "right_level_id": row["right_level_id"],
+            "left_generator_id": row["left_generator_id"],
+            "right_generator_id": row["right_generator_id"],
             "matchmaking_policy": row["matchmaking_policy"],
             "created_at_utc": row["created_at_utc"],
             "updated_at_utc": row["updated_at_utc"],
@@ -1524,8 +1524,8 @@ async def debug_votes(limit: int = 10):
             "battle_id": row["battle_id"],
             "session_id": row["session_id"],
             "result": row["result"],
-            "top_tags": json.loads(row["top_tags_json"]) if row["top_tags_json"] else [],
-            "bottom_tags": json.loads(row["bottom_tags_json"]) if row["bottom_tags_json"] else [],
+            "left_tags": json.loads(row["left_tags_json"]) if row["left_tags_json"] else [],
+            "right_tags": json.loads(row["right_tags_json"]) if row["right_tags_json"] else [],
             "telemetry": json.loads(row["telemetry_json"]) if row["telemetry_json"] else {},
             "payload_hash": row["payload_hash"],
             "created_at_utc": row["created_at_utc"],
@@ -1553,4 +1553,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

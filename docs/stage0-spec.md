@@ -179,11 +179,11 @@ Field notes:
     "issued_at_utc": "2025-12-24T12:00:10Z",
     "expires_at_utc": null,
     "presentation": {
-      "play_order": "TOP_THEN_BOTTOM",
+      "play_order": "LEFT_THEN_RIGHT",
       "reveal_generator_names_after_vote": true,
       "suggested_time_limit_seconds": 300
     },
-    "top": {
+    "left": {
       "level_id": "lvl_markov_v1_0007",
       "generator": {
         "generator_id": "markov_v1",
@@ -237,8 +237,8 @@ Field notes:
 
 #### Backend invariants for battle creation
 
-* `top.generator.generator_id != bottom.generator.generator_id` (must be different generators)
-* `top.level_id != bottom.level_id`
+* `left.generator.generator_id != right.generator.generator_id` (must be different generators)
+* `left.level_id != right.level_id`
 * The returned `tilemap` MUST validate according to the Level Format section.
 * `battle_id` MUST be unique.
 * Battle MUST be persisted as "ISSUED" before returning the response (so resubmission works).
@@ -270,17 +270,17 @@ Field notes:
   "client_version": "0.1.0",
   "session_id": "a3b5c2f0-2c39-4a2a-9fd3-6a8f6dd90e2b",
   "battle_id": "btl_20251224_000001",
-  "result": "TOP",
-  "top_tags": ["fun", "good_flow"],
-  "bottom_tags": ["too_hard"],
+  "result": "LEFT",
+  "left_tags": ["fun", "good_flow"],
+  "right_tags": ["too_hard"],
   "telemetry": {
-    "top": {
+    "left": {
       "played": true,
       "duration_seconds": 63,
       "completed": false,
       "coins_collected": 3
     },
-    "bottom": {
+    "right": {
       "played": true,
       "duration_seconds": 70,
       "completed": true,
@@ -292,21 +292,21 @@ Field notes:
 
 #### `result` enum
 
-* `TOP`
-* `BOTTOM`
+* `LEFT`
+* `RIGHT`
 * `TIE`
 * `SKIP`
 
 Rules:
 
 * `SKIP` is allowed even if the player didn't fully play both levels.
-* If `result` is `TOP/BOTTOM/TIE`, the client SHOULD set `played=true` for both sides unless the user quit early; backend does not enforce but logs.
+* If `result` is `LEFT/RIGHT/TIE`, the client SHOULD set `played=true` for both sides unless the user quit early; backend does not enforce but logs.
 
 #### `tags` vocabulary (Stage 0)
 
 Stage 0 supports a small fixed vocabulary. Unknown tags MUST be rejected (to keep data clean), returning `INVALID_TAG`.
 
-**Note:** Tags are now per-level. Each level (top and bottom) can have its own set of tags.
+**Note:** Tags are per-level. Each level (left and right) can have its own set of tags.
 
 Allowed tags (initial):
 
@@ -525,7 +525,7 @@ XXXXXX|||||XXXXXXXXXXXXXX----XXXXXXXXXXXX----XXXXXXXXXXXXX||||||||||||||||||||||
 
 * Uniformly sample two distinct generators from active set.
 * Uniformly sample one level from each generator's pool.
-* First sampled generator = top, second = bottom.
+* First sampled generator = left, second = right.
 * Persist the battle before returning it.
 
 ### Optional enhancements (allowed but not required)

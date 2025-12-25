@@ -33,10 +33,10 @@ public class MainWindow extends JFrame {
     private enum State {
         STARTING,
         READY_NO_BATTLE,
-        BATTLE_LOADED_WAITING_TOP,      // Phase 2: Waiting for user to press SPACE on top level
-        PLAYING_TOP,                     // Phase 2: Playing top level
-        TOP_FINISHED_WAITING_BOTTOM,     // Phase 2: Top finished, waiting for SPACE on bottom
-        PLAYING_BOTTOM,                  // Phase 2: Playing bottom level
+        BATTLE_LOADED_WAITING_LEFT,      // Phase 2: Waiting for user to press SPACE on left level
+        PLAYING_LEFT,                     // Phase 2: Playing left level
+        LEFT_FINISHED_WAITING_RIGHT,     // Phase 2: Left finished, waiting for SPACE on right
+        PLAYING_RIGHT,                    // Phase 2: Playing right level
         BOTH_FINISHED_READY_TO_VOTE,    // Phase 2: Both levels played, ready to vote
         BATTLE_LOADED_PENDING_VOTE,      // Phase 1: Static view (deprecated)
         SUBMITTING_VOTE,
@@ -56,27 +56,27 @@ public class MainWindow extends JFrame {
     private JLabel battleIdLabel;
     
     // Phase 2: Gameplay panels instead of static views
-    private GameplayPanel topGameplayPanel;
-    private GameplayPanel bottomGameplayPanel;
-    private JLabel topLabel;
-    private JLabel bottomLabel;
+    private GameplayPanel leftGameplayPanel;
+    private GameplayPanel rightGameplayPanel;
+    private JLabel leftLabel;
+    private JLabel rightLabel;
     private JLabel controlsLabel;  // Phase 2: Show controls
     
     // Phase 2: Telemetry storage
-    private LevelPlayResult topPlayResult;
-    private LevelPlayResult bottomPlayResult;
+    private LevelPlayResult leftPlayResult;
+    private LevelPlayResult rightPlayResult;
     
     private LeaderboardPanel leaderboardPanel;
     
-    private JButton topButton;
-    private JButton bottomButton;
+    private JButton leftButton;
+    private JButton rightButton;
     private JButton tieButton;
     private JButton skipButton;
     private JButton nextBattleButton;
     private JButton retryButton;
     
-    private Map<String, JCheckBox> topTagCheckboxes;
-    private Map<String, JCheckBox> bottomTagCheckboxes;
+    private Map<String, JCheckBox> leftTagCheckboxes;
+    private Map<String, JCheckBox> rightTagCheckboxes;
     
     // State
     private BattleResponse.Battle currentBattle;
@@ -87,15 +87,15 @@ public class MainWindow extends JFrame {
         String sessionId;
         String battleId;
         String result;
-        List<String> topTags;
-        List<String> bottomTags;
+        List<String> leftTags;
+        List<String> rightTags;
         
-        VoteRequest(String sessionId, String battleId, String result, List<String> topTags, List<String> bottomTags) {
+        VoteRequest(String sessionId, String battleId, String result, List<String> leftTags, List<String> rightTags) {
             this.sessionId = sessionId;
             this.battleId = battleId;
             this.result = result;
-            this.topTags = new ArrayList<>(topTags);
-            this.bottomTags = new ArrayList<>(bottomTags);
+            this.leftTags = new ArrayList<>(leftTags);
+            this.rightTags = new ArrayList<>(rightTags);
         }
     }
     
@@ -124,112 +124,123 @@ public class MainWindow extends JFrame {
         topBar.add(battleIdLabel);
         add(topBar, BorderLayout.NORTH);
         
-        // Center: Main content with proper ordering (level, tags, level, tags, buttons)
+        // Center: Main content with horizontal layout (left and right side by side)
         JPanel centerPanel = new JPanel();
         centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
         
         // === CONTROLS LABEL === (Phase 2)
         controlsLabel = new JLabel("Controls: Arrow Keys = Move, S = Jump, A = Run/Fire", SwingConstants.CENTER);
         controlsLabel.setFont(new Font("SansSerif", Font.BOLD, 14));
+        controlsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         centerPanel.add(controlsLabel);
         centerPanel.add(Box.createRigidArea(new Dimension(0, 5)));
         
-        // === TOP LEVEL === (Phase 2: GameplayPanel)
-        JPanel topLevelPanel = new JPanel(new BorderLayout());
-        topLabel = new JLabel("TOP LEVEL", SwingConstants.CENTER);
-        topLabel.setFont(new Font("SansSerif", Font.BOLD, 12));
-        topGameplayPanel = new GameplayPanel();
-        topLevelPanel.add(topLabel, BorderLayout.NORTH);
-        topLevelPanel.add(topGameplayPanel, BorderLayout.CENTER);
-        centerPanel.add(topLevelPanel);
+        // === LEVELS PANEL (HORIZONTAL LAYOUT) ===
+        JPanel levelsPanel = new JPanel(new GridLayout(1, 2, 10, 0));
         
-        // Add property change listener for top level finish
-        topGameplayPanel.addPropertyChangeListener("gameFinished", evt -> {
-            topPlayResult = LevelPlayResult.fromMarioResult(topGameplayPanel.getResult());
-            setState(State.TOP_FINISHED_WAITING_BOTTOM);
+        // === LEFT LEVEL === (Phase 2: GameplayPanel)
+        JPanel leftLevelPanel = new JPanel(new BorderLayout());
+        leftLabel = new JLabel("LEFT LEVEL", SwingConstants.CENTER);
+        leftLabel.setFont(new Font("SansSerif", Font.BOLD, 12));
+        leftGameplayPanel = new GameplayPanel();
+        leftLevelPanel.add(leftLabel, BorderLayout.NORTH);
+        leftLevelPanel.add(leftGameplayPanel, BorderLayout.CENTER);
+        levelsPanel.add(leftLevelPanel);
+        
+        // Add property change listener for left level finish
+        leftGameplayPanel.addPropertyChangeListener("gameFinished", evt -> {
+            leftPlayResult = LevelPlayResult.fromMarioResult(leftGameplayPanel.getResult());
+            setState(State.LEFT_FINISHED_WAITING_RIGHT);
             // Update labels and focus
-            topLabel.setText("TOP LEVEL (1/2) - Finished!");
-            bottomLabel.setText("BOTTOM LEVEL (2/2) - Press SPACE to start");
-            setStatus("Top level finished! Press SPACE in bottom panel to play Level 2");
-            // Give focus to bottom panel so SPACE works
+            leftLabel.setText("LEFT LEVEL (1/2) - Finished!");
+            rightLabel.setText("RIGHT LEVEL (2/2) - Press SPACE to start");
+            setStatus("Left level finished! Press SPACE in right panel to play Level 2");
+            // Give focus to right panel so SPACE works
             SwingUtilities.invokeLater(() -> {
-                bottomGameplayPanel.requestFocusInWindow();
+                rightGameplayPanel.requestFocusInWindow();
             });
         });
         
-        // === TOP LEVEL TAGS ===
-        JPanel topTagPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        topTagPanel.add(new JLabel("Top level tags (max 3):"));
-        topTagCheckboxes = new HashMap<>();
-        for (String tag : ALLOWED_TAGS) {
-            JCheckBox cb = new JCheckBox(tag);
-            cb.addActionListener(e -> enforceMaxTags(topTagCheckboxes));
-            topTagCheckboxes.put(tag, cb);
-            topTagPanel.add(cb);
-        }
-        centerPanel.add(topTagPanel);
+        // === RIGHT LEVEL === (Phase 2: GameplayPanel)
+        JPanel rightLevelPanel = new JPanel(new BorderLayout());
+        rightLabel = new JLabel("RIGHT LEVEL", SwingConstants.CENTER);
+        rightLabel.setFont(new Font("SansSerif", Font.BOLD, 12));
+        rightGameplayPanel = new GameplayPanel();
+        rightLevelPanel.add(rightLabel, BorderLayout.NORTH);
+        rightLevelPanel.add(rightGameplayPanel, BorderLayout.CENTER);
+        levelsPanel.add(rightLevelPanel);
         
-        // Add spacing
-        centerPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-        
-        // === BOTTOM LEVEL === (Phase 2: GameplayPanel)
-        JPanel bottomLevelPanel = new JPanel(new BorderLayout());
-        bottomLabel = new JLabel("BOTTOM LEVEL", SwingConstants.CENTER);
-        bottomLabel.setFont(new Font("SansSerif", Font.BOLD, 12));
-        bottomGameplayPanel = new GameplayPanel();
-        bottomLevelPanel.add(bottomLabel, BorderLayout.NORTH);
-        bottomLevelPanel.add(bottomGameplayPanel, BorderLayout.CENTER);
-        centerPanel.add(bottomLevelPanel);
-        
-        // Add property change listener for bottom level finish
-        bottomGameplayPanel.addPropertyChangeListener("gameFinished", evt -> {
-            bottomPlayResult = LevelPlayResult.fromMarioResult(bottomGameplayPanel.getResult());
+        // Add property change listener for right level finish
+        rightGameplayPanel.addPropertyChangeListener("gameFinished", evt -> {
+            rightPlayResult = LevelPlayResult.fromMarioResult(rightGameplayPanel.getResult());
             
-            // Check if top was played - if not, something went wrong (bottom started first)
-            if (topPlayResult == null && topGameplayPanel.getState() == GameplayPanel.State.WAITING_TO_START) {
-                // Bottom started before top - this shouldn't happen, but recover by starting top
-                setState(State.BATTLE_LOADED_WAITING_TOP);
-                bottomLabel.setText("BOTTOM LEVEL (2/2) - Wait for top level");
-                topLabel.setText("TOP LEVEL (1/2) - Press SPACE to start");
-                setStatus("Top level not played yet! Press SPACE in top panel to play Level 1");
+            // Check if left was played - if not, something went wrong (right started first)
+            if (leftPlayResult == null && leftGameplayPanel.getState() == GameplayPanel.State.WAITING_TO_START) {
+                // Right started before left - this shouldn't happen, but recover by starting left
+                setState(State.BATTLE_LOADED_WAITING_LEFT);
+                rightLabel.setText("RIGHT LEVEL (2/2) - Wait for left level");
+                leftLabel.setText("LEFT LEVEL (1/2) - Press SPACE to start");
+                setStatus("Left level not played yet! Press SPACE in left panel to play Level 1");
                 SwingUtilities.invokeLater(() -> {
-                    topGameplayPanel.requestFocusInWindow();
+                    leftGameplayPanel.requestFocusInWindow();
                 });
             } else {
                 // Normal flow - both levels finished
                 setState(State.BOTH_FINISHED_READY_TO_VOTE);
-                bottomLabel.setText("BOTTOM LEVEL (2/2) - Finished!");
+                rightLabel.setText("RIGHT LEVEL (2/2) - Finished!");
                 setStatus("Both levels finished! Vote now");
             }
         });
         
-        // === BOTTOM LEVEL TAGS ===
-        JPanel bottomTagPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        bottomTagPanel.add(new JLabel("Bottom level tags (max 3):"));
-        bottomTagCheckboxes = new HashMap<>();
+        centerPanel.add(levelsPanel);
+        
+        // Add spacing
+        centerPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        
+        // === TAG PANELS (HORIZONTAL LAYOUT) ===
+        JPanel tagsPanel = new JPanel(new GridLayout(1, 2, 10, 0));
+        
+        // === LEFT LEVEL TAGS ===
+        JPanel leftTagPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        leftTagPanel.add(new JLabel("Left level tags (max 3):"));
+        leftTagCheckboxes = new HashMap<>();
         for (String tag : ALLOWED_TAGS) {
             JCheckBox cb = new JCheckBox(tag);
-            cb.addActionListener(e -> enforceMaxTags(bottomTagCheckboxes));
-            bottomTagCheckboxes.put(tag, cb);
-            bottomTagPanel.add(cb);
+            cb.addActionListener(e -> enforceMaxTags(leftTagCheckboxes));
+            leftTagCheckboxes.put(tag, cb);
+            leftTagPanel.add(cb);
         }
-        centerPanel.add(bottomTagPanel);
+        tagsPanel.add(leftTagPanel);
+        
+        // === RIGHT LEVEL TAGS ===
+        JPanel rightTagPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        rightTagPanel.add(new JLabel("Right level tags (max 3):"));
+        rightTagCheckboxes = new HashMap<>();
+        for (String tag : ALLOWED_TAGS) {
+            JCheckBox cb = new JCheckBox(tag);
+            cb.addActionListener(e -> enforceMaxTags(rightTagCheckboxes));
+            rightTagCheckboxes.put(tag, cb);
+            rightTagPanel.add(cb);
+        }
+        tagsPanel.add(rightTagPanel);
+        
+        centerPanel.add(tagsPanel);
         
         // Add spacing
         centerPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         
         // === VOTE BUTTONS ===
         JPanel voteButtonsPanel = new JPanel(new FlowLayout());
-        topButton = new JButton("Top Better");
-        bottomButton = new JButton("Bottom Better");
+        leftButton = new JButton("Left Better");
+        rightButton = new JButton("Right Better");
         tieButton = new JButton("Tie");
         skipButton = new JButton("Skip");
-        topButton.addActionListener(e -> vote("TOP"));
-        bottomButton.addActionListener(e -> vote("BOTTOM"));
+        leftButton.addActionListener(e -> vote("LEFT"));
+        rightButton.addActionListener(e -> vote("RIGHT"));
         tieButton.addActionListener(e -> vote("TIE"));
         skipButton.addActionListener(e -> vote("SKIP"));
-        voteButtonsPanel.add(topButton);
-        voteButtonsPanel.add(bottomButton);
+        voteButtonsPanel.add(leftButton);
+        voteButtonsPanel.add(rightButton);
         voteButtonsPanel.add(tieButton);
         voteButtonsPanel.add(skipButton);
         centerPanel.add(voteButtonsPanel);
@@ -298,11 +309,11 @@ public class MainWindow extends JFrame {
                     displayBattle(currentBattle);
                     clearTags();
                     // Phase 2: Reset telemetry
-                    topPlayResult = null;
-                    bottomPlayResult = null;
-                    // Phase 2: Transition to waiting for top level play
-                    setStatus("Press SPACE in top panel to play Level 1");
-                    setState(State.BATTLE_LOADED_WAITING_TOP);
+                    leftPlayResult = null;
+                    rightPlayResult = null;
+                    // Phase 2: Transition to waiting for left level play
+                    setStatus("Press SPACE in left panel to play Level 1");
+                    setState(State.BATTLE_LOADED_WAITING_LEFT);
                 });
             } catch (ArenaApiException e) {
                 SwingUtilities.invokeLater(() -> handleApiError(e, "fetch battle"));
@@ -315,19 +326,19 @@ public class MainWindow extends JFrame {
      */
     private void displayBattle(BattleResponse.Battle battle) {
         try {
-            // Load bottom level first (without focus) to avoid focus race
-            String bottomTilemap = battle.getBottom().getLevelPayload().getTilemap();
-            bottomGameplayPanel.loadLevel(bottomTilemap, false);
-            bottomLabel.setText("BOTTOM LEVEL (2/2) - Wait for top level to finish");
+            // Load right level first (without focus) to avoid focus race
+            String rightTilemap = battle.getRight().getLevelPayload().getTilemap();
+            rightGameplayPanel.loadLevel(rightTilemap, false);
+            rightLabel.setText("RIGHT LEVEL (2/2) - Wait for left level to finish");
             
-            // Load top level last WITH focus - this ensures top panel gets focus
-            String topTilemap = battle.getTop().getLevelPayload().getTilemap();
-            topGameplayPanel.loadLevel(topTilemap, true);
-            topLabel.setText("TOP LEVEL (1/2) - Press SPACE to start");
+            // Load left level last WITH focus - this ensures left panel gets focus
+            String leftTilemap = battle.getLeft().getLevelPayload().getTilemap();
+            leftGameplayPanel.loadLevel(leftTilemap, true);
+            leftLabel.setText("LEFT LEVEL (1/2) - Press SPACE to start");
             
-            // Ensure top panel has focus (double-check)
+            // Ensure left panel has focus (double-check)
             SwingUtilities.invokeLater(() -> {
-                topGameplayPanel.requestFocusInWindow();
+                leftGameplayPanel.requestFocusInWindow();
             });
             
         } catch (Exception e) {
@@ -342,21 +353,21 @@ public class MainWindow extends JFrame {
     private void revealGenerators() {
         if (currentBattle == null) return;
         
-        BattleResponse.Generator topGen = currentBattle.getTop().getGenerator();
-        String topGenId = topGen.getGeneratorId();
-        String topGenIdShort = topGenId.length() >= 8 ? topGenId.substring(0, 8) : topGenId;
-        topLabel.setText(String.format("TOP: %s v%s (ID: %s)", 
-            topGen.getName(), 
-            topGen.getVersion(),
-            topGenIdShort));
+        BattleResponse.Generator leftGen = currentBattle.getLeft().getGenerator();
+        String leftGenId = leftGen.getGeneratorId();
+        String leftGenIdShort = leftGenId.length() >= 8 ? leftGenId.substring(0, 8) : leftGenId;
+        leftLabel.setText(String.format("LEFT: %s v%s (ID: %s)", 
+            leftGen.getName(), 
+            leftGen.getVersion(),
+            leftGenIdShort));
         
-        BattleResponse.Generator bottomGen = currentBattle.getBottom().getGenerator();
-        String bottomGenId = bottomGen.getGeneratorId();
-        String bottomGenIdShort = bottomGenId.length() >= 8 ? bottomGenId.substring(0, 8) : bottomGenId;
-        bottomLabel.setText(String.format("BOTTOM: %s v%s (ID: %s)", 
-            bottomGen.getName(), 
-            bottomGen.getVersion(),
-            bottomGenIdShort));
+        BattleResponse.Generator rightGen = currentBattle.getRight().getGenerator();
+        String rightGenId = rightGen.getGeneratorId();
+        String rightGenIdShort = rightGenId.length() >= 8 ? rightGenId.substring(0, 8) : rightGenId;
+        rightLabel.setText(String.format("RIGHT: %s v%s (ID: %s)", 
+            rightGen.getName(), 
+            rightGen.getVersion(),
+            rightGenIdShort));
     }
     
     /**
@@ -364,8 +375,8 @@ public class MainWindow extends JFrame {
      */
     private void clearBattleDisplay() {
         // Phase 2: GameplayPanel resets when loadLevel is called
-        topLabel.setText("TOP LEVEL");
-        bottomLabel.setText("BOTTOM LEVEL");
+        leftLabel.setText("LEFT LEVEL");
+        rightLabel.setText("RIGHT LEVEL");
     }
     
     /**
@@ -376,9 +387,9 @@ public class MainWindow extends JFrame {
             return;
         }
         
-        List<String> selectedTopTags = getSelectedTags(topTagCheckboxes);
-        List<String> selectedBottomTags = getSelectedTags(bottomTagCheckboxes);
-        pendingVote = new VoteRequest(config.getSessionId(), currentBattle.getBattleId(), result, selectedTopTags, selectedBottomTags);
+        List<String> selectedLeftTags = getSelectedTags(leftTagCheckboxes);
+        List<String> selectedRightTags = getSelectedTags(rightTagCheckboxes);
+        pendingVote = new VoteRequest(config.getSessionId(), currentBattle.getBattleId(), result, selectedLeftTags, selectedRightTags);
         
         setState(State.SUBMITTING_VOTE);
         setStatus("Submitting vote...");
@@ -388,24 +399,24 @@ public class MainWindow extends JFrame {
                 // Phase 2: Build telemetry
                 Map<String, Object> telemetry = new HashMap<>();
                 
-                Map<String, Object> topTelemetry = new HashMap<>();
-                if (topPlayResult != null) {
-                    topPlayResult.addToTelemetry(topTelemetry);
+                Map<String, Object> leftTelemetry = new HashMap<>();
+                if (leftPlayResult != null) {
+                    leftPlayResult.addToTelemetry(leftTelemetry);
                 }
-                telemetry.put("top", topTelemetry);
+                telemetry.put("left", leftTelemetry);
                 
-                Map<String, Object> bottomTelemetry = new HashMap<>();
-                if (bottomPlayResult != null) {
-                    bottomPlayResult.addToTelemetry(bottomTelemetry);
+                Map<String, Object> rightTelemetry = new HashMap<>();
+                if (rightPlayResult != null) {
+                    rightPlayResult.addToTelemetry(rightTelemetry);
                 }
-                telemetry.put("bottom", bottomTelemetry);
+                telemetry.put("right", rightTelemetry);
                 
                 VoteResponse response = apiClient.submitVote(
                     pendingVote.sessionId,
                     pendingVote.battleId,
                     pendingVote.result,
-                    pendingVote.topTags,
-                    pendingVote.bottomTags,
+                    pendingVote.leftTags,
+                    pendingVote.rightTags,
                     telemetry  // Phase 2: Include telemetry
                 );
                 
@@ -448,24 +459,24 @@ public class MainWindow extends JFrame {
                 // Phase 2: Build telemetry
                 Map<String, Object> telemetry = new HashMap<>();
                 
-                Map<String, Object> topTelemetry = new HashMap<>();
-                if (topPlayResult != null) {
-                    topPlayResult.addToTelemetry(topTelemetry);
+                Map<String, Object> leftTelemetry = new HashMap<>();
+                if (leftPlayResult != null) {
+                    leftPlayResult.addToTelemetry(leftTelemetry);
                 }
-                telemetry.put("top", topTelemetry);
+                telemetry.put("left", leftTelemetry);
                 
-                Map<String, Object> bottomTelemetry = new HashMap<>();
-                if (bottomPlayResult != null) {
-                    bottomPlayResult.addToTelemetry(bottomTelemetry);
+                Map<String, Object> rightTelemetry = new HashMap<>();
+                if (rightPlayResult != null) {
+                    rightPlayResult.addToTelemetry(rightTelemetry);
                 }
-                telemetry.put("bottom", bottomTelemetry);
+                telemetry.put("right", rightTelemetry);
                 
                 VoteResponse response = apiClient.submitVote(
                     pendingVote.sessionId,
                     pendingVote.battleId,
                     pendingVote.result,
-                    pendingVote.topTags,
-                    pendingVote.bottomTags,
+                    pendingVote.leftTags,
+                    pendingVote.rightTags,
                     telemetry  // Phase 2: Include telemetry
                 );
                 
@@ -585,16 +596,16 @@ public class MainWindow extends JFrame {
                           currentState == State.BATTLE_LOADED_PENDING_VOTE; // Phase 1 compatibility
         boolean canFetchBattle = currentState == State.READY_NO_BATTLE || currentState == State.VOTED_SHOW_RESULT;
         
-        topButton.setEnabled(canVote);
-        bottomButton.setEnabled(canVote);
+        leftButton.setEnabled(canVote);
+        rightButton.setEnabled(canVote);
         tieButton.setEnabled(canVote);
         skipButton.setEnabled(true); // Skip always available
         nextBattleButton.setEnabled(canFetchBattle);
         
-        for (JCheckBox cb : topTagCheckboxes.values()) {
+        for (JCheckBox cb : leftTagCheckboxes.values()) {
             cb.setEnabled(canVote);
         }
-        for (JCheckBox cb : bottomTagCheckboxes.values()) {
+        for (JCheckBox cb : rightTagCheckboxes.values()) {
             cb.setEnabled(canVote);
         }
     }
@@ -631,10 +642,10 @@ public class MainWindow extends JFrame {
      * Clear tag selection.
      */
     private void clearTags() {
-        for (JCheckBox cb : topTagCheckboxes.values()) {
+        for (JCheckBox cb : leftTagCheckboxes.values()) {
             cb.setSelected(false);
         }
-        for (JCheckBox cb : bottomTagCheckboxes.values()) {
+        for (JCheckBox cb : rightTagCheckboxes.values()) {
             cb.setSelected(false);
         }
     }

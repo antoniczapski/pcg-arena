@@ -10,7 +10,7 @@ This is a Java desktop client for the PCG Arena system. Phase 2 implements full 
 
 - **Play** two procedurally generated levels sequentially
 - Experience full Mario gameplay mechanics (jump, run, enemies, powerups)
-- Vote on which level is better (TOP/BOTTOM/TIE/SKIP)
+- Vote on which level is better (LEFT/RIGHT/TIE/SKIP)
 - Tag levels with descriptive labels
 - View the leaderboard and rating changes
 - Submit rich telemetry data for research
@@ -53,15 +53,15 @@ The application window will open automatically.
 
 1. The client performs a health check on startup
 2. Click **"Next Battle"** to fetch a battle
-3. **Play Top Level**:
-   - Press **SPACE** in the top panel to start
+3. **Play Left Level**:
+   - Press **SPACE** in the left panel to start
    - Use Arrow Keys to move, **S** to jump, **A** to run/fire
    - Play until you win, die, or time runs out
-4. **Play Bottom Level**:
-   - Press **SPACE** in the bottom panel to start
+4. **Play Right Level**:
+   - Press **SPACE** in the right panel to start
    - Play the second level with the same controls
 5. **Vote**: After playing both levels
-   - Click: **Top Better**, **Bottom Better**, **Tie**, or **Skip**
+   - Click: **Left Better**, **Right Better**, **Tie**, or **Skip**
    - Optionally select up to 3 tags per level
 6. View the rating changes and updated leaderboard
 7. Repeat!
@@ -195,7 +195,7 @@ The client handles various error scenarios:
 ## Phase 2 Features
 
 ✅ **Full Mario gameplay mechanics**
-✅ **Sequential level play (top then bottom)**
+✅ **Sequential level play (left then right)**
 ✅ **Rich telemetry collection** (18+ metrics per level)
 ✅ **SPACE to start** each level
 ✅ **Classic controls** (Arrow Keys, S, A)

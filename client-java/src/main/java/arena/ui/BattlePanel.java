@@ -6,49 +6,49 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * Panel displaying a battle (top and bottom levels vertically stacked).
+ * Panel displaying a battle (left and right levels horizontally stacked).
  */
 public class BattlePanel extends JPanel {
-    private final TilemapView topView;
-    private final TilemapView bottomView;
-    private final JLabel topLabel;
-    private final JLabel bottomLabel;
+    private final TilemapView leftView;
+    private final TilemapView rightView;
+    private final JLabel leftLabel;
+    private final JLabel rightLabel;
     private boolean generatorsRevealed = false;
     
     public BattlePanel() {
         setLayout(new BorderLayout());
         
-        // Create main content panel (vertical layout)
-        JPanel contentPanel = new JPanel(new GridLayout(2, 1, 0, 10));
+        // Create main content panel (horizontal layout)
+        JPanel contentPanel = new JPanel(new GridLayout(1, 2, 10, 0));
         
-        // Top level
-        JPanel topPanel = new JPanel(new BorderLayout());
-        topLabel = new JLabel("TOP LEVEL", SwingConstants.CENTER);
-        topLabel.setFont(new Font("SansSerif", Font.BOLD, 12));
-        topView = new TilemapView();
-        JScrollPane topScroll = new JScrollPane(topView, 
+        // Left level
+        JPanel leftPanel = new JPanel(new BorderLayout());
+        leftLabel = new JLabel("LEFT LEVEL", SwingConstants.CENTER);
+        leftLabel.setFont(new Font("SansSerif", Font.BOLD, 12));
+        leftView = new TilemapView();
+        JScrollPane leftScroll = new JScrollPane(leftView, 
             JScrollPane.VERTICAL_SCROLLBAR_NEVER,  // No vertical scrolling - tight Y-axis
             JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);  // Horizontal scroll for wide levels
         // Set minimum height to accommodate 16-tile-high level (16 tiles * 4 pixels = 64 + some buffer)
-        topScroll.setPreferredSize(new Dimension(800, 80));
-        topPanel.add(topLabel, BorderLayout.NORTH);
-        topPanel.add(topScroll, BorderLayout.CENTER);
+        leftScroll.setPreferredSize(new Dimension(400, 80));
+        leftPanel.add(leftLabel, BorderLayout.NORTH);
+        leftPanel.add(leftScroll, BorderLayout.CENTER);
         
-        // Bottom level
-        JPanel bottomPanel = new JPanel(new BorderLayout());
-        bottomLabel = new JLabel("BOTTOM LEVEL", SwingConstants.CENTER);
-        bottomLabel.setFont(new Font("SansSerif", Font.BOLD, 12));
-        bottomView = new TilemapView();
-        JScrollPane bottomScroll = new JScrollPane(bottomView,
+        // Right level
+        JPanel rightPanel = new JPanel(new BorderLayout());
+        rightLabel = new JLabel("RIGHT LEVEL", SwingConstants.CENTER);
+        rightLabel.setFont(new Font("SansSerif", Font.BOLD, 12));
+        rightView = new TilemapView();
+        JScrollPane rightScroll = new JScrollPane(rightView,
             JScrollPane.VERTICAL_SCROLLBAR_NEVER,  // No vertical scrolling - tight Y-axis
             JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);  // Horizontal scroll for wide levels
         // Set minimum height to accommodate 16-tile-high level (16 tiles * 4 pixels = 64 + some buffer)
-        bottomScroll.setPreferredSize(new Dimension(800, 80));
-        bottomPanel.add(bottomLabel, BorderLayout.NORTH);
-        bottomPanel.add(bottomScroll, BorderLayout.CENTER);
+        rightScroll.setPreferredSize(new Dimension(400, 80));
+        rightPanel.add(rightLabel, BorderLayout.NORTH);
+        rightPanel.add(rightScroll, BorderLayout.CENTER);
         
-        contentPanel.add(topPanel);
-        contentPanel.add(bottomPanel);
+        contentPanel.add(leftPanel);
+        contentPanel.add(rightPanel);
         
         add(contentPanel, BorderLayout.CENTER);
     }
@@ -60,21 +60,21 @@ public class BattlePanel extends JPanel {
         generatorsRevealed = false;  // Reset state
         
         try {
-            // Parse and display top level
-            String topTilemap = battle.getTop().getLevelPayload().getTilemap();
-            char[][] topGrid = TilemapParser.parse(topTilemap);
-            topView.setTilemap(topGrid);
+            // Parse and display left level
+            String leftTilemap = battle.getLeft().getLevelPayload().getTilemap();
+            char[][] leftGrid = TilemapParser.parse(leftTilemap);
+            leftView.setTilemap(leftGrid);
             
             // Initially hide generator names
-            topLabel.setText("TOP LEVEL");
+            leftLabel.setText("LEFT LEVEL");
             
-            // Parse and display bottom level
-            String bottomTilemap = battle.getBottom().getLevelPayload().getTilemap();
-            char[][] bottomGrid = TilemapParser.parse(bottomTilemap);
-            bottomView.setTilemap(bottomGrid);
+            // Parse and display right level
+            String rightTilemap = battle.getRight().getLevelPayload().getTilemap();
+            char[][] rightGrid = TilemapParser.parse(rightTilemap);
+            rightView.setTilemap(rightGrid);
             
             // Initially hide generator names
-            bottomLabel.setText("BOTTOM LEVEL");
+            rightLabel.setText("RIGHT LEVEL");
             
         } catch (Exception e) {
             clear();
@@ -88,32 +88,31 @@ public class BattlePanel extends JPanel {
     public void revealGenerators(BattleResponse.Battle battle) {
         generatorsRevealed = true;
         
-        BattleResponse.Generator topGen = battle.getTop().getGenerator();
-        String topGenId = topGen.getGeneratorId();
-        String topGenIdShort = topGenId.length() >= 8 ? topGenId.substring(0, 8) : topGenId;
-        topLabel.setText(String.format("TOP: %s v%s (ID: %s)", 
-            topGen.getName(), 
-            topGen.getVersion(),
-            topGenIdShort));
+        BattleResponse.Generator leftGen = battle.getLeft().getGenerator();
+        String leftGenId = leftGen.getGeneratorId();
+        String leftGenIdShort = leftGenId.length() >= 8 ? leftGenId.substring(0, 8) : leftGenId;
+        leftLabel.setText(String.format("LEFT: %s v%s (ID: %s)", 
+            leftGen.getName(), 
+            leftGen.getVersion(),
+            leftGenIdShort));
         
-        BattleResponse.Generator bottomGen = battle.getBottom().getGenerator();
-        String bottomGenId = bottomGen.getGeneratorId();
-        String bottomGenIdShort = bottomGenId.length() >= 8 ? bottomGenId.substring(0, 8) : bottomGenId;
-        bottomLabel.setText(String.format("BOTTOM: %s v%s (ID: %s)", 
-            bottomGen.getName(), 
-            bottomGen.getVersion(),
-            bottomGenIdShort));
+        BattleResponse.Generator rightGen = battle.getRight().getGenerator();
+        String rightGenId = rightGen.getGeneratorId();
+        String rightGenIdShort = rightGenId.length() >= 8 ? rightGenId.substring(0, 8) : rightGenId;
+        rightLabel.setText(String.format("RIGHT: %s v%s (ID: %s)", 
+            rightGen.getName(), 
+            rightGen.getVersion(),
+            rightGenIdShort));
     }
     
     /**
      * Clear the battle display.
      */
     public void clear() {
-        topView.clear();
-        bottomView.clear();
-        topLabel.setText("TOP LEVEL");
-        bottomLabel.setText("BOTTOM LEVEL");
+        leftView.clear();
+        rightView.clear();
+        leftLabel.setText("LEFT LEVEL");
+        rightLabel.setText("RIGHT LEVEL");
         generatorsRevealed = false;
     }
 }
-

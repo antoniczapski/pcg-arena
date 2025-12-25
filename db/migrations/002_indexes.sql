@@ -27,7 +27,7 @@ CREATE INDEX IF NOT EXISTS idx_battles_status ON battles(status);
 CREATE INDEX IF NOT EXISTS idx_battles_session_id ON battles(session_id);
 
 -- For analysis: matchup frequency between generators
-CREATE INDEX IF NOT EXISTS idx_battles_generator_pair ON battles(top_generator_id, bottom_generator_id);
+CREATE INDEX IF NOT EXISTS idx_battles_generator_pair ON battles(left_generator_id, right_generator_id);
 
 --------------------------------------------------------------------------------
 -- votes indexes
@@ -37,4 +37,3 @@ CREATE INDEX IF NOT EXISTS idx_votes_created_at_utc ON votes(created_at_utc);
 
 -- For session-based queries
 CREATE INDEX IF NOT EXISTS idx_votes_session_id ON votes(session_id);
-

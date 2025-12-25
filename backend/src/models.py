@@ -19,8 +19,8 @@ PROTOCOL_VERSION = "arena/v0"
 # Enums
 class VoteResult(str, Enum):
     """Vote result enum."""
-    TOP = "TOP"
-    BOTTOM = "BOTTOM"
+    LEFT = "LEFT"
+    RIGHT = "RIGHT"
     TIE = "TIE"
     SKIP = "SKIP"
 
@@ -39,7 +39,7 @@ class ErrorCode(str, Enum):
 
 class PlayOrder(str, Enum):
     """Battle presentation play order."""
-    TOP_THEN_BOTTOM = "TOP_THEN_BOTTOM"
+    LEFT_THEN_RIGHT = "LEFT_THEN_RIGHT"
 
 
 class LevelFormatType(str, Enum):
@@ -76,8 +76,8 @@ class SideTelemetry(BaseModel):
 
 class Telemetry(BaseModel):
     """Telemetry data for both sides of a battle."""
-    top: Optional[SideTelemetry] = Field(default=None, description="Telemetry for top level")
-    bottom: Optional[SideTelemetry] = Field(default=None, description="Telemetry for bottom level")
+    left: Optional[SideTelemetry] = Field(default=None, description="Telemetry for left level")
+    right: Optional[SideTelemetry] = Field(default=None, description="Telemetry for right level")
 
 
 class VoteRequest(BaseModel):
@@ -85,9 +85,9 @@ class VoteRequest(BaseModel):
     client_version: str = Field(..., description="Client version string")
     session_id: str = Field(..., description="Client-generated UUID matching the battle session")
     battle_id: str = Field(..., description="Battle ID from the battle response")
-    result: VoteResult = Field(..., description="Vote outcome: TOP, BOTTOM, TIE, or SKIP")
-    top_tags: Optional[List[str]] = Field(default=None, description="Optional tags describing the top level")
-    bottom_tags: Optional[List[str]] = Field(default=None, description="Optional tags describing the bottom level")
+    result: VoteResult = Field(..., description="Vote outcome: LEFT, RIGHT, TIE, or SKIP")
+    left_tags: Optional[List[str]] = Field(default=None, description="Optional tags describing the left level")
+    right_tags: Optional[List[str]] = Field(default=None, description="Optional tags describing the right level")
     telemetry: Optional[Telemetry] = Field(default=None, description="Optional gameplay telemetry")
 
 
@@ -143,8 +143,8 @@ class Battle(BaseModel):
     issued_at_utc: str = Field(..., description="ISO timestamp when battle was issued")
     expires_at_utc: Optional[str] = Field(default=None, description="ISO timestamp when battle expires (null = no expiry)")
     presentation: BattlePresentation = Field(..., description="Presentation instructions")
-    top: BattleSide = Field(..., description="Top level and generator")
-    bottom: BattleSide = Field(..., description="Bottom level and generator")
+    left: BattleSide = Field(..., description="Left level and generator")
+    right: BattleSide = Field(..., description="Right level and generator")
 
 
 class BattleResponse(BaseModel):
@@ -165,7 +165,7 @@ class LeaderboardGeneratorPreview(BaseModel):
 class LeaderboardPreview(BaseModel):
     """Leaderboard snapshot included in vote response."""
     updated_at_utc: str = Field(..., description="ISO timestamp of last update")
-    generators: List[LeaderboardGeneratorPreview] = Field(..., description="Top generators (may be partial list)")
+    generators: List[LeaderboardGeneratorPreview] = Field(..., description="Generators list (may be partial)")
 
 
 class VoteResponse(BaseModel):
@@ -200,4 +200,3 @@ class ErrorResponse(BaseModel):
             details=details
         )
         return cls(error=error_info)
-

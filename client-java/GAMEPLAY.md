@@ -93,14 +93,14 @@ When voting, you can select up to 3 tags per level:
 ## Phase 2 Flow
 
 1. **Fetch Battle**: Click "Next Battle" to get two levels
-2. **Play Top Level**: 
-   - Press **SPACE** in the top panel to start
+2. **Play Left Level**: 
+   - Press **SPACE** in the left panel to start
    - Play until you win, die, or run out of time
-3. **Play Bottom Level**:
-   - Press **SPACE** in the bottom panel to start
+3. **Play Right Level**:
+   - Press **SPACE** in the right panel to start
    - Play until you win, die, or run out of time
 4. **Vote**: Choose which level was better
-   - Top Better / Bottom Better / Tie / Skip
+   - Left Better / Right Better / Tie / Skip
    - Optionally select tags
 5. **Repeat**: Click "Next Battle" for another comparison
 

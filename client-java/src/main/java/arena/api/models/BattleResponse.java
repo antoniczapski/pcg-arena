@@ -18,8 +18,8 @@ public class BattleResponse {
         @JsonProperty("expires_at_utc")
         private String expiresAtUtc;
         
-        private LevelInfo top;
-        private LevelInfo bottom;
+        private LevelInfo left;
+        private LevelInfo right;
         private Presentation presentation;
         
         public String getBattleId() { return battleId; }
@@ -28,10 +28,10 @@ public class BattleResponse {
         public void setIssuedAtUtc(String issuedAtUtc) { this.issuedAtUtc = issuedAtUtc; }
         public String getExpiresAtUtc() { return expiresAtUtc; }
         public void setExpiresAtUtc(String expiresAtUtc) { this.expiresAtUtc = expiresAtUtc; }
-        public LevelInfo getTop() { return top; }
-        public void setTop(LevelInfo top) { this.top = top; }
-        public LevelInfo getBottom() { return bottom; }
-        public void setBottom(LevelInfo bottom) { this.bottom = bottom; }
+        public LevelInfo getLeft() { return left; }
+        public void setLeft(LevelInfo left) { this.left = left; }
+        public LevelInfo getRight() { return right; }
+        public void setRight(LevelInfo right) { this.right = right; }
         public Presentation getPresentation() { return presentation; }
         public void setPresentation(Presentation presentation) { this.presentation = presentation; }
     }
@@ -125,4 +125,3 @@ public class BattleResponse {
     public Battle getBattle() { return battle; }
     public void setBattle(Battle battle) { this.battle = battle; }
 }
-

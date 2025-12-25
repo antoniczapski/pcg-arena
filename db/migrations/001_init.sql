@@ -64,24 +64,24 @@ CREATE TABLE IF NOT EXISTS battles (
     issued_at_utc TEXT NOT NULL,
     expires_at_utc TEXT,
     status TEXT NOT NULL,
-    top_level_id TEXT NOT NULL,
-    bottom_level_id TEXT NOT NULL,
-    top_generator_id TEXT NOT NULL,
-    bottom_generator_id TEXT NOT NULL,
+    left_level_id TEXT NOT NULL,
+    right_level_id TEXT NOT NULL,
+    left_generator_id TEXT NOT NULL,
+    right_generator_id TEXT NOT NULL,
     matchmaking_policy TEXT NOT NULL DEFAULT 'uniform_v0',
     created_at_utc TEXT NOT NULL,
     updated_at_utc TEXT NOT NULL,
 
     -- Foreign keys
-    FOREIGN KEY (top_level_id) REFERENCES levels(level_id),
-    FOREIGN KEY (bottom_level_id) REFERENCES levels(level_id),
-    FOREIGN KEY (top_generator_id) REFERENCES generators(generator_id),
-    FOREIGN KEY (bottom_generator_id) REFERENCES generators(generator_id),
+    FOREIGN KEY (left_level_id) REFERENCES levels(level_id),
+    FOREIGN KEY (right_level_id) REFERENCES levels(level_id),
+    FOREIGN KEY (left_generator_id) REFERENCES generators(generator_id),
+    FOREIGN KEY (right_generator_id) REFERENCES generators(generator_id),
 
     -- Constraints
     CHECK (status IN ('ISSUED', 'COMPLETED', 'EXPIRED')),
-    CHECK (top_level_id != bottom_level_id),
-    CHECK (top_generator_id != bottom_generator_id)
+    CHECK (left_level_id != right_level_id),
+    CHECK (left_generator_id != right_generator_id)
 );
 
 --------------------------------------------------------------------------------
@@ -93,8 +93,8 @@ CREATE TABLE IF NOT EXISTS votes (
     session_id TEXT NOT NULL,
     created_at_utc TEXT NOT NULL,
     result TEXT NOT NULL,
-    top_tags_json TEXT NOT NULL DEFAULT '[]',
-    bottom_tags_json TEXT NOT NULL DEFAULT '[]',
+    left_tags_json TEXT NOT NULL DEFAULT '[]',
+    right_tags_json TEXT NOT NULL DEFAULT '[]',
     telemetry_json TEXT NOT NULL DEFAULT '{}',
     payload_hash TEXT NOT NULL,
 
@@ -102,7 +102,7 @@ CREATE TABLE IF NOT EXISTS votes (
     FOREIGN KEY (battle_id) REFERENCES battles(battle_id),
 
     -- Constraints
-    CHECK (result IN ('TOP', 'BOTTOM', 'TIE', 'SKIP'))
+    CHECK (result IN ('LEFT', 'RIGHT', 'TIE', 'SKIP'))
 );
 
 --------------------------------------------------------------------------------
@@ -136,15 +136,14 @@ CREATE TABLE IF NOT EXISTS rating_events (
     event_id TEXT PRIMARY KEY,
     vote_id TEXT NOT NULL UNIQUE,
     battle_id TEXT NOT NULL,
-    top_generator_id TEXT NOT NULL,
-    bottom_generator_id TEXT NOT NULL,
+    left_generator_id TEXT NOT NULL,
+    right_generator_id TEXT NOT NULL,
     result TEXT NOT NULL,
-    delta_top REAL NOT NULL,
-    delta_bottom REAL NOT NULL,
+    delta_left REAL NOT NULL,
+    delta_right REAL NOT NULL,
     created_at_utc TEXT NOT NULL,
 
     -- Foreign keys
     FOREIGN KEY (vote_id) REFERENCES votes(vote_id),
     FOREIGN KEY (battle_id) REFERENCES battles(battle_id)
 );
-

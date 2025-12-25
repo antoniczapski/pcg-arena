@@ -103,15 +103,15 @@ public class ArenaApiClient {
      * Submit a vote.
      */
     public VoteResponse submitVote(String sessionId, String battleId, String result, 
-                                   List<String> topTags, List<String> bottomTags, Map<String, Object> telemetry) 
+                                   List<String> leftTags, List<String> rightTags, Map<String, Object> telemetry) 
             throws ArenaApiException {
         VoteRequest request = new VoteRequest(
             ClientConfig.CLIENT_VERSION, 
             sessionId, 
             battleId, 
             result, 
-            topTags,
-            bottomTags,
+            leftTags,
+            rightTags,
             telemetry
         );
         String path = "/v1/votes";
@@ -238,4 +238,3 @@ public class ArenaApiClient {
         return new ArenaApiException(error.getCode(), error.getMessage(), error.isRetryable());
     }
 }
-
