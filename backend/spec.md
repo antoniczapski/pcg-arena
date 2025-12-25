@@ -349,12 +349,12 @@ Issues a new battle with two random levels from different generators.
     "issued_at_utc": "2025-12-24T12:00:00Z",
     "expires_at_utc": null,
     "presentation": {
-      "play_order": "LEFT_THEN_RIGHT",
+      "play_order": "TOP_THEN_BOTTOM",
       "reveal_generator_names_after_vote": true,
       "suggested_time_limit_seconds": 300
     },
-    "left": { "level_id": "...", "generator": {...}, "format": {...}, "level_payload": {...} },
-    "right": { "level_id": "...", "generator": {...}, "format": {...}, "level_payload": {...} }
+    "top": { "level_id": "...", "generator": {...}, "format": {...}, "level_payload": {...} },
+    "bottom": { "level_id": "...", "generator": {...}, "format": {...}, "level_payload": {...} }
   }
 }
 ```
@@ -371,9 +371,10 @@ Submit a vote for a battle. Idempotent with atomic rating update.
   "client_version": "0.1.0",
   "session_id": "...",
   "battle_id": "btl_...",
-  "result": "LEFT",
-  "tags": ["fun", "good_flow"],
-  "telemetry": { "left": {...}, "right": {...} }
+  "result": "TOP",
+  "top_tags": ["fun", "good_flow"],
+  "bottom_tags": ["too_hard"],
+  "telemetry": { "top": {...}, "bottom": {...} }
 }
 ```
 

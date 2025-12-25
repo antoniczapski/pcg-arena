@@ -125,13 +125,13 @@ Stage 0 requires these logical entities:
 
 1) **Generator** — a PCG algorithm / model identity  
 2) **Level** — a generated level artifact, attributed to a generator  
-3) **Battle** — a single comparison instance: exactly one left level and one right level  
-4) **Vote** — the user outcome for a battle (left/right/tie/skip) + optional tags/telemetry  
+3) **Battle** — a single comparison instance: exactly one top level and one bottom level  
+4) **Vote** — the user outcome for a battle (top/bottom/tie/skip) + optional tags/telemetry  
 5) **Rating state** — current rating per generator (+ optional history)
 
 Relationships:
 - A generator has many levels.
-- A battle references two levels (left and right).
+- A battle references two levels (top and bottom).
 - A vote references exactly one battle.
 - Ratings are per generator and updated based on votes.
 

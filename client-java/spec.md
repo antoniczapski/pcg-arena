@@ -15,8 +15,8 @@ Phase 2 (gameplay integration) is described only at a high level and will be for
 Build a **local Java executable** that can:
 
 1. Call the backend to request a battle (`POST /v1/battles:next`)
-2. **Render two levels** (left/right) as static visualizations
-3. Collect a basic **vote** (LEFT/RIGHT/TIE/SKIP) without gameplay
+2. **Render two levels** (top/bottom) as static visualizations
+3. Collect a basic **vote** (TOP/BOTTOM/TIE/SKIP) without gameplay
 4. Submit the vote (`POST /v1/votes`)
 5. Fetch and show leaderboard (`GET /v1/leaderboard`)
 
@@ -162,15 +162,16 @@ Client performs:
   "client_version": "0.1.0",
   "session_id": "<uuid>",
   "battle_id": "<battle_id>",
-  "result": "LEFT",
-  "tags": [],
+  "result": "TOP",
+  "top_tags": [],
+  "bottom_tags": [],
   "telemetry": {}
 }
 ```
 
 **Phase 1 rules:**
 
-* Tags: allow selecting 0–3 tags from the allowed list (optional UI).
+* Tags: allow selecting 0–3 tags per level from the allowed list (optional UI).
 * Telemetry: empty object `{}` in Phase 1.
 
 ### 4.3 Fetch leaderboard
@@ -211,14 +212,14 @@ Single main window:
   * battle_id
 * Main content:
 
-  * Left panel: rendered tilemap
-  * Right panel: rendered tilemap
+  * Top panel: rendered tilemap
+  * Bottom panel: rendered tilemap
 * Under each panel:
 
-  * generator name + id + version
+  * generator name + id + version (revealed after vote)
 * Bottom bar:
 
-  * voting buttons: **Left Better**, **Right Better**, **Tie**, **Skip**
+  * voting buttons: **Top Better**, **Bottom Better**, **Tie**, **Skip**
   * optional tag toggles (checkboxes)
   * status text: “Vote submitted”, “Error: …”
   * button: “Next battle” (enabled only when no pending battle)
@@ -385,9 +386,9 @@ Phase 2 replaces the static viewer with a gameplay loop while keeping the **same
 ### Phase 2 UI flow
 
 1. Fetch battle
-2. Play LEFT level (engine)
-3. Play RIGHT level (engine)
-4. Vote screen (same 4 outcomes + tags)
+2. Play TOP level (engine)
+3. Play BOTTOM level (engine)
+4. Vote screen (same 4 outcomes + per-level tags)
 5. Submit vote with telemetry
 6. Show leaderboard summary (optional)
 

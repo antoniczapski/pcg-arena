@@ -15,16 +15,23 @@ public class VoteRequest {
     private String battleId;
     
     private String result;
-    private List<String> tags;
+    
+    @JsonProperty("top_tags")
+    private List<String> topTags;
+    
+    @JsonProperty("bottom_tags")
+    private List<String> bottomTags;
+    
     private Map<String, Object> telemetry;
     
     public VoteRequest(String clientVersion, String sessionId, String battleId, 
-                      String result, List<String> tags, Map<String, Object> telemetry) {
+                      String result, List<String> topTags, List<String> bottomTags, Map<String, Object> telemetry) {
         this.clientVersion = clientVersion;
         this.sessionId = sessionId;
         this.battleId = battleId;
         this.result = result;
-        this.tags = tags;
+        this.topTags = topTags;
+        this.bottomTags = bottomTags;
         this.telemetry = telemetry;
     }
     
@@ -36,8 +43,10 @@ public class VoteRequest {
     public void setBattleId(String battleId) { this.battleId = battleId; }
     public String getResult() { return result; }
     public void setResult(String result) { this.result = result; }
-    public List<String> getTags() { return tags; }
-    public void setTags(List<String> tags) { this.tags = tags; }
+    public List<String> getTopTags() { return topTags; }
+    public void setTopTags(List<String> topTags) { this.topTags = topTags; }
+    public List<String> getBottomTags() { return bottomTags; }
+    public void setBottomTags(List<String> bottomTags) { this.bottomTags = bottomTags; }
     public Map<String, Object> getTelemetry() { return telemetry; }
     public void setTelemetry(Map<String, Object> telemetry) { this.telemetry = telemetry; }
 }

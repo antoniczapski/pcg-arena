@@ -22,10 +22,10 @@ import java.util.Map;
 public class MainWindow extends JFrame {
     private static final Logger logger = LoggerFactory.getLogger(MainWindow.class);
     
-    // Allowed tags from spec
+    // Allowed tags from spec (updated to match backend)
     private static final String[] ALLOWED_TAGS = {
-        "too_easy", "too_hard", "boring", "unfair", 
-        "interesting", "creative", "broken", "unplayable"
+        "fun", "boring", "good_flow", "creative", "unfair", 
+        "confusing", "too_hard", "too_easy", "not_mario_like"
     };
     private static final int MAX_TAGS = 3;
     
@@ -50,17 +50,22 @@ public class MainWindow extends JFrame {
     private JLabel sessionLabel;
     private JLabel battleIdLabel;
     
-    private BattlePanel battlePanel;
+    private TilemapView topView;
+    private TilemapView bottomView;
+    private JLabel topLabel;
+    private JLabel bottomLabel;
+    
     private LeaderboardPanel leaderboardPanel;
     
-    private JButton leftButton;
-    private JButton rightButton;
+    private JButton topButton;
+    private JButton bottomButton;
     private JButton tieButton;
     private JButton skipButton;
     private JButton nextBattleButton;
     private JButton retryButton;
     
-    private Map<String, JCheckBox> tagCheckboxes;
+    private Map<String, JCheckBox> topTagCheckboxes;
+    private Map<String, JCheckBox> bottomTagCheckboxes;
     
     // State
     private BattleResponse.Battle currentBattle;
@@ -71,13 +76,15 @@ public class MainWindow extends JFrame {
         String sessionId;
         String battleId;
         String result;
-        List<String> tags;
+        List<String> topTags;
+        List<String> bottomTags;
         
-        VoteRequest(String sessionId, String battleId, String result, List<String> tags) {
+        VoteRequest(String sessionId, String battleId, String result, List<String> topTags, List<String> bottomTags) {
             this.sessionId = sessionId;
             this.battleId = battleId;
             this.result = result;
-            this.tags = new ArrayList<>(tags);
+            this.topTags = new ArrayList<>(topTags);
+            this.bottomTags = new ArrayList<>(bottomTags);
         }
     }
     
@@ -106,45 +113,83 @@ public class MainWindow extends JFrame {
         topBar.add(battleIdLabel);
         add(topBar, BorderLayout.NORTH);
         
-        // Center: Battle display
-        battlePanel = new BattlePanel();
-        add(battlePanel, BorderLayout.CENTER);
+        // Center: Main content with proper ordering (level, tags, level, tags, buttons)
+        JPanel centerPanel = new JPanel();
+        centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
         
-        // Bottom: Controls and leaderboard
-        JPanel bottomPanel = new JPanel(new BorderLayout());
+        // === TOP LEVEL ===
+        JPanel topLevelPanel = new JPanel(new BorderLayout());
+        topLabel = new JLabel("TOP LEVEL", SwingConstants.CENTER);
+        topLabel.setFont(new Font("SansSerif", Font.BOLD, 12));
+        topView = new TilemapView();
+        JScrollPane topScroll = new JScrollPane(topView, 
+            JScrollPane.VERTICAL_SCROLLBAR_NEVER,
+            JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        topScroll.setPreferredSize(new Dimension(800, 80));
+        topLevelPanel.add(topLabel, BorderLayout.NORTH);
+        topLevelPanel.add(topScroll, BorderLayout.CENTER);
+        centerPanel.add(topLevelPanel);
         
-        // Voting controls
-        JPanel controlsPanel = new JPanel(new GridLayout(4, 1, 5, 5));
-        
-        // Vote buttons
-        JPanel voteButtonsPanel = new JPanel(new FlowLayout());
-        leftButton = new JButton("Left Better");
-        rightButton = new JButton("Right Better");
-        tieButton = new JButton("Tie");
-        skipButton = new JButton("Skip");
-        leftButton.addActionListener(e -> vote("LEFT"));
-        rightButton.addActionListener(e -> vote("RIGHT"));
-        tieButton.addActionListener(e -> vote("TIE"));
-        skipButton.addActionListener(e -> vote("SKIP"));
-        voteButtonsPanel.add(leftButton);
-        voteButtonsPanel.add(rightButton);
-        voteButtonsPanel.add(tieButton);
-        voteButtonsPanel.add(skipButton);
-        controlsPanel.add(voteButtonsPanel);
-        
-        // Tag selection
-        JPanel tagPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        tagPanel.add(new JLabel("Tags (max 3):"));
-        tagCheckboxes = new HashMap<>();
+        // === TOP LEVEL TAGS ===
+        JPanel topTagPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        topTagPanel.add(new JLabel("Top level tags (max 3):"));
+        topTagCheckboxes = new HashMap<>();
         for (String tag : ALLOWED_TAGS) {
             JCheckBox cb = new JCheckBox(tag);
-            cb.addActionListener(e -> enforceMaxTags());
-            tagCheckboxes.put(tag, cb);
-            tagPanel.add(cb);
+            cb.addActionListener(e -> enforceMaxTags(topTagCheckboxes));
+            topTagCheckboxes.put(tag, cb);
+            topTagPanel.add(cb);
         }
-        controlsPanel.add(tagPanel);
+        centerPanel.add(topTagPanel);
         
-        // Action buttons
+        // Add spacing
+        centerPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        
+        // === BOTTOM LEVEL ===
+        JPanel bottomLevelPanel = new JPanel(new BorderLayout());
+        bottomLabel = new JLabel("BOTTOM LEVEL", SwingConstants.CENTER);
+        bottomLabel.setFont(new Font("SansSerif", Font.BOLD, 12));
+        bottomView = new TilemapView();
+        JScrollPane bottomScroll = new JScrollPane(bottomView,
+            JScrollPane.VERTICAL_SCROLLBAR_NEVER,
+            JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        bottomScroll.setPreferredSize(new Dimension(800, 80));
+        bottomLevelPanel.add(bottomLabel, BorderLayout.NORTH);
+        bottomLevelPanel.add(bottomScroll, BorderLayout.CENTER);
+        centerPanel.add(bottomLevelPanel);
+        
+        // === BOTTOM LEVEL TAGS ===
+        JPanel bottomTagPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        bottomTagPanel.add(new JLabel("Bottom level tags (max 3):"));
+        bottomTagCheckboxes = new HashMap<>();
+        for (String tag : ALLOWED_TAGS) {
+            JCheckBox cb = new JCheckBox(tag);
+            cb.addActionListener(e -> enforceMaxTags(bottomTagCheckboxes));
+            bottomTagCheckboxes.put(tag, cb);
+            bottomTagPanel.add(cb);
+        }
+        centerPanel.add(bottomTagPanel);
+        
+        // Add spacing
+        centerPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        
+        // === VOTE BUTTONS ===
+        JPanel voteButtonsPanel = new JPanel(new FlowLayout());
+        topButton = new JButton("Top Better");
+        bottomButton = new JButton("Bottom Better");
+        tieButton = new JButton("Tie");
+        skipButton = new JButton("Skip");
+        topButton.addActionListener(e -> vote("TOP"));
+        bottomButton.addActionListener(e -> vote("BOTTOM"));
+        tieButton.addActionListener(e -> vote("TIE"));
+        skipButton.addActionListener(e -> vote("SKIP"));
+        voteButtonsPanel.add(topButton);
+        voteButtonsPanel.add(bottomButton);
+        voteButtonsPanel.add(tieButton);
+        voteButtonsPanel.add(skipButton);
+        centerPanel.add(voteButtonsPanel);
+        
+        // === ACTION BUTTONS ===
         JPanel actionPanel = new JPanel(new FlowLayout());
         nextBattleButton = new JButton("Next Battle");
         nextBattleButton.addActionListener(e -> fetchBattle());
@@ -153,15 +198,16 @@ public class MainWindow extends JFrame {
         retryButton.setVisible(false);
         actionPanel.add(nextBattleButton);
         actionPanel.add(retryButton);
-        controlsPanel.add(actionPanel);
+        centerPanel.add(actionPanel);
         
-        bottomPanel.add(controlsPanel, BorderLayout.NORTH);
+        // Wrap in scroll pane
+        JScrollPane centerScroll = new JScrollPane(centerPanel);
+        centerScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        add(centerScroll, BorderLayout.CENTER);
         
-        // Leaderboard
+        // Bottom: Leaderboard
         leaderboardPanel = new LeaderboardPanel();
-        bottomPanel.add(leaderboardPanel, BorderLayout.CENTER);
-        
-        add(bottomPanel, BorderLayout.SOUTH);
+        add(leaderboardPanel, BorderLayout.SOUTH);
         
         updateUIState();
     }
@@ -174,11 +220,11 @@ public class MainWindow extends JFrame {
             try {
                 setStatus("Checking backend health...");
                 apiClient.health();
-                setStatus("Backend OK - Ready");
-                setState(State.READY_NO_BATTLE);
+                setStatus("Backend OK - Loading first battle...");
                 
-                // Auto-fetch first leaderboard
+                // Auto-fetch first leaderboard and battle
                 fetchLeaderboard();
+                fetchBattle();
             } catch (ArenaApiException e) {
                 logger.error("Health check failed", e);
                 if ("PROTOCOL_MISMATCH".equals(e.getErrorCode())) {
@@ -204,7 +250,7 @@ public class MainWindow extends JFrame {
                 SwingUtilities.invokeLater(() -> {
                     currentBattle = response.getBattle();
                     battleIdLabel.setText("Battle: " + currentBattle.getBattleId());
-                    battlePanel.displayBattle(currentBattle);
+                    displayBattle(currentBattle);
                     clearTags();
                     setStatus("Battle loaded - Vote now");
                     setState(State.BATTLE_LOADED_PENDING_VOTE);
@@ -216,6 +262,62 @@ public class MainWindow extends JFrame {
     }
     
     /**
+     * Display a battle.
+     */
+    private void displayBattle(BattleResponse.Battle battle) {
+        try {
+            // Parse and display top level
+            String topTilemap = battle.getTop().getLevelPayload().getTilemap();
+            char[][] topGrid = TilemapParser.parse(topTilemap);
+            topView.setTilemap(topGrid);
+            topLabel.setText("TOP LEVEL");
+            
+            // Parse and display bottom level
+            String bottomTilemap = battle.getBottom().getLevelPayload().getTilemap();
+            char[][] bottomGrid = TilemapParser.parse(bottomTilemap);
+            bottomView.setTilemap(bottomGrid);
+            bottomLabel.setText("BOTTOM LEVEL");
+            
+        } catch (Exception e) {
+            clearBattleDisplay();
+            throw new RuntimeException("Failed to display battle: " + e.getMessage(), e);
+        }
+    }
+    
+    /**
+     * Reveal generator names after voting.
+     */
+    private void revealGenerators() {
+        if (currentBattle == null) return;
+        
+        BattleResponse.Generator topGen = currentBattle.getTop().getGenerator();
+        String topGenId = topGen.getGeneratorId();
+        String topGenIdShort = topGenId.length() >= 8 ? topGenId.substring(0, 8) : topGenId;
+        topLabel.setText(String.format("TOP: %s v%s (ID: %s)", 
+            topGen.getName(), 
+            topGen.getVersion(),
+            topGenIdShort));
+        
+        BattleResponse.Generator bottomGen = currentBattle.getBottom().getGenerator();
+        String bottomGenId = bottomGen.getGeneratorId();
+        String bottomGenIdShort = bottomGenId.length() >= 8 ? bottomGenId.substring(0, 8) : bottomGenId;
+        bottomLabel.setText(String.format("BOTTOM: %s v%s (ID: %s)", 
+            bottomGen.getName(), 
+            bottomGen.getVersion(),
+            bottomGenIdShort));
+    }
+    
+    /**
+     * Clear battle display.
+     */
+    private void clearBattleDisplay() {
+        topView.clear();
+        bottomView.clear();
+        topLabel.setText("TOP LEVEL");
+        bottomLabel.setText("BOTTOM LEVEL");
+    }
+    
+    /**
      * Submit a vote.
      */
     private void vote(String result) {
@@ -223,8 +325,9 @@ public class MainWindow extends JFrame {
             return;
         }
         
-        List<String> selectedTags = getSelectedTags();
-        pendingVote = new VoteRequest(config.getSessionId(), currentBattle.getBattleId(), result, selectedTags);
+        List<String> selectedTopTags = getSelectedTags(topTagCheckboxes);
+        List<String> selectedBottomTags = getSelectedTags(bottomTagCheckboxes);
+        pendingVote = new VoteRequest(config.getSessionId(), currentBattle.getBattleId(), result, selectedTopTags, selectedBottomTags);
         
         setState(State.SUBMITTING_VOTE);
         setStatus("Submitting vote...");
@@ -235,11 +338,15 @@ public class MainWindow extends JFrame {
                     pendingVote.sessionId,
                     pendingVote.battleId,
                     pendingVote.result,
-                    pendingVote.tags,
+                    pendingVote.topTags,
+                    pendingVote.bottomTags,
                     new HashMap<>() // Empty telemetry for Phase 1
                 );
                 
                 SwingUtilities.invokeLater(() -> {
+                    // Reveal generator names after voting
+                    revealGenerators();
+                    
                     setStatus(String.format("Vote accepted! Vote ID: %s", response.getVoteId()));
                     setState(State.VOTED_SHOW_RESULT);
                     pendingVote = null;
@@ -276,11 +383,13 @@ public class MainWindow extends JFrame {
                     pendingVote.sessionId,
                     pendingVote.battleId,
                     pendingVote.result,
-                    pendingVote.tags,
+                    pendingVote.topTags,
+                    pendingVote.bottomTags,
                     new HashMap<>()
                 );
                 
                 SwingUtilities.invokeLater(() -> {
+                    revealGenerators();
                     setStatus(String.format("Vote accepted! Vote ID: %s", response.getVoteId()));
                     setState(State.VOTED_SHOW_RESULT);
                     pendingVote = null;
@@ -393,13 +502,16 @@ public class MainWindow extends JFrame {
         boolean canVote = currentState == State.BATTLE_LOADED_PENDING_VOTE;
         boolean canFetchBattle = currentState == State.READY_NO_BATTLE || currentState == State.VOTED_SHOW_RESULT;
         
-        leftButton.setEnabled(canVote);
-        rightButton.setEnabled(canVote);
+        topButton.setEnabled(canVote);
+        bottomButton.setEnabled(canVote);
         tieButton.setEnabled(canVote);
         skipButton.setEnabled(canVote);
         nextBattleButton.setEnabled(canFetchBattle);
         
-        for (JCheckBox cb : tagCheckboxes.values()) {
+        for (JCheckBox cb : topTagCheckboxes.values()) {
+            cb.setEnabled(canVote);
+        }
+        for (JCheckBox cb : bottomTagCheckboxes.values()) {
             cb.setEnabled(canVote);
         }
     }
@@ -422,9 +534,9 @@ public class MainWindow extends JFrame {
     /**
      * Get selected tags.
      */
-    private List<String> getSelectedTags() {
+    private List<String> getSelectedTags(Map<String, JCheckBox> checkboxes) {
         List<String> selected = new ArrayList<>();
-        for (Map.Entry<String, JCheckBox> entry : tagCheckboxes.entrySet()) {
+        for (Map.Entry<String, JCheckBox> entry : checkboxes.entrySet()) {
             if (entry.getValue().isSelected()) {
                 selected.add(entry.getKey());
             }
@@ -436,29 +548,31 @@ public class MainWindow extends JFrame {
      * Clear tag selection.
      */
     private void clearTags() {
-        for (JCheckBox cb : tagCheckboxes.values()) {
+        for (JCheckBox cb : topTagCheckboxes.values()) {
+            cb.setSelected(false);
+        }
+        for (JCheckBox cb : bottomTagCheckboxes.values()) {
             cb.setSelected(false);
         }
     }
     
     /**
-     * Enforce max tag count.
+     * Enforce max tag count for a specific checkbox map.
      */
-    private void enforceMaxTags() {
-        List<String> selected = getSelectedTags();
+    private void enforceMaxTags(Map<String, JCheckBox> checkboxes) {
+        List<String> selected = getSelectedTags(checkboxes);
         if (selected.size() > MAX_TAGS) {
             // Find the checkbox that was just selected and deselect it
-            for (Map.Entry<String, JCheckBox> entry : tagCheckboxes.entrySet()) {
+            for (Map.Entry<String, JCheckBox> entry : checkboxes.entrySet()) {
                 if (entry.getValue().isSelected() && !selected.subList(0, MAX_TAGS).contains(entry.getKey())) {
                     entry.getValue().setSelected(false);
                     break;
                 }
             }
             JOptionPane.showMessageDialog(this, 
-                "Maximum " + MAX_TAGS + " tags allowed", 
+                "Maximum " + MAX_TAGS + " tags allowed per level", 
                 "Too Many Tags", 
                 JOptionPane.WARNING_MESSAGE);
         }
     }
 }
-

@@ -19,8 +19,8 @@ PROTOCOL_VERSION = "arena/v0"
 # Enums
 class VoteResult(str, Enum):
     """Vote result enum."""
-    LEFT = "LEFT"
-    RIGHT = "RIGHT"
+    TOP = "TOP"
+    BOTTOM = "BOTTOM"
     TIE = "TIE"
     SKIP = "SKIP"
 
@@ -39,7 +39,7 @@ class ErrorCode(str, Enum):
 
 class PlayOrder(str, Enum):
     """Battle presentation play order."""
-    LEFT_THEN_RIGHT = "LEFT_THEN_RIGHT"
+    TOP_THEN_BOTTOM = "TOP_THEN_BOTTOM"
 
 
 class LevelFormatType(str, Enum):
@@ -76,8 +76,8 @@ class SideTelemetry(BaseModel):
 
 class Telemetry(BaseModel):
     """Telemetry data for both sides of a battle."""
-    left: Optional[SideTelemetry] = Field(default=None, description="Telemetry for left level")
-    right: Optional[SideTelemetry] = Field(default=None, description="Telemetry for right level")
+    top: Optional[SideTelemetry] = Field(default=None, description="Telemetry for top level")
+    bottom: Optional[SideTelemetry] = Field(default=None, description="Telemetry for bottom level")
 
 
 class VoteRequest(BaseModel):
@@ -85,8 +85,9 @@ class VoteRequest(BaseModel):
     client_version: str = Field(..., description="Client version string")
     session_id: str = Field(..., description="Client-generated UUID matching the battle session")
     battle_id: str = Field(..., description="Battle ID from the battle response")
-    result: VoteResult = Field(..., description="Vote outcome: LEFT, RIGHT, TIE, or SKIP")
-    tags: Optional[List[str]] = Field(default=None, description="Optional tags describing the levels")
+    result: VoteResult = Field(..., description="Vote outcome: TOP, BOTTOM, TIE, or SKIP")
+    top_tags: Optional[List[str]] = Field(default=None, description="Optional tags describing the top level")
+    bottom_tags: Optional[List[str]] = Field(default=None, description="Optional tags describing the bottom level")
     telemetry: Optional[Telemetry] = Field(default=None, description="Optional gameplay telemetry")
 
 
@@ -142,8 +143,8 @@ class Battle(BaseModel):
     issued_at_utc: str = Field(..., description="ISO timestamp when battle was issued")
     expires_at_utc: Optional[str] = Field(default=None, description="ISO timestamp when battle expires (null = no expiry)")
     presentation: BattlePresentation = Field(..., description="Presentation instructions")
-    left: BattleSide = Field(..., description="Left side level and generator")
-    right: BattleSide = Field(..., description="Right side level and generator")
+    top: BattleSide = Field(..., description="Top level and generator")
+    bottom: BattleSide = Field(..., description="Bottom level and generator")
 
 
 class BattleResponse(BaseModel):
