@@ -1,17 +1,19 @@
-# PCG Arena Java Client - Phase 1
+# PCG Arena Java Client - Phase 2
 
-**Version:** 0.1.0  
+**Version:** 0.2.0  
 **Protocol:** arena/v0  
-**Status:** Phase 1 Implementation Complete
+**Status:** Phase 2 Implementation Complete
 
 ## Overview
 
-This is a Java desktop client for the PCG Arena system. Phase 1 implements a static battle viewer that allows you to:
+This is a Java desktop client for the PCG Arena system. Phase 2 implements full gameplay integration that allows you to:
 
-- View two procedurally generated levels side-by-side
-- Vote on which level is better (LEFT/RIGHT/TIE/SKIP)
+- **Play** two procedurally generated levels sequentially
+- Experience full Mario gameplay mechanics (jump, run, enemies, powerups)
+- Vote on which level is better (TOP/BOTTOM/TIE/SKIP)
 - Tag levels with descriptive labels
 - View the leaderboard and rating changes
+- Submit rich telemetry data for research
 
 ## Requirements
 
@@ -47,15 +49,28 @@ gradlew.bat run
 
 The application window will open automatically.
 
-### 3. Use the Client
+### 3. Use the Client (Phase 2)
 
 1. The client performs a health check on startup
 2. Click **"Next Battle"** to fetch a battle
-3. View the two levels displayed side-by-side
-4. Optionally select up to 3 tags
-5. Click one of the vote buttons: **Left Better**, **Right Better**, **Tie**, or **Skip**
+3. **Play Top Level**:
+   - Press **SPACE** in the top panel to start
+   - Use Arrow Keys to move, **S** to jump, **A** to run/fire
+   - Play until you win, die, or time runs out
+4. **Play Bottom Level**:
+   - Press **SPACE** in the bottom panel to start
+   - Play the second level with the same controls
+5. **Vote**: After playing both levels
+   - Click: **Top Better**, **Bottom Better**, **Tie**, or **Skip**
+   - Optionally select up to 3 tags per level
 6. View the rating changes and updated leaderboard
 7. Repeat!
+
+**Controls:**
+- Arrow Keys: Move left/right, duck
+- S: Jump (hold for higher jump)
+- A: Run / Shoot fireballs (when Fire Mario)
+- SPACE: Start level (when waiting)
 
 ## Configuration
 
@@ -169,22 +184,37 @@ The client handles various error scenarios:
 ✅ **Idempotent vote replay** - Backend handles duplicate votes safely  
 ✅ **Persistence visible** - Votes persist across backend restarts
 
-## Known Limitations (Phase 1)
+## Known Limitations (Phase 2)
 
-- No gameplay - levels are static visualizations only
-- No telemetry - empty object sent in Phase 1
-- Tile rendering is simple colored rectangles
-- No scrolling camera - entire level shown in scrollable panel
-- Small tile size (4px) to fit wide levels
+- No level restart - you play each level once per battle
+- No replay/spectate mode - cannot watch previous plays
+- No AI agent integration - human play only
+- Timer is fixed at 200 seconds per level
+- Cannot pause during gameplay
 
-## Next Steps (Phase 2)
+## Phase 2 Features
 
-Phase 2 will integrate actual gameplay:
+✅ **Full Mario gameplay mechanics**
+✅ **Sequential level play (top then bottom)**
+✅ **Rich telemetry collection** (18+ metrics per level)
+✅ **SPACE to start** each level
+✅ **Classic controls** (Arrow Keys, S, A)
+✅ **Enemies, powerups, physics**
+✅ **30 FPS smooth gameplay**
 
-- Play left level, then right level
-- Collect telemetry (deaths, completion, duration, etc.)
-- Submit vote with rich telemetry data
-- Same protocol and API, enhanced client experience
+## Gameplay Guide
+
+For detailed information about controls, mechanics, enemies, and powerups, see:
+
+**[GAMEPLAY.md](GAMEPLAY.md)** - Complete Mario gameplay guide
+
+Topics covered:
+- Controls and movement
+- Enemies and how to defeat them
+- Powerups (Mushroom, Fire Flower, etc.)
+- Scoring and voting guidelines
+- Phase 2 gameplay flow
+- Troubleshooting gameplay issues
 
 ## Troubleshooting
 

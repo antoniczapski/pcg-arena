@@ -33,7 +33,12 @@ public class MainWindow extends JFrame {
     private enum State {
         STARTING,
         READY_NO_BATTLE,
-        BATTLE_LOADED_PENDING_VOTE,
+        BATTLE_LOADED_WAITING_TOP,      // Phase 2: Waiting for user to press SPACE on top level
+        PLAYING_TOP,                     // Phase 2: Playing top level
+        TOP_FINISHED_WAITING_BOTTOM,     // Phase 2: Top finished, waiting for SPACE on bottom
+        PLAYING_BOTTOM,                  // Phase 2: Playing bottom level
+        BOTH_FINISHED_READY_TO_VOTE,    // Phase 2: Both levels played, ready to vote
+        BATTLE_LOADED_PENDING_VOTE,      // Phase 1: Static view (deprecated)
         SUBMITTING_VOTE,
         VOTED_SHOW_RESULT,
         ERROR_RECOVERABLE,
@@ -50,10 +55,16 @@ public class MainWindow extends JFrame {
     private JLabel sessionLabel;
     private JLabel battleIdLabel;
     
-    private TilemapView topView;
-    private TilemapView bottomView;
+    // Phase 2: Gameplay panels instead of static views
+    private GameplayPanel topGameplayPanel;
+    private GameplayPanel bottomGameplayPanel;
     private JLabel topLabel;
     private JLabel bottomLabel;
+    private JLabel controlsLabel;  // Phase 2: Show controls
+    
+    // Phase 2: Telemetry storage
+    private LevelPlayResult topPlayResult;
+    private LevelPlayResult bottomPlayResult;
     
     private LeaderboardPanel leaderboardPanel;
     
@@ -117,18 +128,34 @@ public class MainWindow extends JFrame {
         JPanel centerPanel = new JPanel();
         centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
         
-        // === TOP LEVEL ===
+        // === CONTROLS LABEL === (Phase 2)
+        controlsLabel = new JLabel("Controls: Arrow Keys = Move, S = Jump, A = Run/Fire", SwingConstants.CENTER);
+        controlsLabel.setFont(new Font("SansSerif", Font.BOLD, 14));
+        centerPanel.add(controlsLabel);
+        centerPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+        
+        // === TOP LEVEL === (Phase 2: GameplayPanel)
         JPanel topLevelPanel = new JPanel(new BorderLayout());
         topLabel = new JLabel("TOP LEVEL", SwingConstants.CENTER);
         topLabel.setFont(new Font("SansSerif", Font.BOLD, 12));
-        topView = new TilemapView();
-        JScrollPane topScroll = new JScrollPane(topView, 
-            JScrollPane.VERTICAL_SCROLLBAR_NEVER,
-            JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        topScroll.setPreferredSize(new Dimension(800, 80));
+        topGameplayPanel = new GameplayPanel();
         topLevelPanel.add(topLabel, BorderLayout.NORTH);
-        topLevelPanel.add(topScroll, BorderLayout.CENTER);
+        topLevelPanel.add(topGameplayPanel, BorderLayout.CENTER);
         centerPanel.add(topLevelPanel);
+        
+        // Add property change listener for top level finish
+        topGameplayPanel.addPropertyChangeListener("gameFinished", evt -> {
+            topPlayResult = LevelPlayResult.fromMarioResult(topGameplayPanel.getResult());
+            setState(State.TOP_FINISHED_WAITING_BOTTOM);
+            // Update labels and focus
+            topLabel.setText("TOP LEVEL (1/2) - Finished!");
+            bottomLabel.setText("BOTTOM LEVEL (2/2) - Press SPACE to start");
+            setStatus("Top level finished! Press SPACE in bottom panel to play Level 2");
+            // Give focus to bottom panel so SPACE works
+            SwingUtilities.invokeLater(() -> {
+                bottomGameplayPanel.requestFocusInWindow();
+            });
+        });
         
         // === TOP LEVEL TAGS ===
         JPanel topTagPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -145,18 +172,36 @@ public class MainWindow extends JFrame {
         // Add spacing
         centerPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         
-        // === BOTTOM LEVEL ===
+        // === BOTTOM LEVEL === (Phase 2: GameplayPanel)
         JPanel bottomLevelPanel = new JPanel(new BorderLayout());
         bottomLabel = new JLabel("BOTTOM LEVEL", SwingConstants.CENTER);
         bottomLabel.setFont(new Font("SansSerif", Font.BOLD, 12));
-        bottomView = new TilemapView();
-        JScrollPane bottomScroll = new JScrollPane(bottomView,
-            JScrollPane.VERTICAL_SCROLLBAR_NEVER,
-            JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        bottomScroll.setPreferredSize(new Dimension(800, 80));
+        bottomGameplayPanel = new GameplayPanel();
         bottomLevelPanel.add(bottomLabel, BorderLayout.NORTH);
-        bottomLevelPanel.add(bottomScroll, BorderLayout.CENTER);
+        bottomLevelPanel.add(bottomGameplayPanel, BorderLayout.CENTER);
         centerPanel.add(bottomLevelPanel);
+        
+        // Add property change listener for bottom level finish
+        bottomGameplayPanel.addPropertyChangeListener("gameFinished", evt -> {
+            bottomPlayResult = LevelPlayResult.fromMarioResult(bottomGameplayPanel.getResult());
+            
+            // Check if top was played - if not, something went wrong (bottom started first)
+            if (topPlayResult == null && topGameplayPanel.getState() == GameplayPanel.State.WAITING_TO_START) {
+                // Bottom started before top - this shouldn't happen, but recover by starting top
+                setState(State.BATTLE_LOADED_WAITING_TOP);
+                bottomLabel.setText("BOTTOM LEVEL (2/2) - Wait for top level");
+                topLabel.setText("TOP LEVEL (1/2) - Press SPACE to start");
+                setStatus("Top level not played yet! Press SPACE in top panel to play Level 1");
+                SwingUtilities.invokeLater(() -> {
+                    topGameplayPanel.requestFocusInWindow();
+                });
+            } else {
+                // Normal flow - both levels finished
+                setState(State.BOTH_FINISHED_READY_TO_VOTE);
+                bottomLabel.setText("BOTTOM LEVEL (2/2) - Finished!");
+                setStatus("Both levels finished! Vote now");
+            }
+        });
         
         // === BOTTOM LEVEL TAGS ===
         JPanel bottomTagPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -252,8 +297,12 @@ public class MainWindow extends JFrame {
                     battleIdLabel.setText("Battle: " + currentBattle.getBattleId());
                     displayBattle(currentBattle);
                     clearTags();
-                    setStatus("Battle loaded - Vote now");
-                    setState(State.BATTLE_LOADED_PENDING_VOTE);
+                    // Phase 2: Reset telemetry
+                    topPlayResult = null;
+                    bottomPlayResult = null;
+                    // Phase 2: Transition to waiting for top level play
+                    setStatus("Press SPACE in top panel to play Level 1");
+                    setState(State.BATTLE_LOADED_WAITING_TOP);
                 });
             } catch (ArenaApiException e) {
                 SwingUtilities.invokeLater(() -> handleApiError(e, "fetch battle"));
@@ -262,21 +311,24 @@ public class MainWindow extends JFrame {
     }
     
     /**
-     * Display a battle.
+     * Display a battle (Phase 2: Load into GameplayPanels).
      */
     private void displayBattle(BattleResponse.Battle battle) {
         try {
-            // Parse and display top level
-            String topTilemap = battle.getTop().getLevelPayload().getTilemap();
-            char[][] topGrid = TilemapParser.parse(topTilemap);
-            topView.setTilemap(topGrid);
-            topLabel.setText("TOP LEVEL");
-            
-            // Parse and display bottom level
+            // Load bottom level first (without focus) to avoid focus race
             String bottomTilemap = battle.getBottom().getLevelPayload().getTilemap();
-            char[][] bottomGrid = TilemapParser.parse(bottomTilemap);
-            bottomView.setTilemap(bottomGrid);
-            bottomLabel.setText("BOTTOM LEVEL");
+            bottomGameplayPanel.loadLevel(bottomTilemap, false);
+            bottomLabel.setText("BOTTOM LEVEL (2/2) - Wait for top level to finish");
+            
+            // Load top level last WITH focus - this ensures top panel gets focus
+            String topTilemap = battle.getTop().getLevelPayload().getTilemap();
+            topGameplayPanel.loadLevel(topTilemap, true);
+            topLabel.setText("TOP LEVEL (1/2) - Press SPACE to start");
+            
+            // Ensure top panel has focus (double-check)
+            SwingUtilities.invokeLater(() -> {
+                topGameplayPanel.requestFocusInWindow();
+            });
             
         } catch (Exception e) {
             clearBattleDisplay();
@@ -308,11 +360,10 @@ public class MainWindow extends JFrame {
     }
     
     /**
-     * Clear battle display.
+     * Clear battle display (Phase 2: No-op, panels reset on load).
      */
     private void clearBattleDisplay() {
-        topView.clear();
-        bottomView.clear();
+        // Phase 2: GameplayPanel resets when loadLevel is called
         topLabel.setText("TOP LEVEL");
         bottomLabel.setText("BOTTOM LEVEL");
     }
@@ -334,13 +385,28 @@ public class MainWindow extends JFrame {
         
         new Thread(() -> {
             try {
+                // Phase 2: Build telemetry
+                Map<String, Object> telemetry = new HashMap<>();
+                
+                Map<String, Object> topTelemetry = new HashMap<>();
+                if (topPlayResult != null) {
+                    topPlayResult.addToTelemetry(topTelemetry);
+                }
+                telemetry.put("top", topTelemetry);
+                
+                Map<String, Object> bottomTelemetry = new HashMap<>();
+                if (bottomPlayResult != null) {
+                    bottomPlayResult.addToTelemetry(bottomTelemetry);
+                }
+                telemetry.put("bottom", bottomTelemetry);
+                
                 VoteResponse response = apiClient.submitVote(
                     pendingVote.sessionId,
                     pendingVote.battleId,
                     pendingVote.result,
                     pendingVote.topTags,
                     pendingVote.bottomTags,
-                    new HashMap<>() // Empty telemetry for Phase 1
+                    telemetry  // Phase 2: Include telemetry
                 );
                 
                 SwingUtilities.invokeLater(() -> {
@@ -379,13 +445,28 @@ public class MainWindow extends JFrame {
         
         new Thread(() -> {
             try {
+                // Phase 2: Build telemetry
+                Map<String, Object> telemetry = new HashMap<>();
+                
+                Map<String, Object> topTelemetry = new HashMap<>();
+                if (topPlayResult != null) {
+                    topPlayResult.addToTelemetry(topTelemetry);
+                }
+                telemetry.put("top", topTelemetry);
+                
+                Map<String, Object> bottomTelemetry = new HashMap<>();
+                if (bottomPlayResult != null) {
+                    bottomPlayResult.addToTelemetry(bottomTelemetry);
+                }
+                telemetry.put("bottom", bottomTelemetry);
+                
                 VoteResponse response = apiClient.submitVote(
                     pendingVote.sessionId,
                     pendingVote.battleId,
                     pendingVote.result,
                     pendingVote.topTags,
                     pendingVote.bottomTags,
-                    new HashMap<>()
+                    telemetry  // Phase 2: Include telemetry
                 );
                 
                 SwingUtilities.invokeLater(() -> {
@@ -499,13 +580,15 @@ public class MainWindow extends JFrame {
      * Update UI based on current state.
      */
     private void updateUIState() {
-        boolean canVote = currentState == State.BATTLE_LOADED_PENDING_VOTE;
+        // Phase 2: Can vote when both levels are finished
+        boolean canVote = currentState == State.BOTH_FINISHED_READY_TO_VOTE || 
+                          currentState == State.BATTLE_LOADED_PENDING_VOTE; // Phase 1 compatibility
         boolean canFetchBattle = currentState == State.READY_NO_BATTLE || currentState == State.VOTED_SHOW_RESULT;
         
         topButton.setEnabled(canVote);
         bottomButton.setEnabled(canVote);
         tieButton.setEnabled(canVote);
-        skipButton.setEnabled(canVote);
+        skipButton.setEnabled(true); // Skip always available
         nextBattleButton.setEnabled(canFetchBattle);
         
         for (JCheckBox cb : topTagCheckboxes.values()) {
