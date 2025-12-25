@@ -44,4 +44,5 @@ logs/
 # Environment variables
 .env
 .env.local
+/Mario-AI-Framework-PCG/
 
