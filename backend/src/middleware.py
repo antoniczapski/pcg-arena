@@ -67,12 +67,26 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         # Get status code
         status_code = response.status_code
         
-        # Log request details
-        logger.info(
+        # Extract session_id from request if present (for battles and votes)
+        session_id = None
+        if request.method == "POST":
+            try:
+                # Try to get session_id from request body if it was parsed
+                if hasattr(request.state, "session_id"):
+                    session_id = request.state.session_id
+            except:
+                pass
+        
+        # Log request details (S1-B4: Enhanced with session_id)
+        log_msg = (
             f"Request: method={request.method} path={request.url.path} "
             f"status_code={status_code} duration_ms={duration_ms:.2f} "
             f"request_id={request_id}"
         )
+        if session_id:
+            log_msg += f" session_id={session_id}"
+        
+        logger.info(log_msg)
         
         # Add correlation ID to response headers
         response.headers["X-Request-Id"] = request_id

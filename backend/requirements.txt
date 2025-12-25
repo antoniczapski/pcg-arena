@@ -8,6 +8,9 @@ uvicorn[standard]>=0.24.0,<1.0.0
 # Pydantic for data validation
 pydantic>=2.5.0,<3.0.0
 
+# Rate limiting
+slowapi>=0.1.9,<1.0.0
+
 # No additional DB drivers needed - sqlite3 is in Python stdlib
 
 # Testing dependencies

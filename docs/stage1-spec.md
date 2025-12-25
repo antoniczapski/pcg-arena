@@ -593,14 +593,9 @@ async def next_battle(request: Request):
 
 ### 5.3 Web Portal (Minimal)
 
-| ID | Task | Priority | Est. Hours | Description |
-|----|------|----------|------------|-------------|
-| **S1-W1** | Enhance HTML leaderboard | High | 2 | Better styling, mobile-friendly |
-| **S1-W2** | Add "Download Client" link | High | 1 | Link to GitHub release or direct download |
-| **S1-W3** | Add "How to Play" page | High | 2 | Instructions for testers |
-| **S1-W4** | Add "About" page | Low | 1 | Project description, credits |
+**Status:** SKIPPED - Not needed for Java client deployment
 
-**Total Web Portal: ~6 hours**
+All web portal tasks have been removed as they are not required for Stage 1 deployment with Java client. Future browser-based frontend will be implemented in later stages.
 
 ---
 
@@ -639,11 +634,10 @@ Authorization: Bearer ARENA_ADMIN_KEY
 
 | ID | Task | Priority | Est. Hours | Description |
 |----|------|----------|------------|-------------|
-| **S1-L1** | Import 100 levels per generator | Low | 2 | From Mario AI Framework |
-| **S1-L2** | Add new generators | Low | 2 | notchParam, ore, pattern generators |
-| **S1-L3** | Level validation script | Low | 2 | Verify all levels are playable |
+| **S1-L1** | Import 100 levels per generator | Low | 2 | From Mario AI Framework (genetic, hopper, notch) |
+| **S1-L2** | Add new generators | Low | 2 | Add 2-3 more generators from framework |
 
-**Total Levels: ~6 hours**
+**Total Levels: ~4 hours**
 
 ---
 
@@ -652,11 +646,11 @@ Authorization: Bearer ARENA_ADMIN_KEY
 | Category | Tasks | Total Hours |
 |----------|-------|-------------|
 | Backend changes | 5 | 8 |
-| Web portal | 4 | 6 |
+| Web portal | 0 | 0 |
 | Admin endpoints | 4 | 7 |
 | Backup system | 4 | 5 |
-| Level expansion | 3 | 6 |
-| **TOTAL** | **20** | **32 hours** |
+| Level expansion | 2 | 4 |
+| **TOTAL** | **15** | **24 hours** |
 
 ---
 

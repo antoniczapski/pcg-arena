@@ -17,12 +17,17 @@ import json
 import sqlite3
 import hashlib
 import math
+import time
 from datetime import datetime, timezone
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, Header, Depends
 from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.exceptions import HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 from config import load_config
 from db import init_connection, get_connection, run_migrations, import_generators, init_generator_ratings, import_levels, log_db_status, transaction
@@ -34,16 +39,16 @@ from models import (
     LeaderboardPreview, LeaderboardGeneratorPreview
 )
 
-# Configure logging
+# Load configuration first
+config = load_config()
+
+# Configure logging based on config
 logging.basicConfig(
-    level=logging.INFO,
+    level=getattr(logging, config.log_level, logging.INFO),
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     handlers=[logging.StreamHandler(sys.stdout)]
 )
 logger = logging.getLogger(__name__)
-
-# Load configuration
-config = load_config()
 
 # Allowed tags vocabulary (Stage 0)
 ALLOWED_TAGS = {
@@ -57,6 +62,30 @@ app = FastAPI(
     description="Pairwise rating platform for Mario PCG generators",
     version="0.1.0",
 )
+
+# S1-B1: Add CORS middleware for browser access
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=config.allowed_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# S1-B5: Set up rate limiter
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# Track server startup time for uptime
+startup_time = time.time()
+
+# Track request counts for monitoring
+request_counts = {
+    "total": 0,
+    "battles": 0,
+    "votes": 0,
+}
 
 # Register exception handlers for consistent error responses
 app.add_exception_handler(APIError, api_error_handler)
@@ -109,23 +138,53 @@ async def startup_event():
 @app.get("/health")
 async def health_check():
     """
-    Health check endpoint.
+    Health check endpoint (S1-B3: Enhanced for Stage 1).
     
-    Returns server status and protocol version.
+    Returns server status, protocol version, and monitoring metrics.
     """
+    conn = get_connection()
+    
+    # Calculate uptime
+    uptime_seconds = int(time.time() - startup_time)
+    
+    # Get battle and vote counts
+    cursor = conn.execute("SELECT COUNT(*) as count FROM battles")
+    battles_served = cursor.fetchone()["count"]
+    
+    cursor = conn.execute("SELECT COUNT(*) as count FROM votes")
+    votes_received = cursor.fetchone()["count"]
+    
+    # Get database size
+    import os
+    from pathlib import Path
+    db_path = Path(config.db_path)
+    db_size_bytes = db_path.stat().st_size if db_path.exists() else 0
+    
     return JSONResponse({
         "protocol_version": "arena/v0",
         "status": "ok",
         "server_time_utc": datetime.now(timezone.utc).isoformat(),
         "build": {
             "backend_version": "0.1.0"
+        },
+        "metrics": {
+            "uptime_seconds": uptime_seconds,
+            "requests_total": request_counts["total"],
+            "battles_served": battles_served,
+            "votes_received": votes_received,
+            "db_size_bytes": db_size_bytes,
+        },
+        "config": {
+            "public_url": config.public_url,
+            "debug_mode": config.debug,
         }
     })
 
 
 @app.post("/v1/battles:next", response_model=BattleResponse)
 @app.post("/v1/battles%3Anext", response_model=BattleResponse)  # Handle URL-encoded version for PowerShell
-async def fetch_next_battle(request: BattleRequest):
+@limiter.limit("10/minute")  # S1-B5: Rate limiting
+async def fetch_next_battle(battle_request: BattleRequest, request: Request):
     """
     Fetch the next battle: two levels from different generators.
     
@@ -133,11 +192,14 @@ async def fetch_next_battle(request: BattleRequest):
     
     Note: Registered with both `:` and `%3A` to handle PowerShell Invoke-RestMethod URL encoding.
     """
+    request_counts["total"] += 1
+    request_counts["battles"] += 1
+    
     conn = get_connection()
     
     # 1. Validate session_id is present and looks like a UUID
     try:
-        uuid.UUID(request.session_id)
+        uuid.UUID(battle_request.session_id)
     except (ValueError, AttributeError):
         raise_api_error(
             ErrorCode.INVALID_PAYLOAD,
@@ -258,7 +320,7 @@ async def fetch_next_battle(request: BattleRequest):
                 """,
                 (
                     battle_id,
-                    request.session_id,
+                    battle_request.session_id,
                     now_utc,
                     None,  # expires_at_utc = NULL (no expiry for Stage 0)
                     "ISSUED",
@@ -715,12 +777,16 @@ def insert_rating_event(
 
 
 @app.post("/v1/votes", response_model=VoteResponse)
-async def submit_vote(request: VoteRequest):
+@limiter.limit("20/minute")  # S1-B5: Rate limiting (higher limit for votes)
+async def submit_vote(vote_request: VoteRequest, request: Request):
     """
     Submit a vote for a battle.
     
     Accepts vote outcome, ensures idempotency, and atomically updates database and ratings.
     """
+    request_counts["total"] += 1
+    request_counts["votes"] += 1
+    
     conn = get_connection()
     now_utc = datetime.now(timezone.utc).isoformat()
     
@@ -729,8 +795,8 @@ async def submit_vote(request: VoteRequest):
     # result is validated by VoteResult enum
     
     # Validate tags vocabulary for left level
-    if request.left_tags:
-        invalid_tags = [tag for tag in request.left_tags if tag not in ALLOWED_TAGS]
+    if vote_request.left_tags:
+        invalid_tags = [tag for tag in vote_request.left_tags if tag not in ALLOWED_TAGS]
         if invalid_tags:
             raise_api_error(
                 ErrorCode.INVALID_TAG,
@@ -741,8 +807,8 @@ async def submit_vote(request: VoteRequest):
             )
     
     # Validate tags vocabulary for right level
-    if request.right_tags:
-        invalid_tags = [tag for tag in request.right_tags if tag not in ALLOWED_TAGS]
+    if vote_request.right_tags:
+        invalid_tags = [tag for tag in vote_request.right_tags if tag not in ALLOWED_TAGS]
         if invalid_tags:
             raise_api_error(
                 ErrorCode.INVALID_TAG,
@@ -753,15 +819,15 @@ async def submit_vote(request: VoteRequest):
             )
     
     # Prepare telemetry JSON
-    telemetry_dict = request.telemetry.model_dump() if request.telemetry else {}
+    telemetry_dict = vote_request.telemetry.model_dump() if vote_request.telemetry else {}
     
     # Compute canonical payload hash for idempotency
-    left_tags_list = request.left_tags if request.left_tags else []
-    right_tags_list = request.right_tags if request.right_tags else []
+    left_tags_list = vote_request.left_tags if vote_request.left_tags else []
+    right_tags_list = vote_request.right_tags if vote_request.right_tags else []
     payload_hash = compute_payload_hash(
-        request.battle_id,
-        request.session_id,
-        request.result.value,
+        vote_request.battle_id,
+        vote_request.session_id,
+        vote_request.result.value,
         left_tags_list,
         right_tags_list,
         telemetry_dict
@@ -773,14 +839,14 @@ async def submit_vote(request: VoteRequest):
             # 1. Load battle by battle_id
             cursor.execute(
                 "SELECT * FROM battles WHERE battle_id = ?",
-                (request.battle_id,)
+                (vote_request.battle_id,)
             )
             battle_row = cursor.fetchone()
             
             if not battle_row:
                 raise_api_error(
                     ErrorCode.BATTLE_NOT_FOUND,
-                    f"Battle with ID '{request.battle_id}' not found",
+                    f"Battle with ID '{vote_request.battle_id}' not found",
                     retryable=False,
                     status_code=404
                 )
@@ -796,7 +862,7 @@ async def submit_vote(request: VoteRequest):
                     # Check if vote exists (idempotency path)
                     cursor.execute(
                         "SELECT vote_id, payload_hash FROM votes WHERE battle_id = ?",
-                        (request.battle_id,)
+                        (vote_request.battle_id,)
                     )
                     existing_vote = cursor.fetchone()
                     
@@ -805,7 +871,7 @@ async def submit_vote(request: VoteRequest):
                         if stored_hash == payload_hash:
                             # Idempotent replay: return existing vote
                             vote_id = existing_vote["vote_id"]
-                            logger.info(f"Idempotent vote replay: battle_id={request.battle_id} vote_id={vote_id}")
+                            logger.info(f"Idempotent vote replay: battle_id={vote_request.battle_id} vote_id={vote_id}")
                             
                             # Fetch leaderboard for response
                             cursor.execute(
@@ -848,16 +914,16 @@ async def submit_vote(request: VoteRequest):
                             # Different payload for same battle
                             raise_api_error(
                                 ErrorCode.DUPLICATE_VOTE_CONFLICT,
-                                f"Vote already exists for battle '{request.battle_id}' with different payload",
+                                f"Vote already exists for battle '{vote_request.battle_id}' with different payload",
                                 retryable=False,
                                 status_code=409,
-                                details={"battle_id": request.battle_id, "existing_vote_id": existing_vote["vote_id"]}
+                                details={"battle_id": vote_request.battle_id, "existing_vote_id": existing_vote["vote_id"]}
                             )
                     else:
                         # COMPLETED but no vote? This shouldn't happen, but handle gracefully
                         raise_api_error(
                             ErrorCode.BATTLE_ALREADY_VOTED,
-                            f"Battle '{request.battle_id}' is COMPLETED but no vote found (inconsistent state)",
+                            f"Battle '{vote_request.battle_id}' is COMPLETED but no vote found (inconsistent state)",
                             retryable=False,
                             status_code=409
                         )
@@ -865,16 +931,16 @@ async def submit_vote(request: VoteRequest):
                     # EXPIRED or other status
                     raise_api_error(
                         ErrorCode.BATTLE_ALREADY_VOTED,
-                        f"Battle '{request.battle_id}' has status '{battle_status}' and cannot be voted on",
+                        f"Battle '{vote_request.battle_id}' has status '{battle_status}' and cannot be voted on",
                         retryable=False,
                         status_code=409
                     )
             
             # 3. Check session_id matches
-            if battle_session_id != request.session_id:
+            if battle_session_id != vote_request.session_id:
                 raise_api_error(
                     ErrorCode.INVALID_PAYLOAD,
-                    f"Session ID mismatch: battle session_id='{battle_session_id}' but request session_id='{request.session_id}'",
+                    f"Session ID mismatch: battle session_id='{battle_session_id}' but request session_id='{vote_request.session_id}'",
                     retryable=False,
                     status_code=400
                 )
@@ -884,7 +950,7 @@ async def submit_vote(request: VoteRequest):
             # 5. Check if vote already exists (shouldn't for ISSUED battle, but check anyway)
             cursor.execute(
                 "SELECT vote_id, payload_hash FROM votes WHERE battle_id = ?",
-                (request.battle_id,)
+                (vote_request.battle_id,)
             )
             existing_vote = cursor.fetchone()
             
@@ -893,11 +959,11 @@ async def submit_vote(request: VoteRequest):
                 if stored_hash == payload_hash:
                     # Idempotent replay
                     vote_id = existing_vote["vote_id"]
-                    logger.info(f"Idempotent vote replay: battle_id={request.battle_id} vote_id={vote_id}")
+                    logger.info(f"Idempotent vote replay: battle_id={vote_request.battle_id} vote_id={vote_id}")
                 else:
                     raise_api_error(
                         ErrorCode.DUPLICATE_VOTE_CONFLICT,
-                        f"Vote already exists for battle '{request.battle_id}' with different payload",
+                        f"Vote already exists for battle '{vote_request.battle_id}' with different payload",
                         retryable=False,
                         status_code=409
                     )
@@ -917,10 +983,10 @@ async def submit_vote(request: VoteRequest):
                     """,
                     (
                         vote_id,
-                        request.battle_id,
-                        request.session_id,
+                        vote_request.battle_id,
+                        vote_request.session_id,
                         now_utc,
-                        request.result.value,
+                        vote_request.result.value,
                         left_tags_json,
                         right_tags_json,
                         telemetry_json,
@@ -935,7 +1001,7 @@ async def submit_vote(request: VoteRequest):
                     SET status = 'COMPLETED', updated_at_utc = ?
                     WHERE battle_id = ?
                     """,
-                    (now_utc, request.battle_id)
+                    (now_utc, vote_request.battle_id)
                 )
                 
                 # 8. Update ratings using Elo rating system
@@ -943,7 +1009,7 @@ async def submit_vote(request: VoteRequest):
                     cursor,
                     left_generator_id,
                     right_generator_id,
-                    request.result.value,
+                    vote_request.result.value,
                     config.k_factor,
                     now_utc,
                     config.initial_rating
@@ -953,10 +1019,10 @@ async def submit_vote(request: VoteRequest):
                 insert_rating_event(
                     cursor,
                     vote_id,
-                    request.battle_id,
+                    vote_request.battle_id,
                     left_generator_id,
                     right_generator_id,
-                    request.result.value,
+                    vote_request.result.value,
                     delta_left,
                     delta_right,
                     now_utc
@@ -991,8 +1057,8 @@ async def submit_vote(request: VoteRequest):
             last_update = last_update_row["last_update"] if last_update_row["last_update"] else now_utc
             
             logger.info(
-                f"Vote accepted: vote_id={vote_id} battle_id={request.battle_id} "
-                f"result={request.result.value} left_tags={left_tags_list} right_tags={right_tags_list}"
+                f"Vote accepted: vote_id={vote_id} battle_id={vote_request.battle_id} "
+                f"result={vote_request.result.value} left_tags={left_tags_list} right_tags={right_tags_list}"
             )
             
             return VoteResponse(
@@ -1537,6 +1603,338 @@ async def debug_votes(limit: int = 10):
         "count": len(votes),
         "limit": limit,
     })
+
+
+# S1-A: Admin API endpoints (protected by admin key)
+
+def verify_admin_key(authorization: str = Header(None)) -> bool:
+    """
+    Verify admin API key from Authorization header.
+    
+    Args:
+        authorization: Authorization header value (format: "Bearer <key>")
+    
+    Returns:
+        True if key is valid
+    
+    Raises:
+        APIError if key is missing or invalid
+    """
+    if not config.admin_key:
+        raise_api_error(
+            ErrorCode.INTERNAL_ERROR,
+            "Admin endpoints are disabled. Set ARENA_ADMIN_KEY to enable.",
+            retryable=False,
+            status_code=403
+        )
+    
+    if not authorization:
+        raise_api_error(
+            ErrorCode.INVALID_PAYLOAD,
+            "Missing Authorization header. Use: Authorization: Bearer <admin_key>",
+            retryable=False,
+            status_code=401
+        )
+    
+    # Parse "Bearer <token>" format
+    parts = authorization.split()
+    if len(parts) != 2 or parts[0].lower() != "bearer":
+        raise_api_error(
+            ErrorCode.INVALID_PAYLOAD,
+            "Invalid Authorization header format. Use: Authorization: Bearer <admin_key>",
+            retryable=False,
+            status_code=401
+        )
+    
+    provided_key = parts[1]
+    if provided_key != config.admin_key:
+        raise_api_error(
+            ErrorCode.INVALID_PAYLOAD,
+            "Invalid admin key",
+            retryable=False,
+            status_code=403
+        )
+    
+    return True
+
+
+@app.post("/admin/generators/{generator_id}/disable")
+async def admin_disable_generator(generator_id: str, is_admin: bool = Depends(verify_admin_key)):
+    """
+    S1-A1: Disable a generator from matchmaking.
+    
+    Sets is_active = 0 for the specified generator, removing it from battle selection.
+    """
+    conn = get_connection()
+    now_utc = datetime.now(timezone.utc).isoformat()
+    
+    # Check if generator exists
+    cursor = conn.execute(
+        "SELECT generator_id, name, is_active FROM generators WHERE generator_id = ?",
+        (generator_id,)
+    )
+    gen = cursor.fetchone()
+    
+    if not gen:
+        raise_api_error(
+            ErrorCode.INVALID_PAYLOAD,
+            f"Generator '{generator_id}' not found",
+            retryable=False,
+            status_code=404
+        )
+    
+    if gen["is_active"] == 0:
+        return JSONResponse({
+            "protocol_version": "arena/v0",
+            "message": f"Generator '{generator_id}' is already disabled",
+            "generator_id": generator_id,
+            "name": gen["name"],
+            "is_active": False
+        })
+    
+    # Disable generator
+    try:
+        with transaction() as cursor:
+            cursor.execute(
+                "UPDATE generators SET is_active = 0, updated_at_utc = ? WHERE generator_id = ?",
+                (now_utc, generator_id)
+            )
+        
+        logger.info(f"Admin: Disabled generator '{generator_id}'")
+        
+        return JSONResponse({
+            "protocol_version": "arena/v0",
+            "message": f"Generator '{generator_id}' has been disabled",
+            "generator_id": generator_id,
+            "name": gen["name"],
+            "is_active": False
+        })
+    except Exception as e:
+        logger.error(f"Failed to disable generator '{generator_id}': {e}")
+        raise_api_error(
+            ErrorCode.INTERNAL_ERROR,
+            f"Failed to disable generator: {str(e)}",
+            retryable=True,
+            status_code=500
+        )
+
+
+@app.post("/admin/generators/{generator_id}/enable")
+async def admin_enable_generator(generator_id: str, is_admin: bool = Depends(verify_admin_key)):
+    """
+    S1-A1: Enable a generator for matchmaking.
+    
+    Sets is_active = 1 for the specified generator, including it in battle selection.
+    """
+    conn = get_connection()
+    now_utc = datetime.now(timezone.utc).isoformat()
+    
+    # Check if generator exists
+    cursor = conn.execute(
+        "SELECT generator_id, name, is_active FROM generators WHERE generator_id = ?",
+        (generator_id,)
+    )
+    gen = cursor.fetchone()
+    
+    if not gen:
+        raise_api_error(
+            ErrorCode.INVALID_PAYLOAD,
+            f"Generator '{generator_id}' not found",
+            retryable=False,
+            status_code=404
+        )
+    
+    if gen["is_active"] == 1:
+        return JSONResponse({
+            "protocol_version": "arena/v0",
+            "message": f"Generator '{generator_id}' is already enabled",
+            "generator_id": generator_id,
+            "name": gen["name"],
+            "is_active": True
+        })
+    
+    # Enable generator
+    try:
+        with transaction() as cursor:
+            cursor.execute(
+                "UPDATE generators SET is_active = 1, updated_at_utc = ? WHERE generator_id = ?",
+                (now_utc, generator_id)
+            )
+        
+        logger.info(f"Admin: Enabled generator '{generator_id}'")
+        
+        return JSONResponse({
+            "protocol_version": "arena/v0",
+            "message": f"Generator '{generator_id}' has been enabled",
+            "generator_id": generator_id,
+            "name": gen["name"],
+            "is_active": True
+        })
+    except Exception as e:
+        logger.error(f"Failed to enable generator '{generator_id}': {e}")
+        raise_api_error(
+            ErrorCode.INTERNAL_ERROR,
+            f"Failed to enable generator: {str(e)}",
+            retryable=True,
+            status_code=500
+        )
+
+
+@app.post("/admin/season/reset")
+async def admin_reset_season(is_admin: bool = Depends(verify_admin_key)):
+    """
+    S1-A2: Reset the season (ratings and battle history).
+    
+    WARNING: This operation:
+    - Resets all generator ratings to initial rating
+    - Clears wins/losses/ties/skips counters
+    - DOES NOT delete battles or votes (for audit trail)
+    
+    Returns count of generators reset.
+    """
+    conn = get_connection()
+    now_utc = datetime.now(timezone.utc).isoformat()
+    
+    try:
+        with transaction() as cursor:
+            # Reset all ratings
+            cursor.execute(
+                """
+                UPDATE ratings 
+                SET rating_value = ?,
+                    games_played = 0,
+                    wins = 0,
+                    losses = 0,
+                    ties = 0,
+                    skips = 0,
+                    updated_at_utc = ?
+                """,
+                (config.initial_rating, now_utc)
+            )
+            
+            count = cursor.rowcount
+        
+        logger.warning(f"Admin: Season reset - {count} generators reset to {config.initial_rating}")
+        
+        return JSONResponse({
+            "protocol_version": "arena/v0",
+            "message": f"Season reset complete. {count} generators reset to rating {config.initial_rating}",
+            "generators_reset": count,
+            "initial_rating": config.initial_rating,
+            "note": "Battle and vote history preserved for audit purposes"
+        })
+    except Exception as e:
+        logger.error(f"Failed to reset season: {e}")
+        raise_api_error(
+            ErrorCode.INTERNAL_ERROR,
+            f"Failed to reset season: {str(e)}",
+            retryable=True,
+            status_code=500
+        )
+
+
+@app.post("/admin/sessions/{session_id}/flag")
+async def admin_flag_session(session_id: str, reason: str = None, is_admin: bool = Depends(verify_admin_key)):
+    """
+    S1-A3: Flag a session for suspicious activity.
+    
+    Query parameters:
+    - reason: Optional reason for flagging
+    
+    Returns count of battles and votes associated with session.
+    Note: Stage 0 does not have a session flags table, so this just returns info for manual review.
+    """
+    conn = get_connection()
+    
+    # Check if session exists
+    cursor = conn.execute(
+        "SELECT COUNT(*) as count FROM battles WHERE session_id = ?",
+        (session_id,)
+    )
+    battle_count = cursor.fetchone()["count"]
+    
+    cursor = conn.execute(
+        "SELECT COUNT(*) as count FROM votes WHERE session_id = ?",
+        (session_id,)
+    )
+    vote_count = cursor.fetchone()["count"]
+    
+    if battle_count == 0 and vote_count == 0:
+        raise_api_error(
+            ErrorCode.INVALID_PAYLOAD,
+            f"Session '{session_id}' not found",
+            retryable=False,
+            status_code=404
+        )
+    
+    logger.warning(f"Admin: Flagged session '{session_id}' - Reason: {reason or 'Not specified'} - Battles: {battle_count}, Votes: {vote_count}")
+    
+    return JSONResponse({
+        "protocol_version": "arena/v0",
+        "message": f"Session '{session_id}' flagged for review",
+        "session_id": session_id,
+        "reason": reason,
+        "battle_count": battle_count,
+        "vote_count": vote_count,
+        "note": "Manual review required - session flagging table not implemented in Stage 0"
+    })
+
+
+@app.post("/admin/backup")
+async def admin_trigger_backup(is_admin: bool = Depends(verify_admin_key)):
+    """
+    S1-A4: Trigger a manual database backup.
+    
+    Copies the SQLite database file to the backup directory.
+    """
+    import shutil
+    from pathlib import Path
+    
+    try:
+        db_path = Path(config.db_path)
+        backup_dir = Path(config.backup_path)
+        
+        if not db_path.exists():
+            raise_api_error(
+                ErrorCode.INTERNAL_ERROR,
+                f"Database file not found: {config.db_path}",
+                retryable=False,
+                status_code=500
+            )
+        
+        # Create backup directory if it doesn't exist
+        backup_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Generate backup filename with timestamp
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+        backup_filename = f"arena_manual_{timestamp}.sqlite"
+        backup_path = backup_dir / backup_filename
+        
+        # Copy database file
+        shutil.copy2(db_path, backup_path)
+        
+        backup_size_bytes = backup_path.stat().st_size
+        backup_size_mb = backup_size_bytes / (1024 * 1024)
+        
+        logger.info(f"Admin: Manual backup created - {backup_filename} ({backup_size_mb:.2f} MB)")
+        
+        return JSONResponse({
+            "protocol_version": "arena/v0",
+            "message": "Backup created successfully",
+            "backup_filename": backup_filename,
+            "backup_path": str(backup_path),
+            "backup_size_bytes": backup_size_bytes,
+            "backup_size_mb": round(backup_size_mb, 2),
+            "timestamp": timestamp
+        })
+    except Exception as e:
+        logger.error(f"Failed to create backup: {e}")
+        raise_api_error(
+            ErrorCode.INTERNAL_ERROR,
+            f"Failed to create backup: {str(e)}",
+            retryable=True,
+            status_code=500
+        )
 
 
 def main():
