@@ -233,20 +233,28 @@ export class Mario extends MarioSprite {
 
     if (collide) {
       if (xa < 0) {
+        // Round to tile boundary: move left edge to tile boundary
         this.x = Math.floor((this.x - this.width) / 16) * 16 + this.width;
         this.xa = 0;
       }
       if (xa > 0) {
-        this.x = Math.floor((this.x + this.width) / 16 + 1) * 16 - this.width - 1;
+        // Round to tile boundary: move right edge to 1 pixel before next tile
+        // Java: (int) ((x + width) / 16 + 1) * 16 - width - 1
+        const rightEdge = this.x + this.width;
+        const nextTileRight = (Math.floor(rightEdge / 16) + 1) * 16;
+        this.x = nextTileRight - this.width - 1;
         this.xa = 0;
       }
       if (ya < 0) {
+        // Round to tile boundary: move top edge to tile boundary
         this.y = Math.floor((this.y - this.height) / 16) * 16 + this.height;
         this.jumpTime = 0;
         this.ya = 0;
       }
       if (ya > 0) {
-        this.y = Math.floor((this.y - 1) / 16 + 1) * 16 - 1;
+        // Round to tile boundary: move bottom to tile boundary
+        // Java: (int) ((y - 1) / 16 + 1) * 16 - 1
+        this.y = (Math.floor((this.y - 1) / 16) + 1) * 16 - 1;
         this.onGround = true;
       }
       return false;

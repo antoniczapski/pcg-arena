@@ -75,24 +75,37 @@ export class SpriteRenderer {
   }
 
   private renderMario(ctx: CanvasRenderingContext2D, mario: Mario, x: number, y: number): void {
+    // Mario's y is the bottom of the sprite
+    // Small Mario: 16x16 sprite, height=12, render at y-16
+    // Large Mario: 32x32 sprite, height=24, render at y-32
+    
     let sheetName = 'smallMario';
-    let offsetY = -12;
+    let spriteHeight = 16;
+    let offsetX = -8;
     
     if (mario.isFire) {
       sheetName = 'fireMario';
-      offsetY = -24;
+      spriteHeight = 32;
+      offsetX = -16;
     } else if (mario.isLarge) {
       sheetName = 'mario';
-      offsetY = -24;
+      spriteHeight = 32;
+      offsetX = -16;
     }
 
     const frameX = Math.floor(this.animationTick / 5) % 4;
     const frameY = mario.isDucking ? 1 : 0;
     
-    assetLoader.drawSprite(ctx, sheetName, frameX, frameY, x - 16, y + offsetY, mario.facing === -1);
+    // Render from top-left: x is center, y is bottom
+    assetLoader.drawSprite(ctx, sheetName, frameX, frameY, x + offsetX, y - spriteHeight, mario.facing === -1);
   }
 
   private renderEnemy(ctx: CanvasRenderingContext2D, enemy: Enemy, x: number, y: number): void {
+    // Enemy's y is the bottom of the sprite
+    // ALL enemy sprites in the sprite sheet are 32 pixels tall (16x32 tiles)
+    // The collision height (12 vs 24) is only for physics, not rendering
+    // originY = 31 means bottom pixel, so render at y - 32 to get top-left
+    
     let frameY = 0;
     
     // Determine sprite row based on type
@@ -116,40 +129,52 @@ export class SpriteRenderer {
     }
 
     const frameX = Math.floor(this.animationTick / 6) % 2;
-    const offsetY = enemy.height === 12 ? -12 : -24;
+    const ENEMY_SPRITE_HEIGHT = 32; // All enemies are 32 pixels tall in sprite sheet
     
-    assetLoader.drawSprite(ctx, 'enemies', frameX, frameY, x - 8, y + offsetY, enemy.facing === -1);
+    // Render from top-left: x is center, y is bottom
+    assetLoader.drawSprite(ctx, 'enemies', frameX, frameY, x - 8, y - ENEMY_SPRITE_HEIGHT, enemy.facing === -1);
   }
 
   private renderShell(ctx: CanvasRenderingContext2D, shell: Shell, x: number, y: number): void {
-    assetLoader.drawSprite(ctx, 'enemies', 2, 1, x - 8, y - 12);
+    // Shell uses enemy sprite sheet with originY = 31
+    // Enemy sprite sheet tiles are 16x32, so render at y - 32
+    assetLoader.drawSprite(ctx, 'enemies', 2, 1, x - 8, y - 32);
   }
 
   private renderFireball(ctx: CanvasRenderingContext2D, _fireball: Fireball, x: number, y: number): void {
+    // Fireball is 8x8 sprite
     const frameX = Math.floor(this.animationTick / 3) % 2;
-    assetLoader.drawSprite(ctx, 'particles', frameX, 0, x - 4, y - 4);
+    assetLoader.drawSprite(ctx, 'particles', frameX, 0, x - 4, y - 8);
   }
 
   private renderMushroom(ctx: CanvasRenderingContext2D, _mushroom: Mushroom, x: number, y: number): void {
-    assetLoader.drawSprite(ctx, 'items', 0, 0, x - 8, y - 12);
+    // Mushroom is 16x16 sprite, height=12
+    assetLoader.drawSprite(ctx, 'items', 0, 0, x - 8, y - 16);
   }
 
   private renderFireFlower(ctx: CanvasRenderingContext2D, _flower: FireFlower, x: number, y: number): void {
+    // Fire flower is 16x16 sprite, height=12
     const frameX = Math.floor(this.animationTick / 4) % 2;
-    assetLoader.drawSprite(ctx, 'items', frameX, 1, x - 8, y - 12);
+    assetLoader.drawSprite(ctx, 'items', frameX, 1, x - 8, y - 16);
   }
 
   private renderLifeMushroom(ctx: CanvasRenderingContext2D, _mushroom: LifeMushroom, x: number, y: number): void {
-    assetLoader.drawSprite(ctx, 'items', 1, 0, x - 8, y - 12);
+    // Life mushroom is 16x16 sprite, height=12
+    assetLoader.drawSprite(ctx, 'items', 1, 0, x - 8, y - 16);
   }
 
   private renderFlowerEnemy(ctx: CanvasRenderingContext2D, _flower: FlowerEnemy, x: number, y: number): void {
+    // FlowerEnemy uses enemy sprite sheet with originY = 24 (different from other enemies)
+    // Enemy sprite sheet tiles are 16x32
+    // With originY = 24, the origin is 24px from top, so render at y - 24 to get top-left
     const frameX = Math.floor(this.animationTick / 6) % 2;
-    assetLoader.drawSprite(ctx, 'enemies', frameX, 4, x - 8, y - 12);
+    assetLoader.drawSprite(ctx, 'enemies', frameX, 4, x - 8, y - 24);
   }
 
   private renderBulletBill(ctx: CanvasRenderingContext2D, bullet: BulletBill, x: number, y: number): void {
-    assetLoader.drawSprite(ctx, 'enemies', 0, 5, x - 8, y - 12, bullet.facing === -1);
+    // BulletBill uses enemy sprite sheet with originY = 31
+    // Enemy sprite sheet tiles are 16x32, so render at y - 32
+    assetLoader.drawSprite(ctx, 'enemies', 0, 5, x - 8, y - 32, bullet.facing === -1);
   }
 
   /**
@@ -177,4 +202,3 @@ export class SpriteRenderer {
     ctx.fillRect(screenPos.x - 1, screenPos.y - 1, 2, 2);
   }
 }
-
