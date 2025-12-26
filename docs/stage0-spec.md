@@ -1,14 +1,18 @@
 # Stage 0 Spec — PCG Arena Local Protocol (v0)
 
-This document is the **single source of truth** for Stage 0 implementation. It defines:
+**Status:** ✅ COMPLETE (2025-12-24)
+
+This document is the **technical specification** for Stage 0 implementation. It defines:
 - the exact **API contract** (endpoints + request/response payloads),
 - the **level format** (ASCII tilemap) with examples and validation rules,
 - database technology choice and **persistence expectations**,
 - invariants and failure modes so the backend, DB, and Java client can be developed independently.
 
 **Protocol version:** `arena/v0`  
-**Scope:** local-only Stage 0 (Docker backend + persistent local DB + Java client)  
-**Implementation:** Backend infrastructure complete (database, migrations, seed import, leaderboard). Battle/vote endpoints and Java client are pending.
+**Scope:** Local-only validation (Docker backend + persistent local DB + Java client)  
+**Implementation:** ✅ All components complete and validated
+
+**Note:** This spec remains the authoritative reference for protocol `arena/v0`, which is stable across all stages (0, 1, 2).
 
 ---
 
@@ -36,7 +40,9 @@ Stage 0 comprises three components:
   - vote submission is idempotent
   - backend rejects malformed levels/unknown generator IDs
 
-### Implementation status (as of current commit)
+### Implementation status
+
+**All Stage 0 components:** ✅ COMPLETE (2025-12-24)
 
 | Feature | Status | Location |
 |---------|--------|----------|
@@ -54,9 +60,11 @@ Stage 0 comprises three components:
 | **Vote submission** | ✅ Complete | `backend/src/main.py` |
 | **ELO rating update** | ✅ Complete | `backend/src/main.py` |
 | **Debug endpoints** | ✅ Complete | `backend/src/main.py` |
-| **Java client** | ⏳ Not implemented | External component |
+| **Java client (Phases 1 & 2)** | ✅ Complete | `client-java/` |
 
-**Testing infrastructure:** You can test the implemented components by running `docker compose up --build` and visiting `http://localhost:8080/`.
+**Stage 1 additions:** Backend deployed to GCP with CORS, rate limiting, admin endpoints, and backups (see `docs/stage1-spec.md`).
+
+**Next stage:** Stage 2 — Browser frontend implementation (see `docs/stage2-spec.md`).
 
 ---
 

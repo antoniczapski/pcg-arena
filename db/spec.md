@@ -1,9 +1,11 @@
-# PCG Arena — Database Spec (Stage 0)
+# PCG Arena — Database Spec
 **Location:** `./db/spec.md`  
 **Protocol:** `arena/v0`  
-**Scope:** Stage 0 (local-only): Dockerized backend + local persistent database + Java client.
+**Status:** ✅ Stage 0/1 Complete — Schema stable for Stage 2 (browser frontend)
 
-This document defines the **database responsibilities** and the exact **data model** required to support Stage 0. It is written so the DB layer can be implemented independently from backend/client decisions, as long as the backend respects these storage contracts.
+This document defines the **database responsibilities** and the exact **data model** for PCG Arena. The schema is designed to be stable across stages (backend/client changes don't require schema migrations).
+
+**Current deployment:** SQLite on GCP VM with daily backups
 
 ---
 

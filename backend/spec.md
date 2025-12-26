@@ -195,9 +195,9 @@ CMD ["python", "main.py"]
 
 ---
 
-## 5) Current system state (Stage 0)
+## 5) Current system state
 
-### Implemented features
+### Stage 0 Features (Complete)
 
 | Feature | Status | Location |
 |---------|--------|----------|
@@ -215,13 +215,31 @@ CMD ["python", "main.py"]
 | Debug endpoints | ✅ Complete | `main.py` |
 | Foreign key enforcement | ✅ Complete | `db/connection.py` |
 
-### Not yet implemented (future tasks)
+### Stage 1 Features (Complete)
 
-| Feature | Priority | Notes |
-|---------|----------|-------|
-| Battle expiration | Low | Mark old battles as EXPIRED (Stage 0 uses NULL expires_at) |
-| OpenAPI spec | Low | Formal API documentation |
-| Java client | High | External component |
+| Feature | Status | Location |
+|---------|--------|----------|
+| CORS middleware | ✅ Complete | `main.py` |
+| Environment configuration | ✅ Complete | `config.py` |
+| Enhanced health check | ✅ Complete | `main.py` |
+| Request logging | ✅ Complete | `middleware.py` |
+| Rate limiting | ✅ Complete | `main.py` |
+| Admin endpoints (5) | ✅ Complete | `main.py` |
+| Bearer token auth | ✅ Complete | `main.py` |
+| GCP deployment | ✅ Complete | Operational on e2-micro |
+| Backup scripts | ✅ Complete | `scripts/backup.sh`, `scripts/backup.ps1` |
+| Remote validation | ✅ Complete | Java client tested |
+
+### Future Tasks
+
+| Feature | Stage | Notes |
+|---------|-------|-------|
+| Browser frontend | Stage 2 | JavaScript/Canvas Mario game |
+| Advanced matchmaking | Stage 3 | Uncertainty-aware pairing |
+| Battle expiration | Stage 3 | Mark old battles as EXPIRED |
+| OpenAPI spec | Stage 3 | Formal API documentation |
+| Generator versioning | Stage 3 | Season archives, A/B testing |
+| User accounts | Stage 4 | Authentication and profiles |
 
 ---
 

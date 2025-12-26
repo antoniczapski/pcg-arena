@@ -1,10 +1,14 @@
-# `client-java/spec.md` — PCG Arena Client (Stage 0) Spec
+# `client-java/spec.md` — PCG Arena Java Client (Validation Prototype)
 
 **Location:** `./client-java/spec.md`
 **Protocol:** `arena/v0`
-**Scope:** Stage 0 client for local development.
-**This spec focuses on Phase 1:** *static battle viewer (no gameplay)* to validate end-to-end integration with backend.
-Phase 2 (gameplay integration) is described only at a high level and will be formalized once the gameplay engine is plugged in.
+**Scope:** Stage 0/1 validation client for local and remote testing
+**Status:** ✅ COMPLETE — Both Phase 1 and Phase 2 implemented and validated
+
+**Note:** This client was built as a validation prototype to prove the end-to-end loop. Future stages will use a browser-based frontend (Stage 2). The Java client remains useful for:
+- Local testing during backend development
+- Validation of protocol changes
+- Reference implementation for gameplay mechanics
 
 ---
 

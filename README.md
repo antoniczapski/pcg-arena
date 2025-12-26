@@ -518,41 +518,124 @@ This repo sits at the intersection of:
 
 Long-term, this can complement purely automated metrics (e.g., playability via A* agents) by providing the thing that is often missing: **human preference data at scale**.
 
-## Roadmap (next stages)
+## Roadmap
 
-### Stage 1 (MVP hosted) — Planning complete ✅
+### Stage 0 (Concept validation) — ✅ COMPLETE
 
-Deploy backend to cloud hosting for remote testing:
+**Status:** Complete and validated locally
 
-* **Target:** Small tester group (~10-50 users)
-* **Backend:** Single VM with Docker (GCP e2-micro free tier recommended)
+* Local-only prototype proving end-to-end loop
+* Docker backend with SQLite persistence
+* ELO rating system with atomic updates
+* Java client with full Mario gameplay
+* 30 seed levels (10 per generator: genetic, hopper, notch)
+
+**Deliverables achieved:**
+- ✅ Battle assignment → play levels → vote → update leaderboard
+- ✅ Data persists across restarts
+- ✅ Complete API implementation (8 endpoints)
+- ✅ Java client validation (Phases 1 & 2)
+- ✅ Demo scripts for automated testing
+
+---
+
+### Stage 1 (Cloud deployment) — ✅ COMPLETE
+
+**Status:** Deployed and operational
+
+Deploy backend to cloud hosting for remote validation:
+
+* **Deployed to:** GCP Compute Engine (e2-micro free tier)
+* **Backend:** Single VM with Docker
 * **Database:** SQLite on VM persistent disk
-* **Frontend:** Browser-based client (no download required)
-* **Backups:** Automated daily backups
-* **Cost:** $0-10/month (free tier or cheap VPS)
+* **Backups:** Automated daily backups configured
+* **Cost:** ~$3-4/month (static IP only)
+
+**Deliverables achieved:**
+- ✅ CORS headers for browser access
+- ✅ Environment-based configuration (11 env variables)
+- ✅ Enhanced health check with metrics
+- ✅ Request logging middleware
+- ✅ Rate limiting (10/min battles, 20/min votes)
+- ✅ Admin endpoints with Bearer token auth
+- ✅ Backup/restore scripts (Windows & Linux)
+- ✅ Remote connectivity validated with Java client
 
 See `docs/stage1-spec.md` for:
-- Cloud platform cost comparison (GCP, AWS, Azure, DigitalOcean, Fly.io, Hetzner)
-- Complete deployment guide (GCP step-by-step)
-- Implementation tasks (backend changes, web portal, admin tools)
-- Backup and monitoring setup
+- Cloud platform cost comparison
+- Complete GCP deployment guide
+- Operational procedures and monitoring
 
-### Stage 2 (Research utility)
+---
 
-* Advanced matchmaking (skill-based, diversity-promoting)
-* Generator versioning and A/B testing
-* Exportable preference dataset for publications
-* Data visualization and analysis tools
+### Stage 2 (Browser frontend) — 🎯 NEXT
 
-### Stage 3 (Community platform)
+**Purpose:** Replace Java client with browser-based gameplay (no download required)
 
+**Planned deliverables:**
+* Browser-playable Mario (JavaScript/Canvas or WebGL)
+* Embedded gameplay with identical UX to Java client
+* Same protocol (`arena/v0`) for seamless backend integration
+* Instant "battle" flow without installation
+* Mobile-friendly responsive design
+
+**Technical approach:**
+- Port Mario engine to JavaScript/TypeScript
+- Use existing backend API (no changes needed)
+- CORS already configured
+- Progressive enhancement (works on any modern browser)
+
+---
+
+### Stage 3 (Backend refinement) — PLANNED
+
+**Purpose:** Turn platform into research-grade utility
+
+**Planned deliverables:**
+* Advanced matchmaking:
+  - Uncertainty-aware pairing (calibration battles for new generators)
+  - Coverage-aware pairing (avoid repetitive matchups)
+  - Rating convergence optimization
+* Generator versioning & seasons:
+  - Immutable season archives
+  - Version tracking for reproducibility
+* Diagnostic surfaces:
+  - Completion/quit rates per generator
+  - Vote breakdown analysis
+  - Tag distribution analytics
+* Exportable dataset:
+  - Anonymized pairwise preferences
+  - Publication-ready format
+* Integrity features:
+  - Enhanced rate limiting
+  - Anomaly detection for voting patterns
+  - Session validation
+
+**Success criteria:**
+- Generate rating curves over time
+- Provide final rankings with uncertainty bounds
+- Enable qualitative analysis via tags + examples
+- Repeatable generator onboarding process
+
+---
+
+### Stage 4 (Platform expansion) — FUTURE
+
+**Purpose:** Scale to community platform with researcher API
+
+**Possible directions:**
 * User accounts and authentication
-* Browser-playable Mario (JavaScript/WebGL)
-* Moderation and anti-abuse systems
+* Moderation and reporting tools
+* Community features (streaks, badges, leaderboards)
+* Curated "best of" playlists
 * Sandboxed generator submissions
-* API for external researchers
+* Public API for external researchers
 
-Stage 0 is intentionally narrow: it exists to prove the loop, not to build a community platform immediately.
+**Success criteria:**
+- Frictionless onboarding
+- Recurring raters for faster convergence
+- Growing generator ecosystem
+- Sustainable moderation
 
 ---
 
