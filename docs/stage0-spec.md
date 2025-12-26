@@ -64,7 +64,9 @@ Stage 0 comprises three components:
 
 **Stage 1 additions:** Backend deployed to GCP with CORS, rate limiting, admin endpoints, and backups (see `docs/stage1-spec.md`).
 
-**Next stage:** Stage 2 — Browser frontend implementation (see `docs/stage2-spec.md`).
+**Stage 2 additions:** Browser frontend implemented with React + TypeScript, replacing Java client for public deployment (see `docs/stage2-spec.md`).
+
+**Next stage:** Stage 3 — Backend refinement for research-grade platform.
 
 ---
 

@@ -1,10 +1,14 @@
-# PCG Arena — Backend Spec (Stage 0)
+# PCG Arena — Backend Spec
 
 **Location:** `./backend/spec.md`  
 **Protocol:** `arena/v0`  
-**Scope:** Stage 0 (local-only): Dockerized Python/FastAPI backend serving the Arena API.
+**Status:** ✅ Stage 0/1/2 Complete — Stable API across all stages
 
-This document describes the **backend implementation** for Stage 0. It explains the current file structure, module responsibilities, and system state to enable future development and AI-assisted planning.
+This document describes the **backend implementation** for PCG Arena. The backend is a Python/FastAPI application serving the Arena API.
+
+**Current deployment:** GCP Compute Engine (e2-micro) with Docker  
+**Clients:** Java validation client (Stage 0/1), Browser frontend (Stage 2)  
+**Key feature:** API unchanged across Stage 0 → Stage 1 → Stage 2
 
 ---
 

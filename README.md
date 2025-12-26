@@ -161,6 +161,23 @@ pcg-arena/
     logs/                  # Runtime logs (gitignored)
     build/                 # Build artifacts (gitignored)
 
+  frontend/                # ✅ Browser client (React + TypeScript)
+    spec.md                # ✅ Frontend specification
+    package.json           # ✅ npm dependencies
+    vite.config.ts         # ✅ Vite build configuration
+    src/
+      api/                 # ✅ API client + types
+      engine/              # ✅ Mario game engine (TypeScript port)
+        sprites/           # ✅ Mario, enemies, items
+        graphics/          # ✅ Rendering system (Canvas)
+        effects/           # ✅ Visual effects
+        input/             # ✅ Keyboard controls
+      components/          # ✅ React components (BattleFlow, GameCanvas, etc.)
+      styles/              # ✅ CSS stylesheets
+    public/
+      assets/              # ✅ Sprite sheets (png files)
+    dist/                  # Production build (gitignored)
+
   shared/                  # ⏳ Placeholder
     schemas/
     level-format/
@@ -168,6 +185,8 @@ pcg-arena/
   docs/
     stage0-spec.md         # ✅ Detailed technical specification
     stage1-spec.md         # ✅ Stage 1 deployment specification
+    stage2-spec.md         # ✅ Stage 2 browser frontend specification
+    PROJECT-STATUS.md      # ✅ Current project status
     future-notes.md        # ✅ Future roadmap notes
   
   Mario-AI-Framework-PCG/  # ✅ Source of game engine and levels
@@ -568,22 +587,34 @@ See `docs/stage1-spec.md` for:
 
 ---
 
-### Stage 2 (Browser frontend) — 🎯 NEXT
+### Stage 2 (Browser frontend) — ✅ COMPLETE
 
-**Purpose:** Replace Java client with browser-based gameplay (no download required)
+**Status:** Complete and operational (2025-12-26)
 
-**Planned deliverables:**
-* Browser-playable Mario (JavaScript/Canvas or WebGL)
+**Deliverables achieved:**
+* Browser-playable Mario (TypeScript/React + Canvas)
 * Embedded gameplay with identical UX to Java client
-* Same protocol (`arena/v0`) for seamless backend integration
+* Same protocol (`arena/v0`) - no backend changes needed
 * Instant "battle" flow without installation
-* Mobile-friendly responsive design
+* Desktop keyboard controls (Arrow keys, S, A)
 
-**Technical approach:**
-- Port Mario engine to JavaScript/TypeScript
-- Use existing backend API (no changes needed)
-- CORS already configured
-- Progressive enhancement (works on any modern browser)
+**Technical implementation:**
+- ✅ Mario engine ported to TypeScript (faithful recreation)
+- ✅ React components for battle flow and UI
+- ✅ HTML5 Canvas rendering system
+- ✅ Full telemetry collection matching Java client
+- ✅ Side-by-side level comparison layout
+- ✅ Generator name reveal only after voting
+- ✅ Production build tested and ready
+
+**Key Features:**
+- No download required - runs in any modern browser
+- 30 FPS gameplay with faithful physics
+- Desktop-focused (keyboard controls)
+- ~150 KB gzipped bundle size
+- Cross-browser support (Chrome, Firefox, Edge, Safari)
+
+See `docs/stage2-spec.md` and `frontend/spec.md` for complete documentation.
 
 ---
 

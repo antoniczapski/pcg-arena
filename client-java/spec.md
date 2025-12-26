@@ -5,10 +5,13 @@
 **Scope:** Stage 0/1 validation client for local and remote testing
 **Status:** ✅ COMPLETE — Both Phase 1 and Phase 2 implemented and validated
 
-**Note:** This client was built as a validation prototype to prove the end-to-end loop. Future stages will use a browser-based frontend (Stage 2). The Java client remains useful for:
+**Note:** This client was built as a validation prototype to prove the end-to-end loop. It has been **superseded by the browser frontend (Stage 2)** for public deployment. The Java client remains useful for:
 - Local testing during backend development
 - Validation of protocol changes
 - Reference implementation for gameplay mechanics
+- Cross-checking browser frontend behavior
+
+**Browser frontend:** See `frontend/spec.md` and `docs/stage2-spec.md` for the TypeScript/React implementation that replaced this client for public use.
 
 ---
 

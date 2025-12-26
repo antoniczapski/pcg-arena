@@ -1,11 +1,12 @@
 # PCG Arena — Database Spec
 **Location:** `./db/spec.md`  
 **Protocol:** `arena/v0`  
-**Status:** ✅ Stage 0/1 Complete — Schema stable for Stage 2 (browser frontend)
+**Status:** ✅ Stage 0/1/2 Complete — Schema stable across all stages
 
 This document defines the **database responsibilities** and the exact **data model** for PCG Arena. The schema is designed to be stable across stages (backend/client changes don't require schema migrations).
 
-**Current deployment:** SQLite on GCP VM with daily backups
+**Current deployment:** SQLite on GCP VM with daily backups  
+**Clients:** Java validation client (Stage 0/1), Browser frontend (Stage 2)
 
 ---
 
