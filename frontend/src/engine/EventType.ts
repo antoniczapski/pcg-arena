@@ -15,5 +15,6 @@ export enum EventType {
   HURT,
   COLLECT,
   BUMP,
+  KICK,
 }
 

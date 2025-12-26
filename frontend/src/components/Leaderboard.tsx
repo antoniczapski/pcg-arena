@@ -32,21 +32,25 @@ export function Leaderboard({ data, isPreview = false }: LeaderboardProps) {
             </tr>
           </thead>
           <tbody>
-            {generators.map((gen, index) => (
-              <tr key={gen.generator_id}>
-                <td>{'rank' in gen ? gen.rank : index + 1}</td>
-                <td className="generator-name">{gen.name}</td>
-                <td>{gen.rating.toFixed(0)}</td>
-                <td>{gen.games_played}</td>
-                {'wins' in gen && (
-                  <>
-                    <td>{gen.wins}</td>
-                    <td>{gen.losses}</td>
-                    <td>{gen.ties}</td>
-                  </>
-                )}
-              </tr>
-            ))}
+            {generators.map((gen, index) => {
+              const hasWins = 'wins' in gen;
+              const ranking = gen as any; // Type narrowing for optional fields
+              return (
+                <tr key={gen.generator_id}>
+                  <td>{'rank' in gen ? (gen as any).rank : index + 1}</td>
+                  <td className="generator-name">{gen.name}</td>
+                  <td>{gen.rating.toFixed(0)}</td>
+                  <td>{gen.games_played}</td>
+                  {hasWins && (
+                    <>
+                      <td>{ranking.wins}</td>
+                      <td>{ranking.losses}</td>
+                      <td>{ranking.ties}</td>
+                    </>
+                  )}
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       )}

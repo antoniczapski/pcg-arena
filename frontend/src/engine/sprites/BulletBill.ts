@@ -14,7 +14,7 @@ export class BulletBill extends MarioSprite {
   private dead: boolean = false;
   private onGround: boolean = false;
 
-  constructor(visuals: boolean, x: number, y: number, dir: number) {
+  constructor(_visuals: boolean, x: number, y: number, dir: number) {
     super(x, y, SpriteType.BULLET_BILL);
     this.width = 4;
     this.height = 12;

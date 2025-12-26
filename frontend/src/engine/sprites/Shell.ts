@@ -12,21 +12,27 @@ const AIR_INERTIA = 0.89;
 
 export class Shell extends MarioSprite {
   private onGround: boolean = false;
-  private avoidCliffs: number = 0;
+  private _shellType: number = 0; // 0=red, 1=green (called avoidCliffs in Java)
   private life: number = 0;
 
-  constructor(visuals: boolean, x: number, y: number, avoidCliffs: number, initialCode: string) {
+  /** Get shell type: 0=red, 1=green */
+  get shellType(): number {
+    return this._shellType;
+  }
+
+  constructor(_visuals: boolean, x: number, y: number, avoidCliffs: number, initialCode: string) {
     super(x, y, SpriteType.SHELL);
     this.width = 4;
     this.height = 12;
     this.facing = 0;
-    this.avoidCliffs = avoidCliffs;
+    this.ya = -5; // Initial bounce when shell is created
+    this._shellType = avoidCliffs; // 0=red, 1=green
     this.initialCode = initialCode;
     this.life = 0;
   }
 
   clone(): MarioSprite {
-    const shell = new Shell(false, this.x, this.y, this.avoidCliffs, this.initialCode);
+    const shell = new Shell(false, this.x, this.y, this._shellType, this.initialCode);
     shell.xa = this.xa;
     shell.ya = this.ya;
     shell.width = this.width;
@@ -52,18 +58,27 @@ export class Shell extends MarioSprite {
           yMarioD <= 0 &&
           (!this.world.mario.onGround || !this.world.mario.wasOnGround)
         ) {
+          // Mario stomped the shell from above
           this.world.mario.stomp(this);
-          this.facing = 0;
-          this.xa = 0;
-        } else {
           if (this.facing !== 0) {
+            // Shell was moving - stop it
+            this.xa = 0;
+            this.facing = 0;
+          } else {
+            // Shell was stopped - start it in Mario's direction
+            this.facing = this.world.mario.facing;
+          }
+        } else {
+          // Mario touched shell from the side
+          if (this.facing !== 0) {
+            // Shell is moving - hurts Mario
             this.world.addEvent(EventType.HURT, this.type);
             this.world.mario.getHurt();
           } else {
+            // Shell is stopped - Mario kicks it
+            this.world.addEvent(EventType.KICK, this.type);
             this.world.mario.kick(this);
-            if (this.world.mario.facing !== 0) {
-              this.facing = this.world.mario.facing;
-            }
+            this.facing = this.world.mario.facing;
           }
         }
       }
@@ -151,7 +166,7 @@ export class Shell extends MarioSprite {
       if (this.isBlocking(this.x + xa + this.width, this.y + ya, xa, ya)) collide = true;
 
       if (
-        this.avoidCliffs !== 0 &&
+        this._shellType !== 0 &&
         this.onGround &&
         this.world &&
         !this.world.level.isBlocking(Math.floor((this.x + xa + this.width) / 16), Math.floor(this.y / 16 + 1), xa, 1)
@@ -165,7 +180,7 @@ export class Shell extends MarioSprite {
       if (this.isBlocking(this.x + xa - this.width, this.y + ya, xa, ya)) collide = true;
 
       if (
-        this.avoidCliffs !== 0 &&
+        this._shellType !== 0 &&
         this.onGround &&
         this.world &&
         !this.world.level.isBlocking(Math.floor((this.x + xa - this.width) / 16), Math.floor(this.y / 16 + 1), xa, 1)

@@ -67,8 +67,9 @@ export function spawnSprite(
       // Enemy will be spawned by MarioWorld
       return { type, visuals, x: x * 16 + 8, y: y * 16 + 15, dir };
     case SpriteType.ENEMY_FLOWER:
-      // FlowerEnemy will be spawned by MarioWorld
-      return { type, visuals, x: x * 16 + 8, y: y * 16 + 15, dir: 0 };
+      // FlowerEnemy spawns at different offset to be centered in pipe
+      // Java: xTile * 16 + 17, yTile * 16 + 18
+      return { type, visuals, x: x * 16 + 17, y: y * 16 + 18, dir: 0 };
     default:
       return null;
   }

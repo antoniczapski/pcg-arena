@@ -19,7 +19,7 @@ class AssetLoaderClass {
    * Load a single sprite sheet image
    */
   private loadImage(name: string, path: string, tileWidth: number, tileHeight: number): Promise<void> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       // Check if already loaded
       if (this.assets.has(name)) {
         console.log('[AssetLoader] Already loaded:', name);

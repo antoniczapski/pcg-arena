@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState, useCallback } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { MarioGame } from '../engine/MarioGame';
 import { MarioWorld } from '../engine/MarioWorld';
 import { GameStatus } from '../engine/GameStatus';

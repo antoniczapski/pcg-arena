@@ -13,7 +13,7 @@ export class Fireball extends MarioSprite {
   private onGround: boolean = false;
   private life: number = 0;
 
-  constructor(visuals: boolean, x: number, y: number, facing: number) {
+  constructor(_visuals: boolean, x: number, y: number, facing: number) {
     super(x, y, SpriteType.FIREBALL);
     this.width = 4;
     this.height = 8;

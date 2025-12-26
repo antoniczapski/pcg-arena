@@ -4,7 +4,9 @@ import { BattleFlow } from './components/BattleFlow';
 import './styles/components.css';
 
 function App() {
-  const [apiClient] = useState(() => new ArenaApiClient('http://localhost:8080'));
+  // Use environment variable for API base URL, fallback to localhost for dev
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+  const [apiClient] = useState(() => new ArenaApiClient(apiBaseUrl));
   const [isConnected, setIsConnected] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -49,7 +51,7 @@ function App() {
           <p className="error-message">{error}</p>
           <button onClick={checkConnection}>Retry Connection</button>
           <p className="hint">
-            Make sure the backend is running at http://localhost:8080
+            Make sure the backend is running at {apiBaseUrl}
           </p>
         </div>
       </div>

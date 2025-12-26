@@ -9,7 +9,7 @@ import { SpriteType } from '../SpriteType';
 export class FireFlower extends MarioSprite {
   private life: number = 0;
 
-  constructor(visuals: boolean, x: number, y: number) {
+  constructor(_visuals: boolean, x: number, y: number) {
     super(x, y, SpriteType.FIRE_FLOWER);
     this.width = 4;
     this.height = 12;

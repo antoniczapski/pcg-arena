@@ -22,3 +22,12 @@ docker compose up --build
 cd client-java
 ./gradlew run --args="--base-url http://34.116.232.204:8080"     
 ```
+
+
+# tech debt
+
+- score using keys (basically do everything using keys)
+- fix kill mechanics
+- level validation - check if robin agent (top 3) can pass the level
+- smarter generator selection (multi-arm-bandid style)
+- ability to give tags

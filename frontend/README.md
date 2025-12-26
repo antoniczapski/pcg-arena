@@ -12,7 +12,38 @@ Browser-based Mario gameplay client for the PCG Arena platform.
 ## Prerequisites
 
 - Node.js 18+ and npm
-- Backend running at `http://localhost:8080` (or configure in vite.config.ts)
+- Backend running (see Configuration section below)
+
+## Configuration
+
+The frontend connects to the backend API using environment variables:
+
+### Environment Files
+
+- `.env` - Default configuration (localhost, committed to git)
+- `.env.local` - Local overrides (gitignored, not committed)
+- `.env.production` - Production configuration (www.pcg-arena.com)
+- `.env.local.example` - Template for local customization
+
+### Backend API URL
+
+Set `VITE_API_BASE_URL` to configure where the frontend connects:
+
+```bash
+# For local development (default)
+VITE_API_BASE_URL=http://localhost:8080
+
+# For production
+VITE_API_BASE_URL=https://www.pcg-arena.com
+```
+
+**Local development:** The default `.env` file points to `localhost:8080`. No changes needed.
+
+**Custom backend:** Create `.env.local` (gitignored) to override:
+```bash
+cp .env.local.example .env.local
+# Edit .env.local with your backend URL
+```
 
 ## Setup
 
@@ -33,6 +64,24 @@ npm run preview
 ## Development
 
 The dev server will start at `http://localhost:3000` with hot module replacement.
+
+By default, it connects to a backend at `http://localhost:8080`. Make sure your backend is running, or configure a different URL in `.env.local`.
+
+## Production Build
+
+To build for production (connects to https://www.pcg-arena.com):
+
+```bash
+npm run build
+```
+
+This creates optimized files in `dist/` using `.env.production` configuration.
+
+To preview the production build locally:
+
+```bash
+npm run preview
+```
 
 ## Project Structure
 

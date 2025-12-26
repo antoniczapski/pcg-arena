@@ -13,7 +13,7 @@ export class LifeMushroom extends MarioSprite {
   private onGround: boolean = false;
   private life: number = 0;
 
-  constructor(visuals: boolean, x: number, y: number) {
+  constructor(_visuals: boolean, x: number, y: number) {
     super(x, y, SpriteType.LIFE_MUSHROOM);
     this.width = 4;
     this.height = 12;

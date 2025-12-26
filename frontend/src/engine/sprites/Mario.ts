@@ -29,13 +29,11 @@ export class Mario extends MarioSprite {
   private yJumpSpeed: number = 0;
   private invulnerableTime: number = 0;
   private xJumpStart: number = -100;
-  private oldLarge: boolean = false;
-  private oldFire: boolean = false;
 
-  constructor(visuals: boolean, x: number, y: number) {
+  constructor(_visuals: boolean, x: number, y: number) {
     super(x + 8, y + 15, SpriteType.MARIO);
-    this.isLarge = this.oldLarge = false;
-    this.isFire = this.oldFire = false;
+    this.isLarge = false;
+    this.isFire = false;
     this.width = 4;
     this.height = 24;
   }
@@ -305,8 +303,6 @@ export class Mario extends MarioSprite {
 
     if (this.isLarge && this.world) {
       this.world.pauseTimer = 3 * POWERUP_TIME;
-      this.oldLarge = this.isLarge;
-      this.oldFire = this.isFire;
       if (this.isFire) {
         this.isFire = false;
       } else {
@@ -325,8 +321,6 @@ export class Mario extends MarioSprite {
 
     if (!this.isFire && this.world) {
       this.world.pauseTimer = 3 * POWERUP_TIME;
-      this.oldFire = this.isFire;
-      this.oldLarge = this.isLarge;
       this.isFire = true;
       this.isLarge = true;
     } else {
@@ -339,8 +333,6 @@ export class Mario extends MarioSprite {
 
     if (!this.isLarge && this.world) {
       this.world.pauseTimer = 3 * POWERUP_TIME;
-      this.oldFire = this.isFire;
-      this.oldLarge = this.isLarge;
       this.isLarge = true;
     } else {
       this.collectCoin();

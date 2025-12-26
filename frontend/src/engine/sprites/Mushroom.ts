@@ -13,7 +13,7 @@ export class Mushroom extends MarioSprite {
   private onGround: boolean = false;
   private life: number = 0;
 
-  constructor(visuals: boolean, x: number, y: number) {
+  constructor(_visuals: boolean, x: number, y: number) {
     super(x, y, SpriteType.MUSHROOM);
     this.width = 4;
     this.height = 12;

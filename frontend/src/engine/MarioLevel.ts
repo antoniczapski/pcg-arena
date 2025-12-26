@@ -302,7 +302,7 @@ export class MarioLevel {
     return level;
   }
 
-  isBlocking(xTile: number, yTile: number, xa: number, ya: number): boolean {
+  isBlocking(xTile: number, yTile: number, _xa: number, ya: number): boolean {
     const block = this.getBlock(xTile, yTile);
     const features = getTileType(block);
     let blocking = hasTileFeature(features, TileFeature.BLOCK_ALL);

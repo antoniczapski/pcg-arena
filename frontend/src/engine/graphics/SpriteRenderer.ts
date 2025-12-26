@@ -108,19 +108,23 @@ export class SpriteRenderer {
     
     let frameY = 0;
     
-    // Determine sprite row based on type
+    // Determine sprite row based on type (from Java startIndex / 8)
+    // RED_KOOPA: startIndex=0 → row 0
+    // GREEN_KOOPA: startIndex=8 → row 1
+    // GOOMBA: startIndex=16 → row 2
+    // SPIKY: startIndex=24 → row 3
     switch (enemy.type) {
-      case SpriteType.GOOMBA:
-      case SpriteType.GOOMBA_WINGED:
-        frameY = 0;
-        break;
       case SpriteType.RED_KOOPA:
       case SpriteType.RED_KOOPA_WINGED:
-        frameY = 2;
+        frameY = 0;
         break;
       case SpriteType.GREEN_KOOPA:
       case SpriteType.GREEN_KOOPA_WINGED:
         frameY = 1;
+        break;
+      case SpriteType.GOOMBA:
+      case SpriteType.GOOMBA_WINGED:
+        frameY = 2;
         break;
       case SpriteType.SPIKY:
       case SpriteType.SPIKY_WINGED:
@@ -136,9 +140,11 @@ export class SpriteRenderer {
   }
 
   private renderShell(ctx: CanvasRenderingContext2D, shell: Shell, x: number, y: number): void {
-    // Shell uses enemy sprite sheet with originY = 31
-    // Enemy sprite sheet tiles are 16x32, so render at y - 32
-    assetLoader.drawSprite(ctx, 'enemies', 2, 1, x - 8, y - 32);
+    // Shell sprite index = shellType * 8 + 3
+    // Red shell (shellType=0): index=3 → column 3, row 0
+    // Green shell (shellType=1): index=11 → column 3, row 1
+    const row = shell.shellType; // 0=red (row 0), 1=green (row 1)
+    assetLoader.drawSprite(ctx, 'enemies', 3, row, x - 8, y - 32, shell.facing === -1);
   }
 
   private renderFireball(ctx: CanvasRenderingContext2D, _fireball: Fireball, x: number, y: number): void {
@@ -164,15 +170,15 @@ export class SpriteRenderer {
   }
 
   private renderFlowerEnemy(ctx: CanvasRenderingContext2D, _flower: FlowerEnemy, x: number, y: number): void {
-    // FlowerEnemy uses enemy sprite sheet with originY = 24 (different from other enemies)
-    // Enemy sprite sheet tiles are 16x32
+    // FlowerEnemy uses enemy sprite sheet at row 6 (startIndex = 48)
+    // Animation cycles through frames: ((tick / 2) & 1) * 2 + ((tick / 6) & 1) = 0, 1, 2, or 3
     // With originY = 24, the origin is 24px from top, so render at y - 24 to get top-left
-    const frameX = Math.floor(this.animationTick / 6) % 2;
-    assetLoader.drawSprite(ctx, 'enemies', frameX, 4, x - 8, y - 24);
+    const frame = ((Math.floor(this.animationTick / 2) & 1) * 2) + (Math.floor(this.animationTick / 6) & 1);
+    assetLoader.drawSprite(ctx, 'enemies', frame, 6, x - 8, y - 24);
   }
 
   private renderBulletBill(ctx: CanvasRenderingContext2D, bullet: BulletBill, x: number, y: number): void {
-    // BulletBill uses enemy sprite sheet with originY = 31
+    // BulletBill: startIndex=40 → row 5 (40/8=5)
     // Enemy sprite sheet tiles are 16x32, so render at y - 32
     assetLoader.drawSprite(ctx, 'enemies', 0, 5, x - 8, y - 32, bullet.facing === -1);
   }

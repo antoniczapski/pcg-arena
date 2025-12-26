@@ -7,8 +7,6 @@ import { GameStatus } from './GameStatus';
 import { MarioSprite } from './MarioSprite';
 import { Mario } from './sprites/Mario';
 import { Enemy } from './sprites/Enemy';
-import { Shell } from './sprites/Shell';
-import { Fireball } from './sprites/Fireball';
 import { Mushroom } from './sprites/Mushroom';
 import { FireFlower } from './sprites/FireFlower';
 import { LifeMushroom } from './sprites/LifeMushroom';
@@ -19,7 +17,6 @@ import { MarioEvent } from './MarioEvent';
 import { EventType } from './EventType';
 import { SpriteType } from './SpriteType';
 import { TileFeature, getTileType, hasTileFeature } from './TileFeature';
-import { numberOfActions } from './MarioActions';
 
 const TILE_WIDTH = GAME_WIDTH / 16;
 const TILE_HEIGHT = GAME_HEIGHT / 16;
@@ -158,7 +155,7 @@ export class MarioWorld {
     this.mario.alive = false;
   }
 
-  getSceneObservation(centerX: number, centerY: number, detail: number): number[][] {
+  getSceneObservation(centerX: number, centerY: number, _detail: number): number[][] {
     const ret: number[][] = Array(TILE_WIDTH)
       .fill(null)
       .map(() => Array(TILE_HEIGHT).fill(0));
@@ -271,7 +268,8 @@ export class MarioWorld {
                   sprite = new Enemy(this.visuals, x * 16 + 8, y * 16 + 15, dir, type);
                   break;
                 case SpriteType.ENEMY_FLOWER:
-                  sprite = new FlowerEnemy(this.visuals, x * 16 + 8, y * 16 + 15);
+                  // FlowerEnemy spawns centered in pipe: Java uses xTile * 16 + 17, yTile * 16 + 18
+                  sprite = new FlowerEnemy(this.visuals, x * 16 + 17, y * 16 + 18);
                   break;
               }
               

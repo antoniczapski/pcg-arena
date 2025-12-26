@@ -19,7 +19,7 @@ export class Enemy extends MarioSprite {
   protected runTime: number = 0;
   protected wingTime: number = 0;
 
-  constructor(visuals: boolean, x: number, y: number, dir: number, type: SpriteType) {
+  constructor(_visuals: boolean, x: number, y: number, dir: number, type: SpriteType) {
     super(x, y, type);
     this.width = 4;
     this.height = 24;
