@@ -17,3 +17,8 @@ Remove-Item db\local\arena.sqlite
 # Recreate everything from scratch
 docker compose up --build
 ```
+
+```
+cd client-java
+./gradlew run --args="--base-url http://34.116.232.204:8080"     
+```

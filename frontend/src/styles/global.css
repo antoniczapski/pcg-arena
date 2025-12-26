@@ -1,0 +1,110 @@
+/* Global styles for PCG Arena */
+
+:root {
+  /* NES-inspired color palette */
+  --color-bg-dark: #0f380f;
+  --color-bg-medium: #306230;
+  --color-lime: #9bbc0f;
+  --color-light: #8bac0f;
+  --color-text: #e0f8d0;
+  --color-error: #e43b44;
+  --color-success: #63c64d;
+  
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  
+  /* Typography */
+  --font-pixel: 'Press Start 2P', cursive;
+  --font-system: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-system);
+  background-color: var(--color-bg-dark);
+  color: var(--color-text);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-pixel);
+  line-height: 1.4;
+  font-weight: normal;
+}
+
+h1 {
+  font-size: 1.5rem;
+  margin-bottom: var(--spacing-md);
+}
+
+h2 {
+  font-size: 1rem;
+  margin-bottom: var(--spacing-sm);
+}
+
+p {
+  margin-bottom: var(--spacing-sm);
+}
+
+button {
+  font-family: var(--font-pixel);
+  font-size: 0.75rem;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--color-lime);
+  color: var(--color-bg-dark);
+  border: 3px solid var(--color-bg-dark);
+  cursor: pointer;
+  transition: all 0.1s;
+  text-transform: uppercase;
+}
+
+button:hover:not(:disabled) {
+  background-color: var(--color-light);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 0 var(--color-bg-dark);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+button.primary-button {
+  background-color: var(--color-success);
+  color: white;
+  padding: var(--spacing-md) var(--spacing-xl);
+  font-size: 0.875rem;
+}
+
+.error-message {
+  color: var(--color-error);
+  font-family: var(--font-pixel);
+  font-size: 0.75rem;
+}
+
+.hint {
+  color: var(--color-lime);
+  font-size: 0.875rem;
+  opacity: 0.8;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+

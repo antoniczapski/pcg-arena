@@ -1,0 +1,263 @@
+/**
+ * Arena API Client for browser
+ * Ported from client-java/src/main/java/arena/api/ArenaApiClient.java
+ */
+
+import {
+  PROTOCOL_VERSION,
+  CLIENT_VERSION,
+  ArenaApiException,
+  type HealthResponse,
+  type BattleRequest,
+  type BattleResponse,
+  type VoteRequest,
+  type VoteResponse,
+  type LeaderboardResponse,
+  type ErrorResponse,
+} from './types';
+
+export class ArenaApiClient {
+  private baseUrl: string;
+
+  constructor(baseUrl: string = 'http://localhost:8080') {
+    this.baseUrl = baseUrl;
+  }
+
+  /**
+   * Health check - verifies backend is reachable and protocol matches
+   */
+  async health(): Promise<HealthResponse> {
+    try {
+      console.log('[API] GET /health');
+      
+      const response = await fetch(`${this.baseUrl}/health`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+
+      console.log(`[API] Response status: ${response.status}`);
+
+      if (!response.ok) {
+        throw new ArenaApiException(
+          'HEALTH_CHECK_FAILED',
+          `Health check failed with status ${response.status}`,
+          true
+        );
+      }
+
+      const data: HealthResponse = await response.json();
+      this.verifyProtocol(data.protocol_version);
+      
+      return data;
+    } catch (error) {
+      if (error instanceof ArenaApiException) {
+        throw error;
+      }
+      console.error('[API] Health check failed:', error);
+      throw new ArenaApiException(
+        'BACKEND_UNREACHABLE',
+        `Backend unreachable: ${error instanceof Error ? error.message : String(error)}`,
+        true
+      );
+    }
+  }
+
+  /**
+   * Request next battle
+   */
+  async nextBattle(sessionId: string): Promise<BattleResponse> {
+    const request: BattleRequest = {
+      client_version: CLIENT_VERSION,
+      session_id: sessionId,
+      player_id: null,
+      preferences: {
+        mode: 'standard',
+      },
+    };
+
+    const path = '/v1/battles:next';
+
+    try {
+      console.log('[API] POST', path);
+      const responseBody = await this.sendJson('POST', path, JSON.stringify(request));
+
+      // Check if it's an error response
+      if (responseBody.includes('"error"')) {
+        const errorResponse: ErrorResponse = JSON.parse(responseBody);
+        this.verifyProtocol(errorResponse.protocol_version);
+        throw this.createException(errorResponse);
+      }
+
+      const battleResponse: BattleResponse = JSON.parse(responseBody);
+      this.verifyProtocol(battleResponse.protocol_version);
+
+      console.log('[API] Battle received:', battleResponse.battle.battle_id);
+      return battleResponse;
+    } catch (error) {
+      if (error instanceof ArenaApiException) {
+        throw error;
+      }
+      console.error('[API] Failed to fetch battle:', error);
+      throw new ArenaApiException(
+        'FETCH_BATTLE_FAILED',
+        `Failed to fetch battle: ${error instanceof Error ? error.message : String(error)}`,
+        true
+      );
+    }
+  }
+
+  /**
+   * Submit a vote
+   */
+  async submitVote(
+    sessionId: string,
+    battleId: string,
+    result: 'LEFT' | 'RIGHT' | 'TIE' | 'SKIP',
+    leftTags: string[],
+    rightTags: string[],
+    telemetry: VoteRequest['telemetry']
+  ): Promise<VoteResponse> {
+    const request: VoteRequest = {
+      client_version: CLIENT_VERSION,
+      session_id: sessionId,
+      battle_id: battleId,
+      result,
+      left_tags: leftTags,
+      right_tags: rightTags,
+      telemetry,
+    };
+
+    const path = '/v1/votes';
+
+    try {
+      console.log('[API] POST', path);
+      const responseBody = await this.sendJson('POST', path, JSON.stringify(request));
+
+      // Check if it's an error response
+      if (responseBody.includes('"error"')) {
+        const errorResponse: ErrorResponse = JSON.parse(responseBody);
+        this.verifyProtocol(errorResponse.protocol_version);
+        throw this.createException(errorResponse);
+      }
+
+      const voteResponse: VoteResponse = JSON.parse(responseBody);
+      this.verifyProtocol(voteResponse.protocol_version);
+
+      console.log('[API] Vote accepted:', voteResponse.vote_id);
+      return voteResponse;
+    } catch (error) {
+      if (error instanceof ArenaApiException) {
+        throw error;
+      }
+      console.error('[API] Failed to submit vote:', error);
+      throw new ArenaApiException(
+        'SUBMIT_VOTE_FAILED',
+        `Failed to submit vote: ${error instanceof Error ? error.message : String(error)}`,
+        true
+      );
+    }
+  }
+
+  /**
+   * Fetch leaderboard
+   */
+  async leaderboard(): Promise<LeaderboardResponse> {
+    const path = '/v1/leaderboard';
+
+    try {
+      console.log('[API] GET', path);
+
+      const response = await fetch(`${this.baseUrl}${path}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+
+      console.log(`[API] Response status: ${response.status}`);
+
+      if (!response.ok) {
+        throw new ArenaApiException(
+          'LEADERBOARD_FETCH_FAILED',
+          `Leaderboard request failed with status ${response.status}`,
+          true
+        );
+      }
+
+      const data: LeaderboardResponse = await response.json();
+      this.verifyProtocol(data.protocol_version);
+
+      return data;
+    } catch (error) {
+      if (error instanceof ArenaApiException) {
+        throw error;
+      }
+      console.error('[API] Failed to fetch leaderboard:', error);
+      throw new ArenaApiException(
+        'LEADERBOARD_FETCH_FAILED',
+        `Failed to fetch leaderboard: ${error instanceof Error ? error.message : String(error)}`,
+        true
+      );
+    }
+  }
+
+  /**
+   * Send a JSON request and return the response body
+   */
+  private async sendJson(method: string, path: string, jsonBody: string): Promise<string> {
+    const fullUrl = `${this.baseUrl}${path}`;
+    console.log(`[API] Sending ${method} request to:`, fullUrl);
+
+    const response = await fetch(fullUrl, {
+      method,
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Accept': 'application/json',
+      },
+      body: jsonBody,
+    });
+
+    console.log(`[API] Response status: ${response.status}`);
+
+    const responseBody = await response.text();
+
+    if (!response.ok && responseBody) {
+      return responseBody; // Return error response for parsing
+    }
+
+    if (!response.ok) {
+      throw new ArenaApiException(
+        'HTTP_ERROR',
+        `HTTP ${response.status}`,
+        response.status >= 500
+      );
+    }
+
+    return responseBody;
+  }
+
+  /**
+   * Verify protocol version matches expected
+   */
+  private verifyProtocol(protocolVersion: string): void {
+    if (protocolVersion !== PROTOCOL_VERSION) {
+      throw new ArenaApiException(
+        'PROTOCOL_MISMATCH',
+        `Incompatible backend protocol: expected ${PROTOCOL_VERSION}, got ${protocolVersion}`,
+        false
+      );
+    }
+  }
+
+  /**
+   * Create exception from error response
+   */
+  private createException(errorResponse: ErrorResponse): ArenaApiException {
+    const error = errorResponse.error;
+    console.error('[API] Error:', error.code, error.message);
+    return new ArenaApiException(error.code, error.message, error.retryable, error.details);
+  }
+}
+
