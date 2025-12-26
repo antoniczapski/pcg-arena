@@ -1,29 +1,84 @@
 {
   "generators": [
     {
-      "generator_id": "hopper",
-      "name": "Hopper level generator",
+      "generator_id": "genetic",
+      "name": "Grammatical Evolution (GE) Generator",
       "version": "1.0.0",
-      "description": "Generates levels using Hopper model.",
-      "tags": ["hopper", "statistical", "learned"],
-      "documentation_url": "https://example.com/generators/markov"
+      "description": "Evolutionary generator using design grammars: levels are encoded as grammar-expansion instructions; fitness favors many placed items while minimizing placement conflicts. (Mapped to the GE generator described in the FDG2014 comparative evaluation.)",
+      "tags": ["evolutionary", "grammatical-evolution", "grammar-based", "search-based", "mario-ai"],
+      "documentation_url": "https://www.um.edu.mt/library/oar/bitstream/123456789/22937/1/Evolving_Levels_for_Super_Mario_Bros_Using_Grammat.pdf"
     },
     {
-      "generator_id": "genetic",
-      "name": "Genetic Algorithm Generator",
+      "generator_id": "hopper",
+      "name": "Hopper Level Generator",
       "version": "1.0.0",
-      "description": "Evolves level segments using genetic algorithms with playability fitness.",
-      "tags": ["evolutionary", "genetic-algorithm", "fitness-based"],
-      "documentation_url": "https://example.com/generators/ga"
+      "description": "Constructive left-to-right generator placing features with probabilities; designed for adaptivity so probabilities can change based on player performance; alternates generated parts with pre-designed parts.",
+      "tags": ["constructive", "probabilistic", "adaptive", "mario-ai-2010", "hybrid"],
+      "documentation_url": "https://julian.togelius.com/Shaker2011The.pdf"
     },
     {
       "generator_id": "notch",
-      "name": "notch level generator",
+      "name": "Notch (Infinite Mario Bros) Generator",
       "version": "1.0.0",
-      "description": "idk.",
-      "tags": ["notch", "random", "procedural"],
-      "documentation_url": "https://example.com/generators/random"
+      "description": "Default Infinite Mario Bros generator: writes levels left-to-right by placing components according to probabilities, with basic playability checks.",
+      "tags": ["constructive", "probabilistic", "baseline", "infinite-mario-bros", "mario-ai"],
+      "documentation_url": "https://github.com/amidos2006/Mario-AI-Framework"
+    },
+    {
+      "generator_id": "notchParam",
+      "name": "Parameterized Notch Generator",
+      "version": "1.0.0",
+      "description": "Parameterized variant of the Notch generator. Parameters bias generation such as number/width of gaps, enemies and their placement, powerups, and boxes (often explored via combinations of high/low settings).",
+      "tags": ["constructive", "probabilistic", "parameterized", "difficulty-control", "mario-ai"],
+      "documentation_url": "https://julian.togelius.com/Shaker2011Feature.pdf"
+    },
+    {
+      "generator_id": "notchParamRand",
+      "name": "Parameterized Notch (Randomized Params) Generator",
+      "version": "1.0.0",
+      "description": "Same as Parameterized Notch, but parameter values are chosen at random (a randomized parameter configuration set).",
+      "tags": ["constructive", "probabilistic", "parameterized", "randomized-params", "mario-ai"],
+      "documentation_url": "https://julian.togelius.com/Shaker2011Feature.pdf"
+    },
+    {
+      "generator_id": "ore",
+      "name": "Occupancy-Regulated Extension (ORE) Generator",
+      "version": "1.0.0",
+      "description": "Chunk-based generator that assembles small hand-authored level pieces using anchor points to determine how chunks connect; can produce complex levels stylistically different from original Mario.",
+      "tags": ["chunk-based", "assembly", "anchor-points", "mario-ai-2010", "case-based"],
+      "documentation_url": "https://www.cs.hmc.edu/~pmawhorter/research/papers/procedural_level_generation_using_occupancy_regulated_extension-Mawhorter_Mateas-2010.pdf"
+    },
+    {
+      "generator_id": "original",
+      "name": "Original Super Mario Bros (SMB1) Levels",
+      "version": "1.0.0",
+      "description": "Hand-authored levels from Super Mario Bros (1985), transcribed into the benchmark’s representation as faithfully as possible (excluding unsupported elements such as water levels in that framework).",
+      "tags": ["human-authored", "super-mario-bros", "baseline", "reference-levels"],
+      "documentation_url": "https://en.wikipedia.org/wiki/Super_Mario_Bros."
+    },
+    {
+      "generator_id": "patternCount",
+      "name": "Pattern-based Generator (Pattern Count Fitness)",
+      "version": "1.0.0",
+      "description": "Evolutionary pattern-based generator: represents a level as a sequence of 1-tile-wide slices (micro-patterns) taken from original Mario; fitness counts each occurrence of specified meso-patterns (counting repeats).",
+      "tags": ["evolutionary", "pattern-based", "slices", "micro-patterns", "meso-patterns", "fitness-pattern-count"],
+      "documentation_url": "https://julian.togelius.com/Dahlskog2013Patterns.pdf"
+    },
+    {
+      "generator_id": "patternOccur",
+      "name": "Pattern-based Generator (Pattern Occurrence Fitness)",
+      "version": "1.0.0",
+      "description": "Pattern-based evolutionary generator variant where fitness rewards unique meso-pattern occurrence (counts each meso-pattern at most once, emphasizing diversity over repetition).",
+      "tags": ["evolutionary", "pattern-based", "pattern-diversity", "unique-occurrence", "meso-patterns"],
+      "documentation_url": "https://julian.togelius.com/Dahlskog2013Patterns.pdf"
+    },
+    {
+      "generator_id": "patternWeightCount",
+      "name": "Pattern-based Generator (Weighted Pattern Count Fitness)",
+      "version": "1.0.0",
+      "description": "Pattern-based evolutionary generator variant where meso-pattern counts are weighted by rarity, rewarding inclusion of rarer patterns more strongly than common ones.",
+      "tags": ["evolutionary", "pattern-based", "rarity-weighted", "meso-patterns", "fitness-weighted-count"],
+      "documentation_url": "https://julian.togelius.com/Dahlskog2013Patterns.pdf"
     }
   ]
 }
-

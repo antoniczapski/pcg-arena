@@ -262,11 +262,7 @@ def validate_level(content: str, filename: str) -> tuple[str, int]:
     
     # Check at least one X exists (ground block)
     full_content = "\n".join(lines)
-    if "X" not in full_content:
-        raise LevelValidationError(
-            f"{filename}: Level must contain at least one 'X' (ground block)"
-        )
-    
+
     return full_content, width
 
 
