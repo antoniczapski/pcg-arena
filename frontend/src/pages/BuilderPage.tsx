@@ -29,6 +29,7 @@ interface GeneratorsResponse {
   user_id: string;
   max_generators: number;
   min_levels_required: number;
+  max_levels_allowed: number;
   generators: GeneratorInfo[];
 }
 
@@ -37,6 +38,7 @@ export function BuilderPage() {
   const [generators, setGenerators] = useState<GeneratorInfo[]>([]);
   const [maxGenerators, setMaxGenerators] = useState(3);
   const [minLevels, setMinLevels] = useState(50);
+  const [maxLevels, setMaxLevels] = useState(200);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -62,6 +64,7 @@ export function BuilderPage() {
       setGenerators(data.generators);
       setMaxGenerators(data.max_generators);
       setMinLevels(data.min_levels_required);
+      setMaxLevels(data.max_levels_allowed);
     } catch (err) {
       console.error('Failed to fetch generators:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch generators');
@@ -149,7 +152,7 @@ export function BuilderPage() {
           <span className="stat-label">/ {maxGenerators} Generators</span>
         </div>
         <div className="stat-card">
-          <span className="stat-value">{minLevels}+</span>
+          <span className="stat-value">{minLevels}-{maxLevels}</span>
           <span className="stat-label">Levels Required</span>
         </div>
       </div>
@@ -171,6 +174,7 @@ export function BuilderPage() {
           <GeneratorForm
             editingId={editingGenerator}
             minLevels={minLevels}
+            maxLevels={maxLevels}
             onSuccess={() => {
               setShowForm(false);
               setEditingGenerator(null);
@@ -279,11 +283,12 @@ function GeneratorCard({ generator, onEdit, onDelete }: GeneratorCardProps) {
 interface GeneratorFormProps {
   editingId: string | null;
   minLevels: number;
+  maxLevels: number;
   onSuccess: () => void;
   onCancel: () => void;
 }
 
-function GeneratorForm({ editingId, minLevels, onSuccess, onCancel }: GeneratorFormProps) {
+function GeneratorForm({ editingId, minLevels, maxLevels, onSuccess, onCancel }: GeneratorFormProps) {
   const [generatorId, setGeneratorId] = useState('');
   const [name, setName] = useState('');
   const [version, setVersion] = useState('1.0.0');
@@ -442,7 +447,7 @@ function GeneratorForm({ editingId, minLevels, onSuccess, onCancel }: GeneratorF
           disabled={isSubmitting}
         />
         <small>
-          ZIP containing at least {minLevels} level files (.txt). 
+          ZIP containing {minLevels}-{maxLevels} level files (.txt). 
           Each file must be 16 lines (variable width up to 250).
           See <a href="https://github.com/amidos2006/Mario-AI-Framework" target="_blank" rel="noopener noreferrer">level format docs</a>.
         </small>

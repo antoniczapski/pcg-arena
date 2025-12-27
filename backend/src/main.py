@@ -47,7 +47,7 @@ from auth import (
 from builders import (
     GeneratorMetadata, GeneratorInfo as BuilderGeneratorInfo, BuilderError,
     get_user_generators, create_generator, update_generator, delete_generator,
-    MAX_GENERATORS_PER_USER, MIN_LEVELS_PER_GENERATOR
+    MAX_GENERATORS_PER_USER, MIN_LEVELS_PER_GENERATOR, MAX_LEVELS_PER_GENERATOR
 )
 
 # Load configuration first
@@ -2157,6 +2157,7 @@ async def list_my_generators(request: Request):
         "user_id": user.user_id,
         "max_generators": MAX_GENERATORS_PER_USER,
         "min_levels_required": MIN_LEVELS_PER_GENERATOR,
+        "max_levels_allowed": MAX_LEVELS_PER_GENERATOR,
         "generators": [
             {
                 "generator_id": g.generator_id,
