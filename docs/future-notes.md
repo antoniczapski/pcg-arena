@@ -31,3 +31,8 @@ cd client-java
 - level validation - check if robin agent (top 3) can pass the level
 - smarter generator selection (multi-arm-bandid style)
 - ability to give tags
+- showcase the whole map
+- add AI gameplay finish
+- login + builder profile
+- debug mode
+- 
