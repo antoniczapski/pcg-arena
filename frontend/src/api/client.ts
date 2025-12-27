@@ -19,7 +19,8 @@ import {
 export class ArenaApiClient {
   private baseUrl: string;
 
-  constructor(baseUrl: string = 'http://localhost:8080') {
+  constructor(baseUrl: string = '') {
+    // Empty string means use relative URLs (goes through Vite proxy in dev)
     this.baseUrl = baseUrl;
   }
 

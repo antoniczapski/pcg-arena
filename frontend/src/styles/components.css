@@ -19,6 +19,32 @@
   margin-bottom: 0;
 }
 
+/* Navigation */
+.app-nav {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: var(--spacing-md);
+}
+
+.nav-link {
+  color: var(--color-text-dim);
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.nav-link:hover {
+  color: var(--color-lime);
+}
+
+.nav-link.active {
+  color: var(--color-lime);
+  background: rgba(153, 230, 0, 0.1);
+}
+
 .app-main {
   flex: 1;
   display: flex;

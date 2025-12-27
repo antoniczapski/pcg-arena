@@ -21,7 +21,7 @@ import time
 from datetime import datetime, timezone
 
 import uvicorn
-from fastapi import FastAPI, Request, Header, Depends
+from fastapi import FastAPI, Request, Response, Header, Depends, UploadFile, Form, File
 from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.exceptions import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -37,6 +37,17 @@ from models import (
     BattleRequest, BattleResponse, Battle, BattleSide, GeneratorInfo, LevelFormat, LevelPayload, LevelMetadata, 
     BattlePresentation, PlayOrder, LevelFormatType, Encoding, VoteRequest, VoteResponse, VoteResult,
     LeaderboardPreview, LeaderboardGeneratorPreview
+)
+from auth import (
+    User, DevLoginRequest, GoogleLoginRequest,
+    get_current_user, create_user, get_user_by_email, get_user_by_google_sub,
+    create_session, delete_session, set_session_cookie, clear_session_cookie,
+    update_last_login, cleanup_expired_sessions, verify_google_token, SESSION_COOKIE_NAME
+)
+from builders import (
+    GeneratorMetadata, GeneratorInfo as BuilderGeneratorInfo, BuilderError,
+    get_user_generators, create_generator, update_generator, delete_generator,
+    MAX_GENERATORS_PER_USER, MIN_LEVELS_PER_GENERATOR
 )
 
 # Load configuration first
@@ -1934,6 +1945,424 @@ async def admin_trigger_backup(is_admin: bool = Depends(verify_admin_key)):
             f"Failed to create backup: {str(e)}",
             retryable=True,
             status_code=500
+        )
+
+
+# ============================================================================
+# Authentication Endpoints (Stage 3)
+# ============================================================================
+
+@app.get("/v1/auth/me")
+async def get_current_user_endpoint(request: Request):
+    """
+    Get the currently authenticated user.
+    
+    Returns user info if authenticated, 401 if not.
+    """
+    user = get_current_user(request)
+    
+    if not user:
+        raise_api_error(
+            ErrorCode.INVALID_PAYLOAD,
+            "Not authenticated",
+            retryable=False,
+            status_code=401
+        )
+    
+    return JSONResponse({
+        "protocol_version": "arena/v0",
+        "user": {
+            "user_id": user.user_id,
+            "email": user.email,
+            "display_name": user.display_name,
+            "created_at_utc": user.created_at_utc,
+            "last_login_utc": user.last_login_utc
+        }
+    })
+
+
+@app.post("/v1/auth/dev-login")
+async def dev_login(request: Request, response: Response, body: DevLoginRequest):
+    """
+    Dev login endpoint for local testing.
+    
+    Only available when ARENA_DEV_AUTH=true.
+    Creates or logs in a test user without OAuth.
+    """
+    if not config.dev_auth:
+        raise_api_error(
+            ErrorCode.INTERNAL_ERROR,
+            "Dev auth is disabled. Set ARENA_DEV_AUTH=true to enable.",
+            retryable=False,
+            status_code=403
+        )
+    
+    # Check if user exists
+    user = get_user_by_email(body.email)
+    
+    if not user:
+        # Create new user
+        user = create_user(
+            email=body.email,
+            display_name=body.display_name,
+            google_sub=None
+        )
+    else:
+        # Update last login
+        update_last_login(user.user_id)
+    
+    # Create session
+    session_token = create_session(user.user_id)
+    
+    logger.info(f"Dev login: user_id={user.user_id} email={user.email}")
+    
+    json_response = JSONResponse({
+        "protocol_version": "arena/v0",
+        "message": "Login successful",
+        "user": {
+            "user_id": user.user_id,
+            "email": user.email,
+            "display_name": user.display_name,
+            "created_at_utc": user.created_at_utc,
+            "last_login_utc": user.last_login_utc
+        }
+    })
+    
+    # Set cookie on the actual response object being returned
+    set_session_cookie(json_response, session_token)
+    return json_response
+
+
+@app.post("/v1/auth/google")
+async def google_login(request: Request, response: Response, body: GoogleLoginRequest):
+    """
+    Google OAuth login endpoint.
+    
+    Exchanges a Google ID token for a session.
+    """
+    if not config.google_client_id:
+        raise_api_error(
+            ErrorCode.INTERNAL_ERROR,
+            "Google OAuth is not configured. Set ARENA_GOOGLE_CLIENT_ID.",
+            retryable=False,
+            status_code=503
+        )
+    
+    # Verify Google token
+    token_info = verify_google_token(body.credential)
+    
+    if not token_info:
+        raise_api_error(
+            ErrorCode.INVALID_PAYLOAD,
+            "Invalid or expired Google token",
+            retryable=False,
+            status_code=401
+        )
+    
+    # Check if user exists by Google sub
+    user = get_user_by_google_sub(token_info["google_sub"])
+    
+    if not user:
+        # Check if user exists by email
+        user = get_user_by_email(token_info["email"])
+        
+        if not user:
+            # Create new user
+            user = create_user(
+                email=token_info["email"],
+                display_name=token_info["name"],
+                google_sub=token_info["google_sub"]
+            )
+        else:
+            # Link Google account to existing user
+            # (Would need to update the user record - simplified for now)
+            update_last_login(user.user_id)
+    else:
+        update_last_login(user.user_id)
+    
+    # Create session
+    session_token = create_session(user.user_id)
+    
+    logger.info(f"Google login: user_id={user.user_id} email={user.email}")
+    
+    json_response = JSONResponse({
+        "protocol_version": "arena/v0",
+        "message": "Login successful",
+        "user": {
+            "user_id": user.user_id,
+            "email": user.email,
+            "display_name": user.display_name,
+            "created_at_utc": user.created_at_utc,
+            "last_login_utc": user.last_login_utc
+        }
+    })
+    
+    # Set cookie on the actual response object being returned
+    set_session_cookie(json_response, session_token)
+    return json_response
+
+
+@app.post("/v1/auth/logout")
+async def logout(request: Request, response: Response):
+    """
+    Logout the current user.
+    
+    Clears the session cookie and deletes the session.
+    """
+    session_token = request.cookies.get(SESSION_COOKIE_NAME)
+    
+    if session_token:
+        delete_session(session_token)
+    
+    json_response = JSONResponse({
+        "protocol_version": "arena/v0",
+        "message": "Logged out successfully"
+    })
+    
+    # Clear cookie on the actual response object being returned
+    clear_session_cookie(json_response)
+    return json_response
+
+
+# ============================================================================
+# Builder Profile Endpoints (Stage 3)
+# ============================================================================
+
+def require_auth(request: Request) -> User:
+    """Helper to require authentication for an endpoint."""
+    user = get_current_user(request)
+    if not user:
+        raise_api_error(
+            ErrorCode.INVALID_PAYLOAD,
+            "Authentication required",
+            retryable=False,
+            status_code=401
+        )
+    return user
+
+
+@app.get("/v1/builders/me/generators")
+async def list_my_generators(request: Request):
+    """
+    List generators owned by the current user.
+    
+    Returns up to MAX_GENERATORS_PER_USER generators with their metadata and stats.
+    """
+    user = require_auth(request)
+    
+    generators = get_user_generators(user.user_id)
+    
+    return JSONResponse({
+        "protocol_version": "arena/v0",
+        "user_id": user.user_id,
+        "max_generators": MAX_GENERATORS_PER_USER,
+        "min_levels_required": MIN_LEVELS_PER_GENERATOR,
+        "generators": [
+            {
+                "generator_id": g.generator_id,
+                "name": g.name,
+                "version": g.version,
+                "description": g.description,
+                "tags": g.tags,
+                "documentation_url": g.documentation_url,
+                "is_active": g.is_active,
+                "level_count": g.level_count,
+                "rating": g.rating,
+                "games_played": g.games_played,
+                "wins": g.wins,
+                "losses": g.losses,
+                "ties": g.ties,
+                "created_at_utc": g.created_at_utc,
+                "updated_at_utc": g.updated_at_utc
+            }
+            for g in generators
+        ]
+    })
+
+
+@app.post("/v1/builders/generators")
+@limiter.limit("5/hour")
+async def create_generator_endpoint(
+    request: Request,
+    generator_id: str = None,
+    name: str = None,
+    version: str = "1.0.0",
+    description: str = "",
+    tags: str = "",
+    documentation_url: str = None,
+    levels_zip: UploadFile = None
+):
+    """
+    Create a new generator with levels.
+    
+    Accepts multipart form data with generator metadata and a ZIP file of levels.
+    """
+    from fastapi import Form, File
+    user = require_auth(request)
+    
+    # For multipart forms, we need to handle this differently
+    # This is a simplified version - real implementation would use Form() and File()
+    raise_api_error(
+        ErrorCode.INTERNAL_ERROR,
+        "Use the multipart endpoint at /v1/builders/generators/upload",
+        retryable=False,
+        status_code=400
+    )
+
+
+@app.post("/v1/builders/generators/upload")
+@limiter.limit("5/hour")
+async def upload_generator(
+    request: Request,
+    generator_id: str = Form(...),
+    name: str = Form(...),
+    version: str = Form(default="1.0.0"),
+    description: str = Form(default=""),
+    tags: str = Form(default=""),
+    documentation_url: str = Form(default=None),
+    levels_zip: UploadFile = File(...)
+):
+    """
+    Create a new generator with levels (multipart upload).
+    
+    Form fields:
+    - generator_id: Unique ID for the generator (3-32 chars, alphanumeric/hyphens)
+    - name: Display name (3-100 chars)
+    - version: Version string (default: "1.0.0")
+    - description: Description (max 1000 chars)
+    - tags: Comma-separated tags (max 10)
+    - documentation_url: Optional URL to documentation
+    - levels_zip: ZIP file containing at least 50 level .txt files
+    """
+    user = require_auth(request)
+    
+    # Parse tags
+    tag_list = [t.strip() for t in tags.split(",") if t.strip()] if tags else []
+    
+    metadata = GeneratorMetadata(
+        generator_id=generator_id,
+        name=name,
+        version=version,
+        description=description,
+        tags=tag_list[:10],  # Limit to 10 tags
+        documentation_url=documentation_url if documentation_url else None
+    )
+    
+    try:
+        generator = await create_generator(user.user_id, metadata, levels_zip)
+        
+        return JSONResponse({
+            "protocol_version": "arena/v0",
+            "message": f"Generator '{generator.generator_id}' created successfully with {generator.level_count} levels",
+            "generator": {
+                "generator_id": generator.generator_id,
+                "name": generator.name,
+                "version": generator.version,
+                "description": generator.description,
+                "tags": generator.tags,
+                "documentation_url": generator.documentation_url,
+                "is_active": generator.is_active,
+                "level_count": generator.level_count,
+                "rating": generator.rating,
+                "games_played": generator.games_played
+            }
+        }, status_code=201)
+    
+    except BuilderError as e:
+        raise_api_error(
+            ErrorCode.INVALID_PAYLOAD,
+            e.message,
+            retryable=False,
+            status_code=e.status_code,
+            details={"code": e.code}
+        )
+
+
+@app.put("/v1/builders/generators/{generator_id}/upload")
+@limiter.limit("5/hour")
+async def update_generator_endpoint(
+    request: Request,
+    generator_id: str,
+    name: str = Form(...),
+    version: str = Form(...),
+    description: str = Form(default=""),
+    tags: str = Form(default=""),
+    documentation_url: str = Form(default=None),
+    levels_zip: UploadFile = File(...)
+):
+    """
+    Update a generator with new levels (new version).
+    
+    Keeps rating and games_played, replaces all levels.
+    """
+    user = require_auth(request)
+    
+    # Parse tags
+    tag_list = [t.strip() for t in tags.split(",") if t.strip()] if tags else []
+    
+    metadata = GeneratorMetadata(
+        generator_id=generator_id,
+        name=name,
+        version=version,
+        description=description,
+        tags=tag_list[:10],
+        documentation_url=documentation_url if documentation_url else None
+    )
+    
+    try:
+        generator = await update_generator(user.user_id, generator_id, metadata, levels_zip)
+        
+        return JSONResponse({
+            "protocol_version": "arena/v0",
+            "message": f"Generator '{generator_id}' updated to version {version} with {generator.level_count} levels",
+            "generator": {
+                "generator_id": generator.generator_id,
+                "name": generator.name,
+                "version": generator.version,
+                "description": generator.description,
+                "tags": generator.tags,
+                "documentation_url": generator.documentation_url,
+                "is_active": generator.is_active,
+                "level_count": generator.level_count,
+                "rating": generator.rating,
+                "games_played": generator.games_played
+            }
+        })
+    
+    except BuilderError as e:
+        raise_api_error(
+            ErrorCode.INVALID_PAYLOAD,
+            e.message,
+            retryable=False,
+            status_code=e.status_code,
+            details={"code": e.code}
+        )
+
+
+@app.delete("/v1/builders/generators/{generator_id}")
+async def delete_generator_endpoint(request: Request, generator_id: str):
+    """
+    Delete a generator and all its levels.
+    
+    This action cannot be undone. Rating history is preserved in rating_events.
+    """
+    user = require_auth(request)
+    
+    try:
+        delete_generator(user.user_id, generator_id)
+        
+        return JSONResponse({
+            "protocol_version": "arena/v0",
+            "message": f"Generator '{generator_id}' deleted successfully"
+        })
+    
+    except BuilderError as e:
+        raise_api_error(
+            ErrorCode.INVALID_PAYLOAD,
+            e.message,
+            retryable=False,
+            status_code=e.status_code,
+            details={"code": e.code}
         )
 
 

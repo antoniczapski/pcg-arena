@@ -35,4 +35,10 @@ cd client-java
 - add AI gameplay finish
 - login + builder profile
 - debug mode
-- 
+- abuse prevention 
+    - scoring alignemnt (every 10 battles give one control battle between best and worst)
+
+- excluding repeated level playing
+- pcg audio overview for engagement
+- community duty - please play 10 battles while submitting new generator
+- add statistics for builders (detailed stats on their generators/levels)

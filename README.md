@@ -618,18 +618,45 @@ See `docs/stage2-spec.md` and `frontend/spec.md` for complete documentation.
 
 ---
 
-### Stage 3 (Backend refinement) — PLANNED
+### Stage 3 (Builder Profile) — IN PROGRESS
+
+**Purpose:** Enable researchers to submit their own generators
+
+**Status:** Phase 1 Complete (Dummy Auth), Phases 2-3 Planned
+
+**Phase 1 deliverables (complete):**
+* User authentication system (dev auth for testing)
+* Builder profile page with generator management
+* Generator submission via ZIP upload (50+ levels required)
+* Generator update with version tracking (keeps rating)
+* Generator deletion
+* Immediate leaderboard integration
+
+**Phase 2 deliverables (planned):**
+* Google OAuth integration
+* Privacy notice and consent
+
+**Phase 3 deliverables (planned):**
+* Production deployment with real OAuth
+* Rate limiting for submissions
+
+**Technical implementation:**
+- Database: `users` table, `user_sessions` table, `generators.owner_user_id`
+- Backend: `/v1/auth/*` and `/v1/builders/*` endpoints
+- Frontend: React Router, AuthContext, BuilderPage
+
+See `docs/stage3-spec.md` for complete documentation.
+
+---
+
+### Stage 4 (Platform refinement) — FUTURE
 
 **Purpose:** Turn platform into research-grade utility
 
-**Planned deliverables:**
+**Possible directions:**
 * Advanced matchmaking:
   - Uncertainty-aware pairing (calibration battles for new generators)
   - Coverage-aware pairing (avoid repetitive matchups)
-  - Rating convergence optimization
-* Generator versioning & seasons:
-  - Immutable season archives
-  - Version tracking for reproducibility
 * Diagnostic surfaces:
   - Completion/quit rates per generator
   - Vote breakdown analysis
@@ -637,36 +664,15 @@ See `docs/stage2-spec.md` and `frontend/spec.md` for complete documentation.
 * Exportable dataset:
   - Anonymized pairwise preferences
   - Publication-ready format
-* Integrity features:
-  - Enhanced rate limiting
-  - Anomaly detection for voting patterns
-  - Session validation
+* Community features:
+  - Moderation tools
+  - Researcher profiles
+  - Generator commenting
 
 **Success criteria:**
 - Generate rating curves over time
-- Provide final rankings with uncertainty bounds
-- Enable qualitative analysis via tags + examples
-- Repeatable generator onboarding process
-
----
-
-### Stage 4 (Platform expansion) — FUTURE
-
-**Purpose:** Scale to community platform with researcher API
-
-**Possible directions:**
-* User accounts and authentication
-* Moderation and reporting tools
-* Community features (streaks, badges, leaderboards)
-* Curated "best of" playlists
-* Sandboxed generator submissions
-* Public API for external researchers
-
-**Success criteria:**
-- Frictionless onboarding
-- Recurring raters for faster convergence
-- Growing generator ecosystem
-- Sustainable moderation
+- Enable qualitative analysis via tags
+- Sustainable community growth
 
 ---
 

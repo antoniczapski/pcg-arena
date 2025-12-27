@@ -11,6 +11,12 @@ pydantic>=2.5.0,<3.0.0
 # Rate limiting
 slowapi>=0.1.9,<1.0.0
 
+# Multipart file uploads
+python-multipart>=0.0.6,<1.0.0
+
+# Google OAuth (Phase 2)
+google-auth>=2.25.0,<3.0.0
+
 # No additional DB drivers needed - sqlite3 is in Python stdlib
 
 # Testing dependencies

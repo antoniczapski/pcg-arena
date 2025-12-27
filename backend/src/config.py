@@ -41,6 +41,10 @@ class Config:
     
     # Logging (Stage 1)
     log_level: str
+    
+    # Authentication (Stage 3)
+    dev_auth: bool  # Enable dev login (testing only)
+    google_client_id: str  # Google OAuth client ID
 
 
 def load_config() -> Config:
@@ -72,5 +76,7 @@ def load_config() -> Config:
         admin_key=os.environ.get("ARENA_ADMIN_KEY", ""),
         allowed_origins=allowed_origins,
         log_level=os.environ.get("ARENA_LOG_LEVEL", "INFO").upper(),
+        dev_auth=os.environ.get("ARENA_DEV_AUTH", "false").lower() in ("true", "1", "yes"),
+        google_client_id=os.environ.get("ARENA_GOOGLE_CLIENT_ID", ""),
     )
 
