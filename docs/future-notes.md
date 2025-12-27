@@ -42,3 +42,4 @@ cd client-java
 - pcg audio overview for engagement
 - community duty - please play 10 battles while submitting new generator
 - add statistics for builders (detailed stats on their generators/levels)
+- prepare oauth for >100 users (1-2 weeks processing)

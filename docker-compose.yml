@@ -30,6 +30,8 @@ services:
       - ARENA_DEV_AUTH=true
       # CORS: Allow frontend origins (required for credentials/cookies)
       - ARENA_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001,http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:3001
+      # Google OAuth Client ID (for production, also works in local testing)
+      - ARENA_GOOGLE_CLIENT_ID=918431758586-bpmp3he6jum82j38ja46jal7aa2636c3.apps.googleusercontent.com
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]

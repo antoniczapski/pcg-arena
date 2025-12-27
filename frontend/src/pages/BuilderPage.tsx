@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useAuth, DEV_AUTH_ENABLED, GOOGLE_CLIENT_ID } from '../contexts/AuthContext';
 import '../styles/builder.css';
 
 // In development, use relative paths to go through Vite's proxy
@@ -34,7 +34,7 @@ interface GeneratorsResponse {
 }
 
 export function BuilderPage() {
-  const { user, isAuthenticated, isLoading: authLoading, login, logout } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading, login, logout, isGoogleReady, renderGoogleButton } = useAuth();
   const [generators, setGenerators] = useState<GeneratorInfo[]>([]);
   const [maxGenerators, setMaxGenerators] = useState(3);
   const [minLevels, setMinLevels] = useState(50);
@@ -43,6 +43,9 @@ export function BuilderPage() {
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingGenerator, setEditingGenerator] = useState<string | null>(null);
+  
+  // Google Sign-In button container ref (must be called before any early returns)
+  const googleButtonRef = useRef<HTMLDivElement>(null);
 
   const fetchGenerators = useCallback(async () => {
     if (!isAuthenticated) return;
@@ -76,6 +79,13 @@ export function BuilderPage() {
   useEffect(() => {
     fetchGenerators();
   }, [fetchGenerators]);
+
+  // Render Google button when ready
+  useEffect(() => {
+    if (googleButtonRef.current && isGoogleReady && !isAuthenticated) {
+      renderGoogleButton(googleButtonRef.current);
+    }
+  }, [isGoogleReady, isAuthenticated, renderGoogleButton]);
 
   const handleDelete = async (generatorId: string) => {
     if (!confirm(`Are you sure you want to delete "${generatorId}"? This action cannot be undone.`)) {
@@ -116,11 +126,35 @@ export function BuilderPage() {
         <div className="builder-login">
           <h2>Builder Profile</h2>
           <p>Sign in to submit your own generators and compete on the leaderboard.</p>
-          <button className="login-button" onClick={() => login()}>
-            Sign In (Dev Mode)
-          </button>
-          <p className="login-hint">
-            In production, this will use Google OAuth for authentication.
+          
+          {/* Google Sign-In Button */}
+          {GOOGLE_CLIENT_ID && (
+            <div className="google-login-container">
+              <div ref={googleButtonRef} className="google-button-wrapper"></div>
+              {!isGoogleReady && <p className="login-hint">Loading Google Sign-In...</p>}
+            </div>
+          )}
+          
+          {/* Dev Mode Login (only when enabled) */}
+          {DEV_AUTH_ENABLED && (
+            <>
+              <div className="login-divider">
+                <span>or</span>
+              </div>
+              <button className="login-button dev-login" onClick={() => login()}>
+                Sign In (Dev Mode)
+              </button>
+            </>
+          )}
+          
+          {/* Fallback if no auth methods available */}
+          {!GOOGLE_CLIENT_ID && !DEV_AUTH_ENABLED && (
+            <p className="login-error">No authentication method configured</p>
+          )}
+          
+          <p className="privacy-notice">
+            By signing in, you agree to our use of your email and display name
+            to identify your generator submissions.
           </p>
         </div>
       </div>

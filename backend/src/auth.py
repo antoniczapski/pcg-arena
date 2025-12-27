@@ -303,21 +303,64 @@ def clear_session_cookie(response: Response) -> None:
     response.delete_cookie(key=SESSION_COOKIE_NAME)
 
 
-# Google OAuth verification (placeholder - will be implemented in Phase 2)
+# Google OAuth verification
 def verify_google_token(credential: str) -> Optional[dict]:
     """
     Verify a Google ID token and extract user info.
     
+    Uses Google's official library to verify the JWT signature,
+    check expiration, and validate the audience (client ID).
+    
     Args:
-        credential: The Google ID token
+        credential: The Google ID token (JWT from frontend)
     
     Returns:
         Dict with email, google_sub, and name if valid, None otherwise
-    
-    Note: This is a placeholder for Phase 2 implementation.
     """
-    # Phase 2 will implement actual Google token verification
-    # For now, return None to indicate not implemented
-    logger.warning("Google OAuth not yet implemented (Phase 2)")
-    return None
+    if not config.google_client_id:
+        logger.error("Google OAuth not configured: ARENA_GOOGLE_CLIENT_ID not set")
+        return None
+    
+    try:
+        from google.oauth2 import id_token
+        from google.auth.transport import requests as google_requests
+        
+        # Verify the token with Google's servers
+        # This checks: signature, expiration, audience, and issuer
+        idinfo = id_token.verify_oauth2_token(
+            credential, 
+            google_requests.Request(), 
+            config.google_client_id
+        )
+        
+        # Verify the token was issued by Google
+        issuer = idinfo.get("iss", "")
+        if issuer not in ["accounts.google.com", "https://accounts.google.com"]:
+            logger.warning(f"Invalid token issuer: {issuer}")
+            return None
+        
+        # Extract user info
+        email = idinfo.get("email")
+        google_sub = idinfo.get("sub")  # Unique, stable Google user ID
+        name = idinfo.get("name", email.split("@")[0] if email else "User")
+        
+        if not email or not google_sub:
+            logger.warning("Token missing required fields (email or sub)")
+            return None
+        
+        logger.info(f"Google token verified for: {email}")
+        
+        return {
+            "email": email,
+            "google_sub": google_sub,
+            "name": name
+        }
+        
+    except ValueError as e:
+        # Token is invalid (expired, wrong audience, bad signature, etc.)
+        logger.warning(f"Google token verification failed: {e}")
+        return None
+    except Exception as e:
+        logger.error(f"Unexpected error verifying Google token: {e}")
+        return None
 
