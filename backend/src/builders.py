@@ -421,10 +421,19 @@ async def update_generator(
     
     try:
         with transaction() as cursor:
-            # Delete old levels
+            # Delete old levels that are NOT referenced by battles
+            # This preserves historical battle data while allowing updates
             cursor.execute(
-                "DELETE FROM levels WHERE generator_id = ?",
-                (generator_id,)
+                """
+                DELETE FROM levels 
+                WHERE generator_id = ? 
+                AND level_id NOT IN (
+                    SELECT left_level_id FROM battles WHERE left_generator_id = ?
+                    UNION
+                    SELECT right_level_id FROM battles WHERE right_generator_id = ?
+                )
+                """,
+                (generator_id, generator_id, generator_id)
             )
             
             # Update generator metadata
@@ -451,12 +460,14 @@ async def update_generator(
                 )
             )
             
-            # Insert new levels
+            # Insert or replace new levels
+            # Using INSERT OR REPLACE to handle levels that might already exist
+            # (e.g., if same filename as a level referenced by battles)
             for filename, tilemap, width, content_hash in levels:
                 level_id = f"{generator_id}::{filename}"
                 cursor.execute(
                     """
-                    INSERT INTO levels (
+                    INSERT OR REPLACE INTO levels (
                         level_id, generator_id, content_format, width, height,
                         tilemap_text, content_hash, seed, controls_json, created_at_utc
                     ) VALUES (?, ?, 'ASCII_TILEMAP', ?, ?, ?, ?, NULL, '{}', ?)
@@ -464,17 +475,24 @@ async def update_generator(
                     (level_id, generator_id, width, LEVEL_HEIGHT, tilemap, content_hash, now_utc)
                 )
         
-        logger.info(f"Updated generator: generator_id={generator_id} owner={user_id} levels={len(levels)}")
+        logger.info(f"Updated generator: generator_id={generator_id} owner={user_id} new_levels={len(levels)}")
         
-        # Get current rating info
-        cursor = conn.execute(
+        # Get current rating info and actual level count
+        rating_cursor = conn.execute(
             """
             SELECT rating_value, games_played, wins, losses, ties
             FROM ratings WHERE generator_id = ?
             """,
             (generator_id,)
         )
-        rating_row = cursor.fetchone()
+        rating_row = rating_cursor.fetchone()
+        
+        # Get actual level count (may include some historical levels)
+        level_count_row = conn.execute(
+            "SELECT COUNT(*) as count FROM levels WHERE generator_id = ?",
+            (generator_id,)
+        ).fetchone()
+        actual_level_count = level_count_row["count"] if level_count_row else len(levels)
         
         return GeneratorInfo(
             generator_id=generator_id,
@@ -484,7 +502,7 @@ async def update_generator(
             tags=metadata.tags,
             documentation_url=metadata.documentation_url,
             is_active=True,
-            level_count=len(levels),
+            level_count=actual_level_count,
             rating=rating_row["rating_value"] if rating_row else config.initial_rating,
             games_played=rating_row["games_played"] if rating_row else 0,
             wins=rating_row["wins"] if rating_row else 0,
@@ -509,6 +527,10 @@ def delete_generator(user_id: str, generator_id: str) -> None:
     """
     Delete a generator and all its levels.
     
+    If the generator has battles (historical data), it will be "soft deleted"
+    by marking it as inactive and removing user ownership, rather than 
+    actually deleting it (to preserve battle history).
+    
     Args:
         user_id: The owner's user ID
         generator_id: The generator to delete
@@ -526,27 +548,52 @@ def delete_generator(user_id: str, generator_id: str) -> None:
     
     conn = get_connection()
     
+    # Check if generator has battles
+    has_battles = conn.execute(
+        """
+        SELECT COUNT(*) as count FROM battles 
+        WHERE left_generator_id = ? OR right_generator_id = ?
+        """,
+        (generator_id, generator_id)
+    ).fetchone()["count"] > 0
+    
     try:
         with transaction() as cursor:
-            # Delete levels first (foreign key)
-            cursor.execute(
-                "DELETE FROM levels WHERE generator_id = ?",
-                (generator_id,)
-            )
-            
-            # Delete rating
-            cursor.execute(
-                "DELETE FROM ratings WHERE generator_id = ?",
-                (generator_id,)
-            )
-            
-            # Delete generator
-            cursor.execute(
-                "DELETE FROM generators WHERE generator_id = ?",
-                (generator_id,)
-            )
-        
-        logger.info(f"Deleted generator: generator_id={generator_id} owner={user_id}")
+            if has_battles:
+                # Soft delete: mark as inactive and remove owner
+                # This preserves battle history while hiding from user
+                cursor.execute(
+                    """
+                    UPDATE generators 
+                    SET is_active = 0, 
+                        owner_user_id = NULL,
+                        name = name || ' [deleted]',
+                        updated_at_utc = ?
+                    WHERE generator_id = ?
+                    """,
+                    (datetime.now(timezone.utc).isoformat(), generator_id)
+                )
+                logger.info(f"Soft-deleted generator (has battles): generator_id={generator_id} owner={user_id}")
+            else:
+                # Hard delete: no battles, safe to remove everything
+                # Delete levels first (foreign key)
+                cursor.execute(
+                    "DELETE FROM levels WHERE generator_id = ?",
+                    (generator_id,)
+                )
+                
+                # Delete rating
+                cursor.execute(
+                    "DELETE FROM ratings WHERE generator_id = ?",
+                    (generator_id,)
+                )
+                
+                # Delete generator
+                cursor.execute(
+                    "DELETE FROM generators WHERE generator_id = ?",
+                    (generator_id,)
+                )
+                logger.info(f"Hard-deleted generator: generator_id={generator_id} owner={user_id}")
     
     except Exception as e:
         logger.error(f"Failed to delete generator: {e}")

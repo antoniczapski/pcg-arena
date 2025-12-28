@@ -90,11 +90,14 @@ export function BuilderPage() {
   }, [fetchGenerators]);
 
   // Render Google button when ready
+  // Re-render after auth errors or mode changes to ensure button is visible
   useEffect(() => {
     if (googleButtonRef.current && isGoogleReady && !isAuthenticated) {
+      // Clear any existing content first
+      googleButtonRef.current.innerHTML = '';
       renderGoogleButton(googleButtonRef.current);
     }
-  }, [isGoogleReady, isAuthenticated, renderGoogleButton]);
+  }, [isGoogleReady, isAuthenticated, renderGoogleButton, authMode, authError]);
 
   const handleDelete = async (generatorId: string) => {
     if (!confirm(`Are you sure you want to delete "${generatorId}"? This action cannot be undone.`)) {
