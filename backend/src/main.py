@@ -47,7 +47,7 @@ from auth import (
     hash_password, verify_password, validate_password, get_password_hash_by_email,
     create_email_verification_token, verify_email_token, send_verification_email,
     create_password_reset_token, verify_password_reset_token, use_password_reset_token,
-    update_user_password, send_password_reset_email
+    update_user_password, send_password_reset_email, mark_email_verified
 )
 from builders import (
     GeneratorMetadata, GeneratorInfo as BuilderGeneratorInfo, BuilderError,
@@ -2074,7 +2074,7 @@ async def google_login(request: Request, response: Response, body: GoogleLoginRe
         user = get_user_by_email(token_info["email"])
         
         if not user:
-            # Create new user
+            # Create new user (auto-verified since using Google OAuth)
             user = create_user(
                 email=token_info["email"],
                 display_name=token_info["name"],
@@ -2082,16 +2082,21 @@ async def google_login(request: Request, response: Response, body: GoogleLoginRe
             )
         else:
             # Link Google account to existing user
-            # (Would need to update the user record - simplified for now)
+            # Mark as verified since they're logging in via Google
             update_last_login(user.user_id)
+            mark_email_verified(user.user_id)
     else:
         update_last_login(user.user_id)
+        # Ensure they're marked as verified (Google users are always verified)
+        if not user.is_email_verified:
+            mark_email_verified(user.user_id)
     
     # Create session
     session_token = create_session(user.user_id)
     
     logger.info(f"Google login: user_id={user.user_id} email={user.email}")
     
+    # Google OAuth users are always verified
     json_response = JSONResponse({
         "protocol_version": "arena/v0",
         "message": "Login successful",
@@ -2101,7 +2106,7 @@ async def google_login(request: Request, response: Response, body: GoogleLoginRe
             "display_name": user.display_name,
             "created_at_utc": user.created_at_utc,
             "last_login_utc": user.last_login_utc,
-            "is_email_verified": user.is_email_verified
+            "is_email_verified": True  # Google OAuth users are always verified
         }
     })
     

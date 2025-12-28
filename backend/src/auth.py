@@ -123,12 +123,14 @@ def create_user(email: str, display_name: str, google_sub: Optional[str] = None,
     
     try:
         with transaction() as cursor:
+            # Google users are auto-verified (Google has verified their email)
+            is_verified = 1 if google_sub else 0
             cursor.execute(
                 """
-                INSERT INTO users (user_id, email, google_sub, display_name, password_hash, created_at_utc, last_login_utc)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO users (user_id, email, google_sub, display_name, password_hash, is_email_verified, created_at_utc, last_login_utc)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """,
-                (user_id, email, google_sub, display_name, password_hash, now_utc, now_utc)
+                (user_id, email, google_sub, display_name, password_hash, is_verified, now_utc, now_utc)
             )
         
         logger.info(f"Created new user: user_id={user_id} email={email}")
@@ -238,6 +240,16 @@ def update_last_login(user_id: str) -> None:
             "UPDATE users SET last_login_utc = ? WHERE user_id = ?",
             (now_utc, user_id)
         )
+
+
+def mark_email_verified(user_id: str) -> None:
+    """Mark a user's email as verified."""
+    with transaction() as cursor:
+        cursor.execute(
+            "UPDATE users SET is_email_verified = 1 WHERE user_id = ?",
+            (user_id,)
+        )
+    logger.info(f"Marked email as verified for user {user_id}")
 
 
 def create_session(user_id: str) -> str:
