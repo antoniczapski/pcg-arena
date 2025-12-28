@@ -45,6 +45,14 @@ class Config:
     # Authentication (Stage 3)
     dev_auth: bool  # Enable dev login (testing only)
     google_client_id: str  # Google OAuth client ID
+    
+    # Email (Stage 3)
+    sendgrid_api_key: str  # SendGrid API key for email sending
+    sendgrid_from_email: str  # From email address
+    sendgrid_from_name: str  # From name
+    
+    # Frontend URL (for email links)
+    frontend_url: str  # URL of the frontend (for verification links)
 
 
 def load_config() -> Config:
@@ -78,5 +86,9 @@ def load_config() -> Config:
         log_level=os.environ.get("ARENA_LOG_LEVEL", "INFO").upper(),
         dev_auth=os.environ.get("ARENA_DEV_AUTH", "false").lower() in ("true", "1", "yes"),
         google_client_id=os.environ.get("ARENA_GOOGLE_CLIENT_ID", ""),
+        sendgrid_api_key=os.environ.get("SENDGRID_API_KEY", ""),
+        sendgrid_from_email=os.environ.get("SENDGRID_FROM_EMAIL", "noreply@pcg-arena.com"),
+        sendgrid_from_name=os.environ.get("SENDGRID_FROM_NAME", "PCG Arena"),
+        frontend_url=os.environ.get("ARENA_FRONTEND_URL", "http://localhost:3000"),
     )
 

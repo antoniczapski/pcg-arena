@@ -9,8 +9,8 @@ export default defineConfig({
     'import.meta.env.VITE_API_BASE_URL': JSON.stringify(''),
     // Google OAuth Client ID
     'import.meta.env.VITE_GOOGLE_CLIENT_ID': JSON.stringify('918431758586-bpmp3he6jum82j38ja46jal7aa2636c3.apps.googleusercontent.com'),
-    // Enable dev auth for local testing (set to 'false' string to disable)
-    'import.meta.env.VITE_DEV_AUTH': JSON.stringify('true'),
+    // Dev auth disabled - use real authentication only
+    'import.meta.env.VITE_DEV_AUTH': JSON.stringify('false'),
   },
   server: {
     port: 3000,

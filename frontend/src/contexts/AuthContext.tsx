@@ -48,11 +48,13 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   isGoogleReady: boolean;
-  login: (email?: string, displayName?: string) => Promise<void>;
+  loginWithEmail: (email: string, password: string) => Promise<void>;
+  registerWithEmail: (email: string, password: string, displayName: string) => Promise<void>;
   loginWithGoogle: (credential: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   renderGoogleButton: (element: HTMLElement) => void;
+  resendVerificationEmail: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -97,6 +99,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // Google login handler
   const loginWithGoogle = useCallback(async (credential: string) => {
+    console.log('Google OAuth: Received credential, sending to backend...');
     setIsLoading(true);
     try {
       const response = await fetch(`${API_BASE_URL}/v1/auth/google`, {
@@ -110,14 +113,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       if (!response.ok) {
         const error = await response.json();
+        console.error('Google OAuth: Backend returned error:', error);
+        // Show alert so user sees the error
+        alert(`Google Sign-In failed: ${error.error?.message || 'Unknown error'}`);
         throw new Error(error.error?.message || 'Google login failed');
       }
 
       const data = await response.json();
       setUser(data.user);
-      console.log('Google login successful:', data.user.email);
+      console.log('Google OAuth: Login successful!', data.user.email);
     } catch (error) {
-      console.error('Google login failed:', error);
+      console.error('Google OAuth: Failed:', error);
       throw error;
     } finally {
       setIsLoading(false);
@@ -184,20 +190,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [isGoogleReady]);
 
-  // Dev login for local testing
-  const login = async (email?: string, displayName?: string) => {
+  // Email/password login
+  const loginWithEmail = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/v1/auth/dev-login`, {
+      const response = await fetch(`${API_BASE_URL}/v1/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({
-          email: email || 'test@example.com',
-          display_name: displayName || 'Test User',
-        }),
+        body: JSON.stringify({ email, password }),
       });
 
       if (!response.ok) {
@@ -207,8 +210,38 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       const data = await response.json();
       setUser(data.user);
+      console.log('Email login successful:', data.user.email);
     } catch (error) {
       console.error('Login failed:', error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Email/password registration
+  const registerWithEmail = async (email: string, password: string, displayName: string) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/v1/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ email, password, display_name: displayName }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error?.message || 'Registration failed');
+      }
+
+      const data = await response.json();
+      setUser(data.user);
+      console.log('Registration successful:', data.user.email);
+    } catch (error) {
+      console.error('Registration failed:', error);
       throw error;
     } finally {
       setIsLoading(false);
@@ -235,16 +268,39 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
+  const resendVerificationEmail = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/v1/auth/resend-verification`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error?.message || 'Failed to send verification email');
+      }
+
+      const data = await response.json();
+      alert(data.message || 'Verification email sent! Please check your inbox.');
+    } catch (error) {
+      console.error('Failed to resend verification email:', error);
+      alert(`Failed to send verification email: ${(error as Error).message}`);
+      throw error;
+    }
+  };
+
   const value: AuthContextType = {
     user,
     isLoading,
     isAuthenticated: !!user,
     isGoogleReady,
-    login,
+    loginWithEmail,
+    registerWithEmail,
     loginWithGoogle,
     logout,
     refreshUser,
     renderGoogleButton,
+    resendVerificationEmail,
   };
 
   return (

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useAuth, DEV_AUTH_ENABLED, GOOGLE_CLIENT_ID } from '../contexts/AuthContext';
+import { useAuth, GOOGLE_CLIENT_ID } from '../contexts/AuthContext';
 import '../styles/builder.css';
 
 // In development, use relative paths to go through Vite's proxy
@@ -34,7 +34,7 @@ interface GeneratorsResponse {
 }
 
 export function BuilderPage() {
-  const { user, isAuthenticated, isLoading: authLoading, login, logout, isGoogleReady, renderGoogleButton } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading, logout, isGoogleReady, renderGoogleButton, loginWithEmail, registerWithEmail, resendVerificationEmail } = useAuth();
   const [generators, setGenerators] = useState<GeneratorInfo[]>([]);
   const [maxGenerators, setMaxGenerators] = useState(3);
   const [minLevels, setMinLevels] = useState(50);
@@ -43,6 +43,15 @@ export function BuilderPage() {
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingGenerator, setEditingGenerator] = useState<string | null>(null);
+  
+  // Login/Register form state
+  const [authMode, setAuthMode] = useState<'login' | 'register' | 'forgot'>('login');
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [authDisplayName, setAuthDisplayName] = useState('');
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [authSubmitting, setAuthSubmitting] = useState(false);
+  const [forgotPasswordSent, setForgotPasswordSent] = useState(false);
   
   // Google Sign-In button container ref (must be called before any early returns)
   const googleButtonRef = useRef<HTMLDivElement>(null);
@@ -120,6 +129,29 @@ export function BuilderPage() {
     );
   }
 
+  // Handle email login/register form submission
+  const handleAuthSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError(null);
+    setAuthSubmitting(true);
+    
+    try {
+      if (authMode === 'login') {
+        await loginWithEmail(authEmail, authPassword);
+      } else if (authMode === 'register') {
+        if (!authDisplayName.trim()) {
+          throw new Error('Display name is required');
+        }
+        await registerWithEmail(authEmail, authPassword, authDisplayName);
+      }
+      // Note: 'forgot' mode has its own form handler
+    } catch (err) {
+      setAuthError(err instanceof Error ? err.message : 'Authentication failed');
+    } finally {
+      setAuthSubmitting(false);
+    }
+  };
+
   if (!isAuthenticated) {
     return (
       <div className="builder-page">
@@ -135,27 +167,192 @@ export function BuilderPage() {
             </div>
           )}
           
-          {/* Dev Mode Login (only when enabled) */}
-          {DEV_AUTH_ENABLED && (
-            <>
-              <div className="login-divider">
-                <span>or</span>
-              </div>
-              <button className="login-button dev-login" onClick={() => login()}>
-                Sign In (Dev Mode)
-              </button>
-            </>
-          )}
+          <div className="login-divider">
+            <span>or</span>
+          </div>
           
-          {/* Fallback if no auth methods available */}
-          {!GOOGLE_CLIENT_ID && !DEV_AUTH_ENABLED && (
-            <p className="login-error">No authentication method configured</p>
+          {/* Email/Password Login Form */}
+          {authMode !== 'forgot' ? (
+            <>
+              <div className="auth-tabs">
+                <button 
+                  className={`auth-tab ${authMode === 'login' ? 'active' : ''}`}
+                  onClick={() => { setAuthMode('login'); setAuthError(null); }}
+                >
+                  Sign In
+                </button>
+                <button 
+                  className={`auth-tab ${authMode === 'register' ? 'active' : ''}`}
+                  onClick={() => { setAuthMode('register'); setAuthError(null); }}
+                >
+                  Create Account
+                </button>
+              </div>
+              
+              <form className="auth-form" onSubmit={handleAuthSubmit}>
+                {authError && <div className="auth-error">{authError}</div>}
+                
+                <div className="form-group">
+                  <label htmlFor="auth-email">Email</label>
+                  <input
+                    id="auth-email"
+                    type="email"
+                    value={authEmail}
+                    onChange={(e) => setAuthEmail(e.target.value)}
+                    placeholder="your@email.com"
+                    required
+                    disabled={authSubmitting}
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label htmlFor="auth-password">Password</label>
+                  <input
+                    id="auth-password"
+                    type="password"
+                    value={authPassword}
+                    onChange={(e) => setAuthPassword(e.target.value)}
+                    placeholder={authMode === 'register' ? 'At least 8 characters' : 'Your password'}
+                    required
+                    minLength={authMode === 'register' ? 8 : undefined}
+                    disabled={authSubmitting}
+                  />
+                </div>
+                
+                {authMode === 'register' && (
+                  <div className="form-group">
+                    <label htmlFor="auth-display-name">Display Name</label>
+                    <input
+                      id="auth-display-name"
+                      type="text"
+                      value={authDisplayName}
+                      onChange={(e) => setAuthDisplayName(e.target.value)}
+                      placeholder="How you'll appear on the leaderboard"
+                      required
+                      disabled={authSubmitting}
+                    />
+                  </div>
+                )}
+                
+                <button type="submit" className="login-button" disabled={authSubmitting}>
+                  {authSubmitting ? 'Please wait...' : (authMode === 'login' ? 'Sign In' : 'Create Account')}
+                </button>
+              </form>
+              
+              {authMode === 'login' && (
+                <button 
+                  className="forgot-password-link"
+                  onClick={() => { setAuthMode('forgot'); setAuthError(null); setForgotPasswordSent(false); }}
+                >
+                  Forgot your password?
+                </button>
+              )}
+            </>
+          ) : (
+            /* Forgot Password Form */
+            <div className="auth-form">
+              <h3 style={{ textAlign: 'center', marginBottom: '1rem' }}>Reset Password</h3>
+              
+              {forgotPasswordSent ? (
+                <div className="password-reset-success">
+                  <p>If an account exists with that email, you'll receive a password reset link shortly.</p>
+                  <p>Check your inbox (and spam folder).</p>
+                </div>
+              ) : (
+                <>
+                  {authError && <div className="auth-error">{authError}</div>}
+                  <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem', textAlign: 'center' }}>
+                    Enter your email and we'll send you a reset link.
+                  </p>
+                  <form onSubmit={async (e) => {
+                    e.preventDefault();
+                    setAuthSubmitting(true);
+                    setAuthError(null);
+                    try {
+                      const response = await fetch(`${API_BASE_URL}/v1/auth/forgot-password`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: authEmail }),
+                      });
+                      if (response.ok) {
+                        setForgotPasswordSent(true);
+                      } else {
+                        const data = await response.json();
+                        setAuthError(data.error?.message || 'Failed to send reset email');
+                      }
+                    } catch (err) {
+                      setAuthError('An error occurred. Please try again.');
+                    } finally {
+                      setAuthSubmitting(false);
+                    }
+                  }}>
+                    <div className="form-group">
+                      <label htmlFor="forgot-email">Email</label>
+                      <input
+                        id="forgot-email"
+                        type="email"
+                        value={authEmail}
+                        onChange={(e) => setAuthEmail(e.target.value)}
+                        placeholder="your@email.com"
+                        required
+                        disabled={authSubmitting}
+                      />
+                    </div>
+                    <button type="submit" className="login-button" disabled={authSubmitting}>
+                      {authSubmitting ? 'Sending...' : 'Send Reset Link'}
+                    </button>
+                  </form>
+                </>
+              )}
+              
+              <button 
+                className="forgot-password-link"
+                onClick={() => { setAuthMode('login'); setAuthError(null); }}
+                style={{ marginTop: '1rem' }}
+              >
+                ← Back to Sign In
+              </button>
+            </div>
           )}
           
           <p className="privacy-notice">
             By signing in, you agree to our use of your email and display name
             to identify your generator submissions.
           </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show email verification required screen for unverified users
+  if (user && !user.is_email_verified) {
+    return (
+      <div className="email-required-page">
+        <div className="email-required-card">
+          <div className="icon">📧</div>
+          <h2>Email Verification Required</h2>
+          <p>
+            Before you can submit generators, please verify your email address.
+          </p>
+          <p>
+            We sent a verification link to:<br />
+            <span className="email-highlight">{user.email}</span>
+          </p>
+          <p>
+            Check your inbox (and spam folder) for the verification email, then click the link to verify.
+          </p>
+          
+          <div className="email-required-actions">
+            <button 
+              className="resend-button"
+              onClick={resendVerificationEmail}
+            >
+              Resend Verification Email
+            </button>
+            <button className="logout-button" onClick={logout}>
+              Sign Out
+            </button>
+          </div>
         </div>
       </div>
     );

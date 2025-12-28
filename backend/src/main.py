@@ -39,10 +39,15 @@ from models import (
     LeaderboardPreview, LeaderboardGeneratorPreview
 )
 from auth import (
-    User, DevLoginRequest, GoogleLoginRequest,
+    User, DevLoginRequest, GoogleLoginRequest, EmailRegisterRequest, EmailLoginRequest,
+    ForgotPasswordRequest, ResetPasswordRequest,
     get_current_user, create_user, get_user_by_email, get_user_by_google_sub,
     create_session, delete_session, set_session_cookie, clear_session_cookie,
-    update_last_login, cleanup_expired_sessions, verify_google_token, SESSION_COOKIE_NAME
+    update_last_login, cleanup_expired_sessions, verify_google_token, SESSION_COOKIE_NAME,
+    hash_password, verify_password, validate_password, get_password_hash_by_email,
+    create_email_verification_token, verify_email_token, send_verification_email,
+    create_password_reset_token, verify_password_reset_token, use_password_reset_token,
+    update_user_password, send_password_reset_email
 )
 from builders import (
     GeneratorMetadata, GeneratorInfo as BuilderGeneratorInfo, BuilderError,
@@ -1976,7 +1981,8 @@ async def get_current_user_endpoint(request: Request):
             "email": user.email,
             "display_name": user.display_name,
             "created_at_utc": user.created_at_utc,
-            "last_login_utc": user.last_login_utc
+            "last_login_utc": user.last_login_utc,
+            "is_email_verified": user.is_email_verified
         }
     })
 
@@ -2024,7 +2030,8 @@ async def dev_login(request: Request, response: Response, body: DevLoginRequest)
             "email": user.email,
             "display_name": user.display_name,
             "created_at_utc": user.created_at_utc,
-            "last_login_utc": user.last_login_utc
+            "last_login_utc": user.last_login_utc,
+            "is_email_verified": user.is_email_verified
         }
     })
     
@@ -2093,11 +2100,149 @@ async def google_login(request: Request, response: Response, body: GoogleLoginRe
             "email": user.email,
             "display_name": user.display_name,
             "created_at_utc": user.created_at_utc,
-            "last_login_utc": user.last_login_utc
+            "last_login_utc": user.last_login_utc,
+            "is_email_verified": user.is_email_verified
         }
     })
     
     # Set cookie on the actual response object being returned
+    set_session_cookie(json_response, session_token)
+    return json_response
+
+
+@app.post("/v1/auth/register")
+async def email_register(request: Request, response: Response, body: EmailRegisterRequest):
+    """
+    Register a new user with email and password.
+    
+    Creates a new account and logs the user in.
+    """
+    # Validate password
+    is_valid, error_msg = validate_password(body.password)
+    if not is_valid:
+        raise_api_error(
+            ErrorCode.INVALID_PAYLOAD,
+            error_msg,
+            retryable=False,
+            status_code=400
+        )
+    
+    # Validate email format (basic check)
+    if not body.email or '@' not in body.email or len(body.email) < 5:
+        raise_api_error(
+            ErrorCode.INVALID_PAYLOAD,
+            "Invalid email address",
+            retryable=False,
+            status_code=400
+        )
+    
+    # Check if email already exists
+    existing_user = get_user_by_email(body.email.lower())
+    if existing_user:
+        raise_api_error(
+            ErrorCode.INVALID_PAYLOAD,
+            "An account with this email already exists",
+            retryable=False,
+            status_code=409
+        )
+    
+    # Create user with hashed password
+    password_hash = hash_password(body.password)
+    user = create_user(
+        email=body.email.lower(),
+        display_name=body.display_name or body.email.split('@')[0],
+        password_hash=password_hash
+    )
+    
+    # Send verification email
+    verification_token = create_email_verification_token(user.user_id)
+    email_sent = send_verification_email(body.email.lower(), verification_token)
+    
+    if not email_sent:
+        logger.warning(f"Failed to send verification email for user {user.user_id}")
+    
+    # Create session
+    session_token = create_session(user.user_id)
+    
+    logger.info(f"Email registration: user_id={user.user_id} email={user.email}")
+    
+    json_response = JSONResponse({
+        "protocol_version": "arena/v0",
+        "message": "Registration successful. Please check your email to verify your account.",
+        "user": {
+            "user_id": user.user_id,
+            "email": user.email,
+            "display_name": user.display_name,
+            "created_at_utc": user.created_at_utc,
+            "last_login_utc": user.last_login_utc,
+            "is_email_verified": user.is_email_verified,
+            "is_email_verified": user.is_email_verified
+        }
+    })
+    
+    set_session_cookie(json_response, session_token)
+    return json_response
+
+
+@app.post("/v1/auth/login")
+async def email_login(request: Request, response: Response, body: EmailLoginRequest):
+    """
+    Login with email and password.
+    
+    Authenticates the user and creates a new session.
+    """
+    # Get user by email
+    user = get_user_by_email(body.email.lower())
+    
+    if not user:
+        raise_api_error(
+            ErrorCode.INVALID_PAYLOAD,
+            "Invalid email or password",
+            retryable=False,
+            status_code=401
+        )
+    
+    # Get password hash
+    password_hash = get_password_hash_by_email(body.email.lower())
+    
+    if not password_hash:
+        raise_api_error(
+            ErrorCode.INVALID_PAYLOAD,
+            "This account uses Google Sign-In. Please login with Google.",
+            retryable=False,
+            status_code=401
+        )
+    
+    # Verify password
+    if not verify_password(body.password, password_hash):
+        raise_api_error(
+            ErrorCode.INVALID_PAYLOAD,
+            "Invalid email or password",
+            retryable=False,
+            status_code=401
+        )
+    
+    # Update last login
+    update_last_login(user.user_id)
+    
+    # Create session
+    session_token = create_session(user.user_id)
+    
+    logger.info(f"Email login: user_id={user.user_id} email={user.email}")
+    
+    json_response = JSONResponse({
+        "protocol_version": "arena/v0",
+        "message": "Login successful",
+        "user": {
+            "user_id": user.user_id,
+            "email": user.email,
+            "display_name": user.display_name,
+            "created_at_utc": user.created_at_utc,
+            "last_login_utc": user.last_login_utc,
+            "is_email_verified": user.is_email_verified
+        }
+    })
+    
     set_session_cookie(json_response, session_token)
     return json_response
 
@@ -2124,6 +2269,147 @@ async def logout(request: Request, response: Response):
     return json_response
 
 
+@app.post("/v1/auth/verify-email")
+async def verify_email(token: str):
+    """
+    Verify a user's email address using the token from the verification email.
+    
+    Query params:
+        token: The verification token from the email link
+    """
+    user_id = verify_email_token(token)
+    
+    if not user_id:
+        raise_api_error(
+            ErrorCode.INVALID_PAYLOAD,
+            "Invalid or expired verification token",
+            retryable=False,
+            status_code=400
+        )
+    
+    logger.info(f"Email verified for user {user_id}")
+    
+    return JSONResponse({
+        "protocol_version": "arena/v0",
+        "message": "Email verified successfully"
+    })
+
+
+@app.post("/v1/auth/resend-verification")
+async def resend_verification(request: Request):
+    """
+    Resend verification email to the current user.
+    
+    Requires authentication.
+    """
+    user = require_auth(request)
+    
+    if user.is_email_verified:
+        return JSONResponse({
+            "protocol_version": "arena/v0",
+            "message": "Email already verified"
+        })
+    
+    # Create new verification token
+    verification_token = create_email_verification_token(user.user_id)
+    email_sent = send_verification_email(user.email, verification_token)
+    
+    if not email_sent:
+        raise_api_error(
+            ErrorCode.INTERNAL_ERROR,
+            "Failed to send verification email. Please try again later.",
+            retryable=True,
+            status_code=500
+        )
+    
+    logger.info(f"Verification email resent for user {user.user_id}")
+    
+    return JSONResponse({
+        "protocol_version": "arena/v0",
+        "message": "Verification email sent"
+    })
+
+
+@app.post("/v1/auth/forgot-password")
+async def forgot_password(body: ForgotPasswordRequest):
+    """
+    Request a password reset email.
+    
+    Sends a password reset link to the user's email if the account exists.
+    Always returns success to prevent email enumeration.
+    """
+    email = body.email.lower()
+    user = get_user_by_email(email)
+    
+    if user:
+        # Check if user has a password (not Google-only)
+        if get_password_hash_by_email(email):
+            # Create reset token and send email
+            reset_token = create_password_reset_token(user.user_id)
+            send_password_reset_email(email, reset_token)
+            logger.info(f"Password reset requested for: {email}")
+        else:
+            # Google-only account, don't send reset email
+            logger.info(f"Password reset requested for Google-only account: {email}")
+    else:
+        # Don't reveal whether the email exists
+        logger.info(f"Password reset requested for unknown email: {email}")
+    
+    # Always return success to prevent email enumeration
+    return JSONResponse({
+        "protocol_version": "arena/v0",
+        "message": "If an account exists with this email, you will receive a password reset link."
+    })
+
+
+@app.post("/v1/auth/reset-password")
+async def reset_password(body: ResetPasswordRequest):
+    """
+    Reset password using a reset token.
+    
+    Sets a new password for the user if the token is valid.
+    """
+    # Validate new password
+    is_valid, error_msg = validate_password(body.new_password)
+    if not is_valid:
+        raise_api_error(
+            ErrorCode.INVALID_PAYLOAD,
+            error_msg,
+            retryable=False,
+            status_code=400
+        )
+    
+    # Verify token
+    user_id = verify_password_reset_token(body.token)
+    if not user_id:
+        raise_api_error(
+            ErrorCode.INVALID_PAYLOAD,
+            "Invalid or expired reset link. Please request a new one.",
+            retryable=False,
+            status_code=400
+        )
+    
+    # Update password
+    new_hash = hash_password(body.new_password)
+    if not update_user_password(user_id, new_hash):
+        raise_api_error(
+            ErrorCode.INTERNAL_ERROR,
+            "Failed to update password. Please try again.",
+            retryable=True,
+            status_code=500
+        )
+    
+    # Mark token as used
+    use_password_reset_token(body.token)
+    
+    logger.info(f"Password reset successful for user {user_id}")
+    
+    return JSONResponse({
+        "protocol_version": "arena/v0",
+        "message": "Password updated successfully. You can now sign in with your new password."
+    })
+
+
 # ============================================================================
 # Builder Profile Endpoints (Stage 3)
 # ============================================================================
@@ -2138,6 +2424,15 @@ def require_auth(request: Request) -> User:
             retryable=False,
             status_code=401
         )
+    
+    # Check email verification (but allow unverified users to access certain endpoints)
+    # Google users are auto-verified, so this mainly applies to email/password users
+    if not user.is_email_verified:
+        # For now, we allow unverified users to access the builder profile
+        # but they will see a verification notice
+        # In the future, you might want to restrict certain actions
+        logger.debug(f"Unverified user accessing endpoint: {user.user_id}")
+    
     return user
 
 
