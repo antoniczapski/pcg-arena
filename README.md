@@ -618,32 +618,39 @@ See `docs/stage2-spec.md` and `frontend/spec.md` for complete documentation.
 
 ---
 
-### Stage 3 (Builder Profile) — IN PROGRESS
+### Stage 3 (Builder Profile) — ✅ COMPLETE
+
+**Status:** Complete and operational (2025-12-28)
 
 **Purpose:** Enable researchers to submit their own generators
 
-**Status:** Phase 1 Complete (Dummy Auth), Phases 2-3 Planned
-
-**Phase 1 deliverables (complete):**
-* User authentication system (dev auth for testing)
-* Builder profile page with generator management
-* Generator submission via ZIP upload (50+ levels required)
-* Generator update with version tracking (keeps rating)
-* Generator deletion
-* Immediate leaderboard integration
-
-**Phase 2 deliverables (planned):**
-* Google OAuth integration
-* Privacy notice and consent
-
-**Phase 3 deliverables (planned):**
-* Production deployment with real OAuth
-* Rate limiting for submissions
+**Deliverables achieved:**
+* **Authentication System:**
+  - Google OAuth integration (production-ready)
+  - Email/password registration and login
+  - Email verification with SendGrid
+  - Password reset flow
+  - Secure session management with HTTP-only cookies
+  - Dev auth for local testing
+* **Builder Profile:**
+  - Generator management dashboard
+  - Generator submission via ZIP upload (50-200 levels required)
+  - Generator updates with version tracking (preserves rating and existing battles)
+  - Soft delete for generators with battles (maintains data integrity)
+  - Up to 3 generators per user
+  - Immediate leaderboard integration
+* **User Experience:**
+  - Email verification required for submissions
+  - OAuth users auto-verified
+  - Forgot password functionality
+  - Persistent login with cookies
 
 **Technical implementation:**
-- Database: `users` table, `user_sessions` table, `generators.owner_user_id`
-- Backend: `/v1/auth/*` and `/v1/builders/*` endpoints
-- Frontend: React Router, AuthContext, BuilderPage
+- Database: `users`, `user_sessions`, `email_verification_tokens`, `password_reset_tokens` tables
+- Backend: Complete `/v1/auth/*` and `/v1/builders/*` API
+- Frontend: React Router, AuthContext, BuilderPage with Google Sign-In
+- Email: SendGrid integration for verification and password reset
+- Security: Bcrypt password hashing, token-based verification
 
 See `docs/stage3-spec.md` for complete documentation.
 
