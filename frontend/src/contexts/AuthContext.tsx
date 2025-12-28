@@ -39,6 +39,7 @@ export interface User {
   user_id: string;
   email: string;
   display_name: string;
+  is_email_verified: boolean;
   created_at_utc: string;
   last_login_utc: string;
 }
