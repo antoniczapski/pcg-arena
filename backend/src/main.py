@@ -54,6 +54,12 @@ from builders import (
     get_user_generators, create_generator, update_generator, delete_generator,
     MAX_GENERATORS_PER_USER, MIN_LEVELS_PER_GENERATOR, MAX_LEVELS_PER_GENERATOR
 )
+from matchmaking import (
+    select_generators_agis, select_random_level, update_pair_stats, get_matchmaking_stats
+)
+from glicko2 import (
+    update_ratings_glicko2, GlickoRating, DEFAULT_RD, DEFAULT_VOLATILITY
+)
 
 # Load configuration first
 config = load_config()
@@ -134,10 +140,14 @@ async def startup_event():
         level_count = import_levels(config.seed_path)
         logger.info(f"Levels ready ({level_count} imported/updated)")
         
-        # Initialize ratings for new generators
-        ratings_init = init_generator_ratings(config.initial_rating)
+        # Initialize Glicko-2 ratings for new generators
+        ratings_init = init_generator_ratings(
+            config.initial_rating, 
+            config.initial_rd,
+            config.initial_volatility
+        )
         if ratings_init > 0:
-            logger.info(f"Initialized ratings for {ratings_init} new generator(s)")
+            logger.info(f"Initialized Glicko-2 ratings for {ratings_init} new generator(s)")
         
         # Log DB status summary
         log_db_status(config.db_path)
@@ -224,89 +234,53 @@ async def fetch_next_battle(battle_request: BattleRequest, request: Request):
             status_code=400
         )
     
-    # 2. Query active generators (is_active = 1)
-    cursor = conn.execute(
-        "SELECT generator_id FROM generators WHERE is_active = 1"
-    )
-    active_generators = [row["generator_id"] for row in cursor.fetchall()]
+    # 2. Select generators using matchmaking policy
+    # AGIS (Adaptive Glicko-Informed Selection) considers:
+    # - Generator uncertainty (RD): prioritize uncertain generators
+    # - Rating similarity: prefer similar skill levels
+    # - Coverage: ensure all pairs get enough battles
+    # - Quality bias: slight preference for better generators after convergence
     
-    if len(active_generators) < 2:
+    matchmaking_policy = config.matchmaking_policy
+    
+    try:
+        if matchmaking_policy == "agis_v1":
+            # Use AGIS algorithm for smart matchmaking
+            left_generator_id, right_generator_id = select_generators_agis(conn)
+        else:
+            # Fallback to uniform random selection
+            cursor = conn.execute(
+                "SELECT generator_id FROM generators WHERE is_active = 1"
+            )
+            active_generators = [row["generator_id"] for row in cursor.fetchall()]
+            
+            if len(active_generators) < 2:
+                raise ValueError(f"Need at least 2 active generators, found {len(active_generators)}")
+            
+            selected_generators = random.sample(active_generators, 2)
+            left_generator_id = selected_generators[0]
+            right_generator_id = selected_generators[1]
+            matchmaking_policy = "uniform_v0"
+            
+    except ValueError as e:
         raise_api_error(
             ErrorCode.NO_BATTLE_AVAILABLE,
-            f"Not enough active generators available (found {len(active_generators)}, need at least 2)",
+            str(e),
             retryable=False,
             status_code=503
         )
     
-    # 3. Sample two distinct generator_ids uniformly
-    selected_generators = random.sample(active_generators, 2)
-    left_generator_id = selected_generators[0]
-    right_generator_id = selected_generators[1]
+    # 3. Select random levels from each generator
+    left_level_id = select_random_level(conn, left_generator_id)
+    right_level_id = select_random_level(conn, right_generator_id)
     
-    # 4. For each generator, select 1 random level
-    # 
-    # Random level selection strategy (Stage 0):
-    # We use SQLite's RANDOM() function with ORDER BY RANDOM() LIMIT 1.
-    # This approach:
-    # - Works well for Stage 0 scale (typically <100 levels per generator)
-    # - Provides uniform distribution over repeated requests
-    # - Is simple and requires no additional state or precomputation
-    # 
-    # Performance note:
-    # ORDER BY RANDOM() requires sorting all matching rows, which is O(n log n).
-    # For Stage 0 with small datasets (dozens of levels per generator), this is
-    # perfectly acceptable. If we scale to thousands of levels per generator,
-    # we should consider:
-    # - Pre-computing random offsets (SELECT COUNT(*), then random offset)
-    # - Using a more sophisticated sampling algorithm
-    # - Caching level pools per generator
-    # 
-    # Query random level for left generator
-    cursor = conn.execute(
-        """
-        SELECT level_id FROM levels 
-        WHERE generator_id = ? 
-        ORDER BY RANDOM() 
-        LIMIT 1
-        """,
-        (left_generator_id,)
-    )
-    left_level_row = cursor.fetchone()
-    
-    # Query random level for right generator
-    cursor = conn.execute(
-        """
-        SELECT level_id FROM levels 
-        WHERE generator_id = ? 
-        ORDER BY RANDOM() 
-        LIMIT 1
-        """,
-        (right_generator_id,)
-    )
-    right_level_row = cursor.fetchone()
-    
-    # Check if we have levels for both generators
-    if not left_level_row or not right_level_row:
-        # Count how many generators have levels
-        cursor = conn.execute(
-            """
-            SELECT COUNT(DISTINCT generator_id) as count
-            FROM levels
-            WHERE generator_id IN (?, ?)
-            """,
-            (left_generator_id, right_generator_id)
-        )
-        eligible_count = cursor.fetchone()["count"]
-        
+    if not left_level_id or not right_level_id:
         raise_api_error(
             ErrorCode.NO_BATTLE_AVAILABLE,
-            f"Not enough generators with levels available (found {eligible_count} eligible generators, need 2)",
+            f"Selected generators have no levels",
             retryable=False,
             status_code=503
         )
-    
-    left_level_id = left_level_row["level_id"]
-    right_level_id = right_level_row["level_id"]
     
     # Ensure left and right levels are different (should be guaranteed by different generators, but double-check)
     if left_level_id == right_level_id:
@@ -344,7 +318,7 @@ async def fetch_next_battle(battle_request: BattleRequest, request: Request):
                     right_level_id,
                     left_generator_id,
                     right_generator_id,
-                    "uniform_v0",
+                    matchmaking_policy,
                     now_utc,
                     now_utc,
                 )
@@ -520,10 +494,12 @@ def ensure_ratings_exist(
     cursor: sqlite3.Cursor,
     generator_id: str,
     initial_rating: float,
+    initial_rd: float,
+    initial_volatility: float,
     now_utc: str
 ) -> None:
     """
-    Ensure a ratings row exists for a generator (Task D2).
+    Ensure a Glicko-2 ratings row exists for a generator.
     
     If the ratings row doesn't exist, creates it with initial values.
     This is defensive programming to handle edge cases where a generator
@@ -533,6 +509,8 @@ def ensure_ratings_exist(
         cursor: Database cursor (within transaction)
         generator_id: Generator ID to check/create
         initial_rating: Initial rating value (default 1000.0)
+        initial_rd: Initial rating deviation (default 350.0)
+        initial_volatility: Initial volatility (default 0.06)
         now_utc: Current UTC timestamp
     """
     cursor.execute(
@@ -540,15 +518,15 @@ def ensure_ratings_exist(
         (generator_id,)
     )
     if cursor.fetchone() is None:
-        logger.warning(f"Ratings row missing for generator {generator_id}, creating with initial rating {initial_rating}")
+        logger.warning(f"Ratings row missing for generator {generator_id}, creating with Glicko-2 defaults")
         cursor.execute(
             """
             INSERT INTO ratings (
-                generator_id, rating_value, games_played,
-                wins, losses, ties, skips, updated_at_utc
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                generator_id, rating_value, rd, volatility,
+                games_played, wins, losses, ties, skips, updated_at_utc
+            ) VALUES (?, ?, ?, ?, 0, 0, 0, 0, 0, ?)
             """,
-            (generator_id, initial_rating, 0, 0, 0, 0, 0, now_utc)
+            (generator_id, initial_rating, initial_rd, initial_volatility, now_utc)
         )
 
 
@@ -557,43 +535,44 @@ def update_ratings(
     left_generator_id: str,
     right_generator_id: str,
     result: str,
-    k_factor: float,
     now_utc: str,
-    initial_rating: float = 1000.0
-) -> tuple[float, float]:
+    initial_rating: float = 1000.0,
+    initial_rd: float = 350.0,
+    initial_volatility: float = 0.06
+) -> tuple[float, float, dict]:
     """
-    Update generator ratings based on vote result using Elo rating system (Task D1).
+    Update generator ratings based on vote result using Glicko-2 rating system.
     
-    Implements standard Elo rating calculation:
-    - Expected score: E_left = 1 / (1 + 10^((R_right - R_left)/400))
-    - Delta: delta_left = K * (S_left - E_left), delta_right = -delta_left
-    - Updates rating_value and counters (wins, losses, ties, games_played)
+    Glicko-2 features:
+    - Rating (μ): Skill estimate
+    - Rating Deviation (RD/φ): Uncertainty in rating (decreases with more games)
+    - Volatility (σ): Expected fluctuation in performance
     
-    SKIP semantics (Task C3):
-    - Do NOT change rating_value for either generator
+    SKIP semantics:
+    - Do NOT change rating_value, RD, or volatility for either generator
     - Increment skips counter for BOTH generators
-    - Do NOT increment games_played (games_played is for rating-relevant matches only)
-    - Return (0.0, 0.0) for deltas (no rating change)
+    - Do NOT increment games_played
+    - Return (0.0, 0.0, {}) for deltas
     
     Args:
         cursor: Database cursor (within transaction)
         left_generator_id: Left generator ID
         right_generator_id: Right generator ID
         result: Vote result (LEFT, RIGHT, TIE, SKIP)
-        k_factor: ELO K-factor (default 24)
         now_utc: Current UTC timestamp
         initial_rating: Initial rating if row doesn't exist (default 1000.0)
+        initial_rd: Initial rating deviation (default 350.0)
+        initial_volatility: Initial volatility (default 0.06)
     
     Returns:
-        Tuple of (delta_left, delta_right) rating changes
+        Tuple of (delta_left, delta_right, rd_info) where rd_info contains RD before/after
     """
-    # Task D2: Ensure ratings rows exist before updating
-    ensure_ratings_exist(cursor, left_generator_id, initial_rating, now_utc)
-    ensure_ratings_exist(cursor, right_generator_id, initial_rating, now_utc)
+    # Ensure ratings rows exist before updating
+    ensure_ratings_exist(cursor, left_generator_id, initial_rating, initial_rd, initial_volatility, now_utc)
+    ensure_ratings_exist(cursor, right_generator_id, initial_rating, initial_rd, initial_volatility, now_utc)
     
     if result == VoteResult.SKIP.value or result == "SKIP":
-        # SKIP semantics: increment skip counters for both generators, no rating change
-        # Note: games_played is NOT incremented for SKIP (it's for rating-relevant matches only)
+        # SKIP semantics: increment skip counters, no rating change
         cursor.execute(
             """
             UPDATE ratings 
@@ -614,124 +593,92 @@ def update_ratings(
             f"SKIP vote processed: left_gen={left_generator_id} right_gen={right_generator_id} "
             f"(skip counters incremented, no rating change)"
         )
-        return (0.0, 0.0)
+        return (0.0, 0.0, {})
     
-    # Task D1: Fetch current ratings
+    # Fetch current Glicko-2 ratings
     cursor.execute(
-        "SELECT rating_value FROM ratings WHERE generator_id = ?",
+        "SELECT rating_value, rd, volatility FROM ratings WHERE generator_id = ?",
         (left_generator_id,)
     )
     left_row = cursor.fetchone()
-    R_left = left_row["rating_value"] if left_row else initial_rating
+    left_rating = left_row["rating_value"] if left_row else initial_rating
+    left_rd = left_row["rd"] if left_row and left_row["rd"] else initial_rd
+    left_volatility = left_row["volatility"] if left_row and left_row["volatility"] else initial_volatility
     
     cursor.execute(
-        "SELECT rating_value FROM ratings WHERE generator_id = ?",
+        "SELECT rating_value, rd, volatility FROM ratings WHERE generator_id = ?",
         (right_generator_id,)
     )
     right_row = cursor.fetchone()
-    R_right = right_row["rating_value"] if right_row else initial_rating
+    right_rating = right_row["rating_value"] if right_row else initial_rating
+    right_rd = right_row["rd"] if right_row and right_row["rd"] else initial_rd
+    right_volatility = right_row["volatility"] if right_row and right_row["volatility"] else initial_volatility
     
-    # Calculate expected scores (Elo formula)
-    # E_left = 1 / (1 + 10^((R_right - R_left)/400))
-    rating_diff = (R_right - R_left) / 400.0
-    E_left = 1.0 / (1.0 + math.pow(10.0, rating_diff))
-    E_right = 1.0 - E_left
-    
-    # Determine outcome scores based on result
-    if result == VoteResult.LEFT.value or result == "LEFT":
-        S_left = 1.0
-        S_right = 0.0
-    elif result == VoteResult.RIGHT.value or result == "RIGHT":
-        S_left = 0.0
-        S_right = 1.0
-    elif result == VoteResult.TIE.value or result == "TIE":
-        S_left = 0.5
-        S_right = 0.5
-    else:
-        # Should not happen, but handle gracefully
-        logger.error(f"Unexpected vote result: {result}")
-        return (0.0, 0.0)
-    
-    # Calculate rating deltas
-    # delta_left = K * (S_left - E_left)
-    # delta_right = -delta_left (zero-sum: ratings are conserved)
-    delta_left = k_factor * (S_left - E_left)
-    delta_right = -delta_left
-    
-    # Update left generator rating and counters
-    new_rating_left = R_left + delta_left
-    if result == VoteResult.LEFT.value or result == "LEFT":
-        cursor.execute(
-            """
-            UPDATE ratings 
-            SET rating_value = ?, games_played = games_played + 1,
-                wins = wins + 1, updated_at_utc = ?
-            WHERE generator_id = ?
-            """,
-            (new_rating_left, now_utc, left_generator_id)
-        )
-    elif result == VoteResult.RIGHT.value or result == "RIGHT":
-        cursor.execute(
-            """
-            UPDATE ratings 
-            SET rating_value = ?, games_played = games_played + 1,
-                losses = losses + 1, updated_at_utc = ?
-            WHERE generator_id = ?
-            """,
-            (new_rating_left, now_utc, left_generator_id)
-        )
-    elif result == VoteResult.TIE.value or result == "TIE":
-        cursor.execute(
-            """
-            UPDATE ratings 
-            SET rating_value = ?, games_played = games_played + 1,
-                ties = ties + 1, updated_at_utc = ?
-            WHERE generator_id = ?
-            """,
-            (new_rating_left, now_utc, left_generator_id)
-        )
-    
-    # Update right generator rating and counters
-    new_rating_right = R_right + delta_right
-    if result == VoteResult.LEFT.value or result == "LEFT":
-        cursor.execute(
-            """
-            UPDATE ratings 
-            SET rating_value = ?, games_played = games_played + 1,
-                losses = losses + 1, updated_at_utc = ?
-            WHERE generator_id = ?
-            """,
-            (new_rating_right, now_utc, right_generator_id)
-        )
-    elif result == VoteResult.RIGHT.value or result == "RIGHT":
-        cursor.execute(
-            """
-            UPDATE ratings 
-            SET rating_value = ?, games_played = games_played + 1,
-                wins = wins + 1, updated_at_utc = ?
-            WHERE generator_id = ?
-            """,
-            (new_rating_right, now_utc, right_generator_id)
-        )
-    elif result == VoteResult.TIE.value or result == "TIE":
-        cursor.execute(
-            """
-            UPDATE ratings 
-            SET rating_value = ?, games_played = games_played + 1,
-                ties = ties + 1, updated_at_utc = ?
-            WHERE generator_id = ?
-            """,
-            (new_rating_right, now_utc, right_generator_id)
-        )
-    
-    logger.info(
-        f"Elo rating update: left_gen={left_generator_id} right_gen={right_generator_id} "
-        f"result={result} R_left={R_left:.1f}->{new_rating_left:.1f} "
-        f"R_right={R_right:.1f}->{new_rating_right:.1f} "
-        f"delta_left={delta_left:.2f} delta_right={delta_right:.2f}"
+    # Update ratings using Glicko-2
+    new_left, new_right = update_ratings_glicko2(
+        left_rating, left_rd, left_volatility,
+        right_rating, right_rd, right_volatility,
+        result
     )
     
-    return (delta_left, delta_right)
+    # Calculate deltas for audit trail
+    delta_left = new_left.rating - left_rating
+    delta_right = new_right.rating - right_rating
+    
+    # RD info for audit trail
+    rd_info = {
+        "rd_left_before": left_rd,
+        "rd_left_after": new_left.rd,
+        "rd_right_before": right_rd,
+        "rd_right_after": new_right.rd
+    }
+    
+    # Update left generator
+    if result == VoteResult.LEFT.value or result == "LEFT":
+        counter_update = "wins = wins + 1"
+    elif result == VoteResult.RIGHT.value or result == "RIGHT":
+        counter_update = "losses = losses + 1"
+    else:  # TIE
+        counter_update = "ties = ties + 1"
+    
+    cursor.execute(
+        f"""
+        UPDATE ratings 
+        SET rating_value = ?, rd = ?, volatility = ?,
+            games_played = games_played + 1, {counter_update},
+            updated_at_utc = ?
+        WHERE generator_id = ?
+        """,
+        (new_left.rating, new_left.rd, new_left.volatility, now_utc, left_generator_id)
+    )
+    
+    # Update right generator (opposite outcome)
+    if result == VoteResult.LEFT.value or result == "LEFT":
+        counter_update = "losses = losses + 1"
+    elif result == VoteResult.RIGHT.value or result == "RIGHT":
+        counter_update = "wins = wins + 1"
+    else:  # TIE
+        counter_update = "ties = ties + 1"
+    
+    cursor.execute(
+        f"""
+        UPDATE ratings 
+        SET rating_value = ?, rd = ?, volatility = ?,
+            games_played = games_played + 1, {counter_update},
+            updated_at_utc = ?
+        WHERE generator_id = ?
+        """,
+        (new_right.rating, new_right.rd, new_right.volatility, now_utc, right_generator_id)
+    )
+    
+    logger.info(
+        f"Glicko-2 rating update: left_gen={left_generator_id} right_gen={right_generator_id} "
+        f"result={result} "
+        f"left={left_rating:.1f}±{left_rd:.0f} -> {new_left.rating:.1f}±{new_left.rd:.0f} "
+        f"right={right_rating:.1f}±{right_rd:.0f} -> {new_right.rating:.1f}±{new_right.rd:.0f}"
+    )
+    
+    return (delta_left, delta_right, rd_info)
 
 
 def insert_rating_event(
@@ -743,7 +690,8 @@ def insert_rating_event(
     result: str,
     delta_left: float,
     delta_right: float,
-    now_utc: str
+    now_utc: str,
+    rd_info: dict = None
 ) -> None:
     """
     Insert rating event for auditability and debugging.
@@ -761,6 +709,7 @@ def insert_rating_event(
         delta_left: Rating change for left generator (0.0 for SKIP)
         delta_right: Rating change for right generator (0.0 for SKIP)
         now_utc: Current UTC timestamp
+        rd_info: Optional dict with RD before/after values for Glicko-2
     
     Note:
         This function is called within the vote submission transaction, ensuring
@@ -769,14 +718,21 @@ def insert_rating_event(
     """
     event_id = f"evt_{uuid.uuid4()}"
     
+    # Extract RD info if provided
+    rd_left_before = rd_info.get("rd_left_before") if rd_info else None
+    rd_left_after = rd_info.get("rd_left_after") if rd_info else None
+    rd_right_before = rd_info.get("rd_right_before") if rd_info else None
+    rd_right_after = rd_info.get("rd_right_after") if rd_info else None
+    
     cursor.execute(
         """
         INSERT INTO rating_events (
             event_id, vote_id, battle_id,
             left_generator_id, right_generator_id,
             result, delta_left, delta_right,
+            rd_left_before, rd_left_after, rd_right_before, rd_right_after,
             created_at_utc
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             event_id,
@@ -787,6 +743,10 @@ def insert_rating_event(
             result,
             delta_left,
             delta_right,
+            rd_left_before,
+            rd_left_after,
+            rd_right_before,
+            rd_right_after,
             now_utc,
         )
     )
@@ -1020,15 +980,16 @@ async def submit_vote(vote_request: VoteRequest, request: Request):
                     (now_utc, vote_request.battle_id)
                 )
                 
-                # 8. Update ratings using Elo rating system
-                delta_left, delta_right = update_ratings(
+                # 8. Update ratings using Glicko-2 rating system
+                delta_left, delta_right, rd_info = update_ratings(
                     cursor,
                     left_generator_id,
                     right_generator_id,
                     vote_request.result.value,
-                    config.k_factor,
                     now_utc,
-                    config.initial_rating
+                    config.initial_rating,
+                    config.initial_rd,
+                    config.initial_volatility
                 )
                 
                 # 9. Insert rating event for auditability
@@ -1041,6 +1002,16 @@ async def submit_vote(vote_request: VoteRequest, request: Request):
                     vote_request.result.value,
                     delta_left,
                     delta_right,
+                    now_utc,
+                    rd_info
+                )
+                
+                # 10. Update generator pair statistics
+                update_pair_stats(
+                    cursor,
+                    left_generator_id,
+                    right_generator_id,
+                    vote_request.result.value,
                     now_utc
                 )
             
@@ -1210,6 +1181,7 @@ async def get_leaderboard():
             g.version,
             g.documentation_url,
             r.rating_value,
+            r.rd,
             r.games_played,
             r.wins,
             r.losses,
@@ -1232,6 +1204,7 @@ async def get_leaderboard():
             "version": row["version"],
             "documentation_url": row["documentation_url"],
             "rating": row["rating_value"],
+            "rd": row["rd"] if row["rd"] else config.initial_rd,  # Rating deviation
             "games_played": row["games_played"],
             "wins": row["wins"],
             "losses": row["losses"],
@@ -1252,10 +1225,11 @@ async def get_leaderboard():
         "protocol_version": "arena/v0",
         "updated_at_utc": last_update,
         "rating_system": {
-            "name": "ELO",
+            "name": "Glicko-2",
             "initial_rating": config.initial_rating,
-            "k_factor": config.k_factor,
+            "initial_rd": config.initial_rd,
         },
+        "matchmaking_policy": config.matchmaking_policy,
         "generators": generators,
     })
 
@@ -1747,6 +1721,88 @@ async def debug_votes(limit: int = 10):
         "votes": votes,
         "count": len(votes),
         "limit": limit,
+    })
+
+
+@app.get("/debug/matchmaking")
+async def debug_matchmaking():
+    """
+    Get matchmaking statistics for debugging.
+    
+    Returns information about:
+    - Total generators and pairs
+    - Coverage statistics (pairs with battles, pairs at target)
+    - Average rating deviation
+    - New generators needing more games
+    
+    Only available when ARENA_DEBUG=true.
+    """
+    if not config.debug:
+        raise_api_error(
+            ErrorCode.INTERNAL_ERROR,
+            "Debug endpoints are disabled. Set ARENA_DEBUG=true to enable.",
+            retryable=False,
+            status_code=403
+        )
+    
+    conn = get_connection()
+    stats = get_matchmaking_stats(conn)
+    
+    return JSONResponse({
+        "protocol_version": "arena/v0",
+        "matchmaking_policy": config.matchmaking_policy,
+        "stats": stats,
+    })
+
+
+@app.get("/debug/pair-stats")
+async def debug_pair_stats(limit: int = 50):
+    """
+    Get generator pair battle statistics for confusion matrix.
+    
+    Returns battle counts and win rates between generator pairs.
+    
+    Only available when ARENA_DEBUG=true.
+    """
+    if not config.debug:
+        raise_api_error(
+            ErrorCode.INTERNAL_ERROR,
+            "Debug endpoints are disabled. Set ARENA_DEBUG=true to enable.",
+            retryable=False,
+            status_code=403
+        )
+    
+    conn = get_connection()
+    cursor = conn.execute(
+        """
+        SELECT 
+            gen1_id, gen2_id, battle_count, 
+            gen1_wins, gen2_wins, ties, skips,
+            last_battle_utc
+        FROM generator_pair_stats
+        ORDER BY battle_count DESC
+        LIMIT ?
+        """,
+        (min(limit, 500),)
+    )
+    
+    pairs = []
+    for row in cursor.fetchall():
+        pairs.append({
+            "gen1_id": row["gen1_id"],
+            "gen2_id": row["gen2_id"],
+            "battle_count": row["battle_count"],
+            "gen1_wins": row["gen1_wins"],
+            "gen2_wins": row["gen2_wins"],
+            "ties": row["ties"],
+            "skips": row["skips"],
+            "last_battle_utc": row["last_battle_utc"],
+        })
+    
+    return JSONResponse({
+        "protocol_version": "arena/v0",
+        "pairs": pairs,
+        "count": len(pairs),
     })
 
 

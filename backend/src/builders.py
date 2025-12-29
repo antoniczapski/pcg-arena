@@ -342,15 +342,16 @@ async def create_generator(
                     (level_id, metadata.generator_id, width, LEVEL_HEIGHT, tilemap, content_hash, now_utc)
                 )
             
-            # Initialize rating
+            # Initialize Glicko-2 rating
             cursor.execute(
                 """
                 INSERT INTO ratings (
-                    generator_id, rating_value, games_played,
-                    wins, losses, ties, skips, updated_at_utc
-                ) VALUES (?, ?, 0, 0, 0, 0, 0, ?)
+                    generator_id, rating_value, rd, volatility,
+                    games_played, wins, losses, ties, skips, updated_at_utc
+                ) VALUES (?, ?, ?, ?, 0, 0, 0, 0, 0, ?)
                 """,
-                (metadata.generator_id, config.initial_rating, now_utc)
+                (metadata.generator_id, config.initial_rating, config.initial_rd, 
+                 config.initial_volatility, now_utc)
             )
         
         logger.info(f"Created generator: generator_id={metadata.generator_id} owner={user_id} levels={len(levels)}")

@@ -21,9 +21,13 @@ class Config:
     port: int
     public_url: str  # Public URL for external access (Stage 1)
     
-    # Rating system
+    # Rating system (Glicko-2)
     initial_rating: float
-    k_factor: float
+    initial_rd: float  # Initial rating deviation (uncertainty)
+    initial_volatility: float  # Initial volatility
+    
+    # Matchmaking
+    matchmaking_policy: str  # "uniform_v0" or "agis_v1"
     
     # Paths (inside container)
     migrations_path: str
@@ -76,7 +80,9 @@ def load_config() -> Config:
         port=port,
         public_url=public_url,
         initial_rating=float(os.environ.get("ARENA_INITIAL_RATING", "1000.0")),
-        k_factor=float(os.environ.get("ARENA_K_FACTOR", "24")),
+        initial_rd=float(os.environ.get("ARENA_INITIAL_RD", "350.0")),
+        initial_volatility=float(os.environ.get("ARENA_INITIAL_VOLATILITY", "0.06")),
+        matchmaking_policy=os.environ.get("ARENA_MATCHMAKING_POLICY", "agis_v1"),
         migrations_path=os.environ.get("ARENA_MIGRATIONS_PATH", "/migrations"),
         seed_path=os.environ.get("ARENA_SEED_PATH", "/seed"),
         backup_path=os.environ.get("ARENA_BACKUP_PATH", "/backups"),

@@ -146,12 +146,20 @@ def import_generators(seed_path: str) -> int:
     return count
 
 
-def init_generator_ratings(initial_rating: float = 1000.0) -> int:
+def init_generator_ratings(
+    initial_rating: float = 1000.0,
+    initial_rd: float = 350.0,
+    initial_volatility: float = 0.06
+) -> int:
     """
     Initialize ratings for generators that don't have a ratings row yet.
     
+    Uses Glicko-2 rating system with rating deviation (RD) and volatility.
+    
     Args:
         initial_rating: The starting rating value for new generators.
+        initial_rd: The starting rating deviation (uncertainty). High = uncertain.
+        initial_volatility: The starting volatility (expected fluctuation).
         
     Returns:
         Number of ratings initialized.
@@ -175,22 +183,22 @@ def init_generator_ratings(initial_rating: float = 1000.0) -> int:
         logger.debug("All generators already have ratings")
         return 0
     
-    logger.info(f"Initializing ratings for {len(missing)} generator(s)")
+    logger.info(f"Initializing Glicko-2 ratings for {len(missing)} generator(s)")
     
     for generator_id in missing:
         conn.execute(
             """
             INSERT INTO ratings (
-                generator_id, rating_value, games_played,
-                wins, losses, ties, skips, updated_at_utc
-            ) VALUES (?, ?, 0, 0, 0, 0, 0, ?)
+                generator_id, rating_value, rd, volatility,
+                games_played, wins, losses, ties, skips, updated_at_utc
+            ) VALUES (?, ?, ?, ?, 0, 0, 0, 0, 0, ?)
             """,
-            (generator_id, initial_rating, now)
+            (generator_id, initial_rating, initial_rd, initial_volatility, now)
         )
-        logger.debug(f"Initialized rating for: {generator_id}")
+        logger.debug(f"Initialized Glicko-2 rating for: {generator_id} (rating={initial_rating}, rd={initial_rd})")
     
     conn.commit()
-    logger.info(f"Initialized {len(missing)} rating(s)")
+    logger.info(f"Initialized {len(missing)} Glicko-2 rating(s)")
     
     return len(missing)
 
