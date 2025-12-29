@@ -64,9 +64,16 @@ export function LevelPreview({
           return;
         }
 
-        // Set canvas dimensions
-        const canvasWidth = width * TILE_SIZE * scale;
-        const canvasHeight = height * TILE_SIZE * scale;
+        // Parse level first to get actual dimensions
+        const level = new MarioLevel(tilemap, true);
+        
+        // Use actual level dimensions from the parsed tilemap
+        const actualWidth = level.tileWidth;
+        const actualHeight = level.tileHeight;
+
+        // Set canvas dimensions based on actual level size
+        const canvasWidth = actualWidth * TILE_SIZE * scale;
+        const canvasHeight = actualHeight * TILE_SIZE * scale;
         canvas.width = canvasWidth;
         canvas.height = canvasHeight;
 
@@ -74,27 +81,24 @@ export function LevelPreview({
         ctx.fillStyle = SKY_COLOR;
         ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-        // Parse level
-        const level = new MarioLevel(tilemap, true);
-
         // If scaling, use an offscreen canvas at 1:1 then scale
         if (scale !== 1) {
           const offscreen = document.createElement('canvas');
-          offscreen.width = width * TILE_SIZE;
-          offscreen.height = height * TILE_SIZE;
+          offscreen.width = actualWidth * TILE_SIZE;
+          offscreen.height = actualHeight * TILE_SIZE;
           const offCtx = offscreen.getContext('2d');
           
           if (offCtx) {
             offCtx.fillStyle = SKY_COLOR;
             offCtx.fillRect(0, 0, offscreen.width, offscreen.height);
-            renderTiles(offCtx, level, width, height);
+            renderTiles(offCtx, level, actualWidth, actualHeight);
             
             // Scale to final canvas
             ctx.imageSmoothingEnabled = false;
             ctx.drawImage(offscreen, 0, 0, canvasWidth, canvasHeight);
           }
         } else {
-          renderTiles(ctx, level, width, height);
+          renderTiles(ctx, level, actualWidth, actualHeight);
         }
 
         setIsLoaded(true);
