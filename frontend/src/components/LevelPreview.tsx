@@ -8,6 +8,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { assetLoader } from '../engine/graphics/AssetLoader';
 import { MarioLevel } from '../engine/MarioLevel';
+import { SpriteType } from '../engine/SpriteType';
 
 interface LevelPreviewProps {
   /** The level ID (used for identification) */
@@ -92,6 +93,7 @@ export function LevelPreview({
             offCtx.fillStyle = SKY_COLOR;
             offCtx.fillRect(0, 0, offscreen.width, offscreen.height);
             renderTiles(offCtx, level, actualWidth, actualHeight);
+            renderEnemies(offCtx, level, actualWidth, actualHeight);
             
             // Scale to final canvas
             ctx.imageSmoothingEnabled = false;
@@ -99,6 +101,7 @@ export function LevelPreview({
           }
         } else {
           renderTiles(ctx, level, actualWidth, actualHeight);
+          renderEnemies(ctx, level, actualWidth, actualHeight);
         }
 
         setIsLoaded(true);
@@ -127,6 +130,61 @@ export function LevelPreview({
         }
       }
     }
+  }
+
+  function renderEnemies(ctx: CanvasRenderingContext2D, level: MarioLevel, tileWidth: number, tileHeight: number) {
+    for (let tileY = 0; tileY < tileHeight; tileY++) {
+      for (let tileX = 0; tileX < tileWidth; tileX++) {
+        const spriteType = level.getSpriteType(tileX, tileY);
+        if (spriteType !== SpriteType.NONE) {
+          renderEnemy(ctx, spriteType, tileX, tileY);
+        }
+      }
+    }
+  }
+
+  function renderEnemy(ctx: CanvasRenderingContext2D, spriteType: SpriteType, tileX: number, tileY: number) {
+    // Determine sprite row based on enemy type
+    let frameY = 0;
+    const ENEMY_SPRITE_HEIGHT = 32;
+
+    switch (spriteType) {
+      case SpriteType.RED_KOOPA:
+      case SpriteType.RED_KOOPA_WINGED:
+        frameY = 0;
+        break;
+      case SpriteType.GREEN_KOOPA:
+      case SpriteType.GREEN_KOOPA_WINGED:
+        frameY = 1;
+        break;
+      case SpriteType.GOOMBA:
+      case SpriteType.GOOMBA_WINGED:
+        frameY = 2;
+        break;
+      case SpriteType.SPIKY:
+      case SpriteType.SPIKY_WINGED:
+        frameY = 3;
+        break;
+      case SpriteType.BULLET_BILL:
+        frameY = 5;
+        break;
+      case SpriteType.ENEMY_FLOWER:
+        // Flower enemy at row 6, render at different offset (centered in pipe)
+        const flowerX = tileX * TILE_SIZE + 9; // centered
+        const flowerY = tileY * TILE_SIZE - 8; // slightly above
+        assetLoader.drawSprite(ctx, 'enemies', 0, 6, flowerX, flowerY);
+        return;
+      default:
+        return; // Skip non-enemy sprites like items
+    }
+
+    // Enemy position: center of tile, bottom aligned
+    // Enemies spawn at x * 16 + 8, y * 16 + 15 (bottom of sprite)
+    const x = tileX * TILE_SIZE;
+    const y = (tileY + 1) * TILE_SIZE - ENEMY_SPRITE_HEIGHT;
+    
+    // Use frame 0 for static preview
+    assetLoader.drawSprite(ctx, 'enemies', 0, frameY, x, y);
   }
 
   const containerStyle: React.CSSProperties = {
