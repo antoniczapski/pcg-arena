@@ -667,30 +667,47 @@ See `docs/stage3-spec.md` for complete documentation.
 
 ---
 
-### Stage 4 (Platform refinement) — FUTURE
+### Stage 4 (Platform refinement) — ✅ COMPLETE (2025-12-30)
 
 **Purpose:** Turn platform into research-grade utility
 
-**Possible directions:**
-* Advanced matchmaking:
-  - Uncertainty-aware pairing (calibration battles for new generators)
-  - Coverage-aware pairing (avoid repetitive matchups)
-* Diagnostic surfaces:
-  - Completion/quit rates per generator
-  - Vote breakdown analysis
-  - Tag distribution analytics
-* Exportable dataset:
-  - Anonymized pairwise preferences
-  - Publication-ready format
-* Community features:
-  - Moderation tools
-  - Researcher profiles
-  - Generator commenting
+**Status:** Phase 1 complete and deployed
 
-**Success criteria:**
-- Generate rating curves over time
-- Enable qualitative analysis via tags
-- Sustainable community growth
+#### Stage 4a: AGIS Matchmaking (✅ Complete)
+- **Glicko-2 Rating System:** Replaced Elo with Glicko-2 for uncertainty-aware ratings
+  - Rating deviation (RD) and volatility tracking
+  - Better handling of new generators with limited data
+- **AGIS Algorithm:** Adaptive Glicko-Informed Selection for intelligent matchmaking
+  - Fast convergence: Prioritizes generators with high uncertainty
+  - Similar ratings: Prefers matchups between generators of similar skill
+  - Coverage: Ensures all generator pairs get sufficient battles
+  - Quality bias: Slightly favors better generators after convergence
+- **Generator Pair Statistics:** Tracks battle history between specific pairs
+- **Configurable Parameters:** All AGIS parameters configurable via environment variables
+
+#### Stage 4b: Coverage System (✅ Complete)
+- **Confusion Matrix Endpoint:** `GET /v1/stats/confusion-matrix` for pairwise comparison data
+  - Win rates and battle counts between all generator pairs
+  - Coverage statistics (pairs with data, pairs at target)
+  - Publicly accessible for research analysis
+- **Admin Dashboard:** OAuth-protected admin interface
+  - Matchmaking statistics and system configuration
+  - Generator status and convergence tracking
+  - Coverage gaps analysis (under-covered and missing pairs)
+  - Three-tab interface: Overview, Confusion Matrix, Coverage Gaps
+  - Accessible only to authorized admin emails via Google OAuth
+- **Configurable AGIS Parameters:**
+  - `ARENA_AGIS_MIN_GAMES`: Games before generator is "converged" (default: 30)
+  - `ARENA_AGIS_TARGET_BATTLES_PER_PAIR`: Minimum battles per pair (default: 10)
+  - `ARENA_AGIS_RATING_SIGMA`: Rating similarity standard deviation (default: 150.0)
+  - `ARENA_AGIS_QUALITY_BIAS`: How much to favor high-rated generators (default: 0.2)
+
+**Deliverables achieved:**
+- ✅ Uncertainty-aware matchmaking (AGIS + Glicko-2)
+- ✅ Coverage tracking and visualization
+- ✅ Admin dashboard for system monitoring
+- ✅ Configurable matchmaking behavior
+- ✅ Research-ready data export (confusion matrix)
 
 ---
 

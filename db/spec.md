@@ -1,12 +1,12 @@
 # PCG Arena — Database Spec
 **Location:** `./db/spec.md`  
 **Protocol:** `arena/v0`  
-**Status:** ✅ Stage 0/1/2 Complete — Schema stable across all stages
+**Status:** ✅ Stage 0/1/2/3/4 Complete — Schema stable with Glicko-2 extensions
 
 This document defines the **database responsibilities** and the exact **data model** for PCG Arena. The schema is designed to be stable across stages (backend/client changes don't require schema migrations).
 
 **Current deployment:** SQLite on GCP VM with daily backups  
-**Clients:** Java validation client (Stage 0/1), Browser frontend (Stage 2)
+**Clients:** Java validation client (Stage 0/1), Browser frontend (Stage 2/3/4)
 
 ---
 
@@ -90,6 +90,11 @@ Contains ordered, versioned migration scripts.
 **Current migrations:**
 - `001_init.sql` — Creates tables: `schema_migrations`, `generators`, `levels`, `battles`, `votes`, `ratings`, `rating_events`
 - `002_indexes.sql` — Creates indexes for: `generators.is_active`, `levels.generator_id`, `levels.content_hash`, `battles.status`, `battles.session_id`, `battles.generator_pair`, `votes.created_at_utc`, `votes.session_id`
+- `003_users.sql` — Users and sessions tables (Stage 3)
+- `004_password_auth.sql` — Password authentication (Stage 3)
+- `005_email_verification.sql` — Email verification tokens (Stage 3)
+- `006_password_reset.sql` — Password reset tokens (Stage 3)
+- `007_glicko_matchmaking.sql` — Glicko-2 rating system and generator pair statistics (Stage 4)
 
 **Functional requirements:**
 - Migrations run from scratch on empty DB
@@ -294,6 +299,8 @@ Stores current rating state per generator.
 Required columns:
 - `generator_id` (TEXT, PK, FK -> generators.generator_id)
 - `rating_value` (REAL, NOT NULL)
+- `rd` (REAL, NOT NULL) — Rating deviation (uncertainty) for Glicko-2 (Stage 4)
+- `volatility` (REAL, NOT NULL) — Volatility for Glicko-2 (Stage 4)
 - `games_played` (INTEGER, NOT NULL)
 - `wins` (INTEGER, NOT NULL)
 - `losses` (INTEGER, NOT NULL)
@@ -301,8 +308,10 @@ Required columns:
 - `skips` (INTEGER, NOT NULL)
 - `updated_at_utc` (TEXT, NOT NULL)
 
-Stage 0 defaults:
+Defaults:
 - initial rating = 1000.0
+- initial RD = 350.0 (high uncertainty for new generators)
+- initial volatility = 0.06
 - `games_played/wins/...` start at 0
 
 Constraints:
@@ -329,6 +338,31 @@ Rules:
 - used to reconstruct rating history if needed
 
 If you want to keep Stage 0 minimal, you can omit `rating_events`, but then you lose most of your explainability.
+
+---
+
+### 5.7 Table: `generator_pair_stats` (Stage 4)
+Tracks battle statistics between specific generator pairs for coverage analysis and matchmaking.
+
+Required columns:
+- `gen1_id` (TEXT, NOT NULL, FK -> generators.generator_id)
+- `gen2_id` (TEXT, NOT NULL, FK -> generators.generator_id)
+- `battle_count` (INTEGER, NOT NULL DEFAULT 0)
+- `gen1_wins` (INTEGER, NOT NULL DEFAULT 0)
+- `gen2_wins` (INTEGER, NOT NULL DEFAULT 0)
+- `ties` (INTEGER, NOT NULL DEFAULT 0)
+- `skips` (INTEGER, NOT NULL DEFAULT 0)
+- `last_battle_utc` (TEXT)
+- PRIMARY KEY (gen1_id, gen2_id)
+
+Constraints:
+- `gen1_id < gen2_id` (canonical ordering to avoid duplicate pairs)
+- counts must be non-negative
+
+Purpose:
+- Used by AGIS matchmaking to ensure coverage (all pairs get enough battles)
+- Powers confusion matrix endpoint for research analysis
+- Updated atomically with each vote
 
 ---
 

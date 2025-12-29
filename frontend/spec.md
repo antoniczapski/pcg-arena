@@ -1,9 +1,9 @@
 # PCG Arena - Frontend Specification
 
 **Created:** 2025-12-26  
-**Updated:** 2025-12-28 (Stage 3)  
+**Updated:** 2025-12-30 (Stage 4)  
 **Protocol:** arena/v0  
-**Status:** ✅ COMPLETE (Stage 2 + Stage 3 deployed and operational)
+**Status:** ✅ COMPLETE (Stage 2/3/4 deployed and operational)
 
 ---
 
@@ -33,7 +33,8 @@
 The browser frontend is a TypeScript/React implementation that allows users to play Mario levels directly in the browser without downloading a client. It implements the `arena/v0` protocol.
 
 **Stage 2 (2025-12-26):** Battle flow and gameplay  
-**Stage 3 (2025-12-28):** Authentication and builder profile
+**Stage 3 (2025-12-28):** Authentication and builder profile  
+**Stage 4 (2025-12-30):** AGIS matchmaking and admin dashboard
 
 ### 1.2 Key Features
 
@@ -183,7 +184,7 @@ frontend/
 
 ```
 App (with Router)
-├── Navigation (Play, Leaderboard, Builder Profile)
+├── Navigation (Play, Leaderboard, Builder Profile, Admin [if admin])
 ├── BattleFlow (/)
 │   ├── Voting Phase
 │   │   ├── LevelPreview (Level A - with enemies)
@@ -195,6 +196,11 @@ App (with Router)
 ├── BuilderPage (/builder)
 │   ├── AuthContext (login/register)
 │   └── GeneratorCard (with "View" link)
+├── AdminPage (/admin) [Stage 4b]
+│   ├── AuthContext (OAuth required)
+│   ├── Overview Tab (config, matchmaking stats, generators)
+│   ├── Confusion Matrix Tab (pairwise win rates)
+│   └── Coverage Gaps Tab (under-covered and missing pairs)
 ├── GeneratorPage (/generator/:id)
 │   ├── Generator details
 │   └── Level gallery (LevelPreview grid - with enemies)
@@ -232,6 +238,7 @@ App (with Router)
 | **Phase 10** | Testing + deployment | ✅ Complete | Production build validated |
 | **Phase 11** | Level Preview system | ✅ Complete | `LevelPreview.tsx`, `GeneratorPage.tsx` |
 | **Phase 12** | Voting page redesign | ✅ Complete | A/B naming, inline reveals, auto-advance |
+| **Phase 13** | Admin dashboard | ✅ Complete | `AdminPage.tsx`, confusion matrix, coverage gaps |
 
 ### 4.2 Development Timeline
 
@@ -682,6 +689,42 @@ interface VoteRequest {
 - Full leaderboard (not preview)
 
 **Route:** `/leaderboard`
+
+---
+
+### 9.8 AdminPage Component (Stage 4b)
+
+**Responsibility:** Display admin dashboard for system monitoring and coverage analysis.
+
+**Access Control:** 
+- Requires Google OAuth authentication
+- Only authorized admin emails can access
+- Email list configurable via `ARENA_ADMIN_EMAILS` environment variable
+
+**Sections:**
+
+1. **Overview Tab:**
+   - System configuration (matchmaking policy, AGIS parameters)
+   - Matchmaking statistics (total generators, pair coverage, average RD)
+   - Generator list with convergence status
+
+2. **Confusion Matrix Tab:**
+   - Visual matrix showing win rates between all generator pairs
+   - Color-coded cells (green = high win rate, red = low win rate)
+   - Battle counts displayed for each pair
+   - Coverage summary statistics
+
+3. **Coverage Gaps Tab:**
+   - Under-covered pairs (fewer than target battles)
+   - Missing pairs (no battles yet)
+   - Helps identify matchmaking priorities
+
+**Data Sources:** 
+- `/v1/admin/stats` - Admin statistics
+- `/v1/stats/confusion-matrix` - Pairwise comparison data
+- `/v1/auth/me/admin` - Admin status check
+
+**Route:** `/admin`
 
 ---
 

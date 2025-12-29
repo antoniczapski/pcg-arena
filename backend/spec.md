@@ -2,16 +2,18 @@
 
 **Location:** `./backend/spec.md`  
 **Protocol:** `arena/v0`  
-**Status:** ✅ Stage 0/1/2/3 Complete — Stable API with authentication
+**Status:** ✅ Stage 0/1/2/3/4 Complete — Stable API with advanced matchmaking
 
 This document describes the **backend implementation** for PCG Arena. The backend is a Python/FastAPI application serving the Arena API.
 
 **Current deployment:** GCP Compute Engine (e2-micro) with Docker  
-**Clients:** Java validation client (Stage 0/1), Browser frontend (Stage 2/3)  
+**Clients:** Java validation client (Stage 0/1), Browser frontend (Stage 2/3/4)  
 **Key features:** 
 - Core battle/voting API (Stage 0-2)
 - Authentication system with Google OAuth and email/password (Stage 3)
 - Builder profile for generator submissions (Stage 3)
+- Glicko-2 rating system and AGIS matchmaking (Stage 4a)
+- Admin dashboard and confusion matrix (Stage 4b)
 
 ---
 
@@ -74,8 +76,15 @@ backend/
 - `ARENA_DB_PATH` — Path to SQLite database (default: `/data/arena.sqlite`)
 - `ARENA_HOST` — Server bind address (default: `0.0.0.0`)
 - `ARENA_PORT` — Server port (default: `8080`)
-- `ARENA_INITIAL_RATING` — Starting ELO rating (default: `1000.0`)
-- `ARENA_K_FACTOR` — ELO K-factor (default: `24`)
+- `ARENA_INITIAL_RATING` — Starting Glicko-2 rating (default: `1000.0`)
+- `ARENA_INITIAL_RD` — Initial rating deviation (default: `350.0`)
+- `ARENA_INITIAL_VOLATILITY` — Initial volatility (default: `0.06`)
+- `ARENA_MATCHMAKING_POLICY` — Matchmaking algorithm: `uniform_v0` or `agis_v1` (default: `agis_v1`)
+- `ARENA_AGIS_MIN_GAMES` — Games before generator is "converged" (default: `30`)
+- `ARENA_AGIS_TARGET_BATTLES_PER_PAIR` — Minimum battles per pair (default: `10`)
+- `ARENA_AGIS_RATING_SIGMA` — Rating similarity standard deviation (default: `150.0`)
+- `ARENA_AGIS_QUALITY_BIAS` — Quality bias strength (default: `0.2`)
+- `ARENA_ADMIN_EMAILS` — Comma-separated admin emails (default: `antoni.krzysztof.czapski@gmail.com`)
 - `ARENA_MIGRATIONS_PATH` — Path to migrations directory (default: `/migrations`)
 - `ARENA_SEED_PATH` — Path to seed directory (default: `/seed`)
 
@@ -106,14 +115,19 @@ FastAPI application entry point. Contains:
 | Method | Path | Description |
 |--------|------|-------------|
 | GET | `/health` | Health check, returns protocol version and server time |
-| GET | `/v1/leaderboard` | JSON leaderboard: generators sorted by rating |
+| GET | `/v1/leaderboard` | JSON leaderboard: generators sorted by rating (Glicko-2) |
 | GET | `/v1/generators/{generator_id}` | Get detailed generator info with all levels |
+| GET | `/v1/stats/confusion-matrix` | Confusion matrix of generator pairwise comparisons (Stage 4b) |
+| GET | `/v1/auth/me/admin` | Check if current user has admin privileges (Stage 4b) |
+| GET | `/v1/admin/stats` | Admin statistics (requires OAuth admin auth, Stage 4b) |
 | GET | `/` | HTML leaderboard page for humans |
-| POST | `/v1/battles:next` | Issue a new battle with two random levels |
-| POST | `/v1/votes` | Submit vote for a battle, update ratings |
+| POST | `/v1/battles:next` | Issue a new battle using AGIS matchmaking (Stage 4a) |
+| POST | `/v1/votes` | Submit vote for a battle, update Glicko-2 ratings (Stage 4a) |
 | GET | `/debug/db-status` | Database status (requires `ARENA_DEBUG=true`) |
 | GET | `/debug/battles` | List battles (requires `ARENA_DEBUG=true`) |
 | GET | `/debug/votes` | List votes (requires `ARENA_DEBUG=true`) |
+| GET | `/debug/matchmaking` | AGIS matchmaking stats (requires `ARENA_DEBUG=true`, Stage 4a) |
+| GET | `/debug/pair-stats` | Generator pair statistics (requires `ARENA_DEBUG=true`, Stage 4a) |
 
 ### `src/db/`
 
@@ -238,6 +252,18 @@ CMD ["python", "main.py"]
 | Backup scripts | ✅ Complete | `scripts/backup.sh`, `scripts/backup.ps1` |
 | Remote validation | ✅ Complete | Java client tested |
 
+### Stage 4 Features (Complete)
+
+| Feature | Status | Location |
+|---------|--------|----------|
+| Glicko-2 rating system | ✅ Complete | `glicko2.py`, `main.py` |
+| AGIS matchmaking | ✅ Complete | `matchmaking.py`, `main.py` |
+| Generator pair statistics | ✅ Complete | `main.py`, `db/migrations/007_glicko_matchmaking.sql` |
+| Confusion matrix endpoint | ✅ Complete | `main.py` |
+| Admin dashboard endpoints | ✅ Complete | `main.py` |
+| Configurable AGIS parameters | ✅ Complete | `config.py` |
+| Admin email configuration | ✅ Complete | `config.py` |
+
 ### Future Tasks
 
 | Feature | Stage | Notes |
@@ -326,10 +352,11 @@ Returns generator rankings.
   "protocol_version": "arena/v0",
   "updated_at_utc": "2025-12-24T12:00:00Z",
   "rating_system": {
-    "name": "ELO",
+    "name": "Glicko-2",
     "initial_rating": 1000.0,
-    "k_factor": 24
+    "initial_rd": 350.0
   },
+  "matchmaking_policy": "agis_v1",
   "generators": [
     {
       "rank": 1,
@@ -364,12 +391,13 @@ Returns detailed information about a specific generator including all its levels
   "documentation_url": "https://...",
   "is_active": true,
   "level_count": 100,
-  "rating": 1024.5,
-  "games_played": 42,
-  "wins": 20,
-  "losses": 18,
-  "ties": 4,
-  "skips": 0,
+      "rating": 1024.5,
+      "rd": 125.3,
+      "games_played": 42,
+      "wins": 20,
+      "losses": 18,
+      "ties": 4,
+      "skips": 0,
   "created_at_utc": "2025-12-24T12:00:00Z",
   "updated_at_utc": "2025-12-28T15:30:00Z",
   "levels": [
@@ -460,6 +488,73 @@ Submit a vote for a battle. Idempotent with atomic rating update.
 **Errors:** `BATTLE_NOT_FOUND`, `BATTLE_ALREADY_VOTED`, `DUPLICATE_VOTE_CONFLICT`, `INVALID_TAG`, `INVALID_PAYLOAD`, `INTERNAL_ERROR`
 
 Note: Vote result values are `LEFT`, `RIGHT`, `TIE`, or `SKIP`.
+
+### `GET /v1/stats/confusion-matrix`
+
+Returns confusion matrix of generator pairwise comparisons.
+
+**Response 200:**
+```json
+{
+  "protocol_version": "arena/v0",
+  "generators": [
+    {"id": "genetic", "name": "Grammatical Evolution Generator"},
+    {"id": "hopper", "name": "Hopper Level Generator"}
+  ],
+  "matrix": [
+    [null, {"battles": 15, "wins": 8, "losses": 5, "ties": 2, "win_rate": 0.533}],
+    [{"battles": 15, "wins": 5, "losses": 8, "ties": 2, "win_rate": 0.333}, null]
+  ],
+  "coverage": {
+    "total_pairs": 45,
+    "pairs_with_data": 38,
+    "pairs_at_target": 22,
+    "target_battles_per_pair": 10,
+    "coverage_percent": 84.4,
+    "target_coverage_percent": 48.9
+  }
+}
+```
+
+### `GET /v1/auth/me/admin`
+
+Check if current user has admin privileges.
+
+**Response 200:**
+```json
+{
+  "authenticated": true,
+  "is_admin": true,
+  "email": "admin@example.com"
+}
+```
+
+### `GET /v1/admin/stats`
+
+Get admin statistics for matchmaking and coverage. Requires OAuth authentication with admin email.
+
+**Response 200:**
+```json
+{
+  "protocol_version": "arena/v0",
+  "user": {"email": "admin@example.com", "is_admin": true},
+  "config": {
+    "matchmaking_policy": "agis_v1",
+    "initial_rating": 1000.0,
+    "initial_rd": 350.0,
+    "min_games_for_significance": 30,
+    "target_battles_per_pair": 10,
+    "rating_similarity_sigma": 150.0,
+    "quality_bias_strength": 0.2
+  },
+  "matchmaking": { ... },
+  "generators": [ ... ],
+  "coverage_gaps": { ... }
+}
+```
+
+**Response 401:** Not authenticated
+**Response 403:** Not an admin user
 
 ### Debug Endpoints
 

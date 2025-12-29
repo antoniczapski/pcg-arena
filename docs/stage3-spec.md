@@ -2,7 +2,8 @@
 
 **Location:** `docs/stage3-spec.md`  
 **Protocol:** `arena/v0`  
-**Status:** ✅ COMPLETE & DEPLOYED TO PRODUCTION (2025-12-28)
+**Status:** ✅ COMPLETE & DEPLOYED TO PRODUCTION (2025-12-28)  
+**Note:** Stage 4 (AGIS matchmaking and admin dashboard) completed 2025-12-30
 
 ---
 
