@@ -1,8 +1,9 @@
 # PCG Arena - Frontend Specification
 
 **Created:** 2025-12-26  
+**Updated:** 2025-12-28 (Stage 3)  
 **Protocol:** arena/v0  
-**Status:** ✅ COMPLETE (Deployed and operational)
+**Status:** ✅ COMPLETE (Stage 2 + Stage 3 deployed and operational)
 
 ---
 
@@ -29,7 +30,10 @@
 
 ### 1.1 Purpose
 
-The browser frontend is a TypeScript/React implementation that allows users to play Mario levels directly in the browser without downloading a client. It implements the same `arena/v0` protocol as the Java validation client.
+The browser frontend is a TypeScript/React implementation that allows users to play Mario levels directly in the browser without downloading a client. It implements the `arena/v0` protocol.
+
+**Stage 2 (2025-12-26):** Battle flow and gameplay  
+**Stage 3 (2025-12-28):** Authentication and builder profile
 
 ### 1.2 Key Features
 

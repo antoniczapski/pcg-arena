@@ -1,9 +1,9 @@
-# GCP Deployment Spec — PCG Arena (Stage 1 → Stage 2)
+# GCP Deployment Spec — PCG Arena (Stage 1 → Stage 2 → Stage 3)
 
 **Project:** PCG Arena  
 **Protocol:** `arena/v0`  
-**Last Updated:** 2025-12-26  
-**Current State:** ✅ Stage 2 deployed (Frontend + Backend) on a single GCP VM with HTTPS + domain  
+**Last Updated:** 2025-12-28  
+**Current State:** ✅ Stage 3 deployed (Frontend + Backend + Builder Profile + Authentication) on a single GCP VM with HTTPS + domain  
 **VM Public IP:** `34.116.232.204`  
 **Domain:** `pcg-arena.com`, `www.pcg-arena.com`
 
@@ -14,10 +14,16 @@
 This document describes the full GCP deployment of PCG Arena:
 
 - **Stage 1 (historical):** hosted backend on a VM (public `:8080`), accessed by Java client.
-- **Stage 2 (current):** hosted backend + hosted browser frontend under a custom domain with HTTPS.
+- **Stage 2 (deployed 2025-12-26):** hosted backend + hosted browser frontend under a custom domain with HTTPS.
   - Frontend served as **static files**.
   - Backend remains a Docker container, reachable **only on localhost**.
   - A web server (Caddy) is the single public entrypoint, handling TLS and reverse proxy.
+- **Stage 3 (deployed 2025-12-28):** added authentication system and builder profile.
+  - Google OAuth integration for researcher sign-in.
+  - Email/password authentication with verification.
+  - Builder dashboard for generator submissions (50-200 levels).
+  - SendGrid email integration for verification and password reset.
+  - Session management with HTTP-only cookies.
 
 This is intended to be a **reproducible runbook** for:
 - provisioning the VM,
@@ -567,20 +573,155 @@ docker compose logs --tail=200 backend
 
 ---
 
-## Appendix A: Key endpoints (Stage 2)
+## 16. Stage 3 Deployment (Builder Profile + Authentication)
+
+### 16.1 What's New in Stage 3
+
+**Features:**
+- User authentication (Google OAuth + Email/Password)
+- Builder profile dashboard at `/builder`
+- Generator submission (ZIP upload, 50-200 levels)
+- Email verification via SendGrid
+- Password reset flow
+- Session management with HTTP-only cookies
+
+**New API Endpoints:**
+- `/v1/auth/*` - Authentication (10 endpoints)
+- `/v1/builders/*` - Builder profile (4 endpoints)
+
+### 16.2 Additional Configuration Required
+
+**On VM, update docker-compose.override.yml:**
+
+```yaml
+services:
+  backend:
+    ports:
+      - "127.0.0.1:8080:8080"  # Removed from main docker-compose.yml
+    environment:
+      - ARENA_DEBUG=true
+      - ARENA_ADMIN_KEY=<your-admin-key>
+      - ARENA_PUBLIC_URL=https://www.pcg-arena.com
+      - ARENA_DEV_AUTH=false  # Disable dev auth in production
+      - ARENA_GOOGLE_CLIENT_ID=<your-google-client-id>
+      - ARENA_SENDGRID_API_KEY=<your-sendgrid-api-key>
+      - ARENA_SENDER_EMAIL=noreply@pcg-arena.com
+      - ARENA_FRONTEND_URL=https://www.pcg-arena.com
+      - ARENA_ALLOWED_ORIGINS=https://www.pcg-arena.com,https://pcg-arena.com
+```
+
+**Create .env file on VM:**
+
+```bash
+cat > ~/pcg-arena/.env << 'EOF'
+GOOGLE_CLIENT_ID=<your-google-client-id>
+SENDGRID_API_KEY=<your-sendgrid-api-key>
+SENDGRID_FROM_EMAIL=noreply@pcg-arena.com
+ADMIN_KEY=<your-admin-key>
+PUBLIC_URL=https://www.pcg-arena.com
+EOF
+```
+
+### 16.3 Critical Caddyfile Update
+
+**Important:** The Caddyfile must use `handle` blocks to properly route API requests:
+
+```caddy
+pcg-arena.com, www.pcg-arena.com {
+    # Backend API routes - handle first
+    handle /v1/* {
+        reverse_proxy localhost:8080
+    }
+    
+    handle /health {
+        reverse_proxy localhost:8080
+    }
+    
+    handle /admin/* {
+        reverse_proxy localhost:8080
+    }
+    
+    # Everything else - serve frontend (SPA)
+    handle {
+        root * /var/www/pcg-arena
+        try_files {path} /index.html
+        file_server
+    }
+}
+```
+
+**Why handle blocks?** Without them, `try_files` catches all requests including API calls and returns HTML instead of proxying to the backend.
+
+### 16.4 Frontend Configuration
+
+Update `frontend/.env.production`:
+
+```bash
+VITE_API_BASE_URL=
+VITE_GOOGLE_CLIENT_ID=<your-google-client-id>
+VITE_DEV_AUTH=false
+```
+
+**Note:** `VITE_API_BASE_URL` must be empty (not `/v1`), as the frontend code adds the path itself.
+
+### 16.5 Deployment Checklist
+
+- [x] Google OAuth credentials configured (authorized origin: https://www.pcg-arena.com)
+- [x] SendGrid account created and sender verified
+- [x] `.env` file created on VM with secrets
+- [x] `docker-compose.override.yml` updated with Stage 3 config
+- [x] `docker-compose.yml` modified (port binding changed to localhost only)
+- [x] Caddyfile updated with `handle` blocks
+- [x] Backend rebuilt and deployed
+- [x] Frontend rebuilt with production config
+- [x] Database migrations applied automatically (003, 004, 005, 006)
+- [x] HTTPS cookies working correctly
+- [x] API endpoints return JSON (not HTML)
+
+### 16.6 Troubleshooting Stage 3
+
+**Issue:** API calls return HTML instead of JSON
+
+**Solution:** Check Caddyfile uses `handle` blocks, not `reverse_proxy` after `try_files`.
+
+```bash
+# Test API endpoints
+curl -s https://www.pcg-arena.com/health | head -5
+curl -s https://www.pcg-arena.com/v1/auth/me
+
+# Should return JSON, not HTML
+```
+
+**Issue:** Port 8080 already in use
+
+**Solution:** Check for duplicate port bindings in docker-compose.yml and docker-compose.override.yml. Only one should define ports.
+
+**Issue:** Google OAuth fails
+
+**Solution:** Verify `https://www.pcg-arena.com` is in authorized JavaScript origins in Google Cloud Console.
+
+---
+
+## Appendix A: Key endpoints (Stage 3)
 
 Public:
 
 * `GET https://www.pcg-arena.com/` (frontend)
+* `GET https://www.pcg-arena.com/builder` (builder profile - requires auth)
 * `GET https://www.pcg-arena.com/health`
 * `GET https://www.pcg-arena.com/v1/leaderboard`
 * `POST https://www.pcg-arena.com/v1/battles:next`
 * `POST https://www.pcg-arena.com/v1/votes`
+* `POST https://www.pcg-arena.com/v1/auth/google` (Google OAuth)
+* `POST https://www.pcg-arena.com/v1/auth/register` (Email registration)
+* `POST https://www.pcg-arena.com/v1/auth/login` (Email login)
+* `GET https://www.pcg-arena.com/v1/builders/me/generators` (requires auth)
 
 Internal (VM):
 
 * `GET http://localhost:8080/health`
 * `GET http://localhost:8080/v1/leaderboard`
+* `GET http://localhost:8080/v1/auth/me`
 
 ---
 

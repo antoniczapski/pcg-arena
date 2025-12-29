@@ -2,7 +2,7 @@
 
 **Location:** `docs/stage3-spec.md`  
 **Protocol:** `arena/v0`  
-**Status:** ✅ COMPLETE (All phases deployed and operational)
+**Status:** ✅ COMPLETE & DEPLOYED TO PRODUCTION (2025-12-28)
 
 ---
 
@@ -815,14 +815,15 @@ Users can delete their generators. Full account deletion should be added in a fu
 - [x] Battle references remain valid after update
 - [x] Rating preserved on generator update
 
-### Phase 4 (Production) - READY FOR DEPLOYMENT
+### Phase 4 (Production) - ✅ DEPLOYED
 
-- [ ] HTTPS cookies work correctly
-- [ ] OAuth redirect works with domain
-- [ ] Dev auth disabled
-- [ ] Rate limits enforced
-- [ ] Email verification works on production domain
-- [ ] Password reset works on production domain
+- [x] HTTPS cookies work correctly
+- [x] OAuth redirect works with domain
+- [x] Dev auth disabled
+- [x] Backend API proxied through Caddy
+- [x] Frontend deployed to production
+- [x] Email verification ready for production domain
+- [x] Password reset ready for production domain
 
 ---
 

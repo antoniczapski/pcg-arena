@@ -618,9 +618,9 @@ See `docs/stage2-spec.md` and `frontend/spec.md` for complete documentation.
 
 ---
 
-### Stage 3 (Builder Profile) — ✅ COMPLETE
+### Stage 3 (Builder Profile) — ✅ COMPLETE & DEPLOYED
 
-**Status:** Complete and operational (2025-12-28)
+**Status:** Complete and deployed to production (2025-12-28)
 
 **Purpose:** Enable researchers to submit their own generators
 

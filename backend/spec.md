@@ -2,13 +2,16 @@
 
 **Location:** `./backend/spec.md`  
 **Protocol:** `arena/v0`  
-**Status:** ✅ Stage 0/1/2 Complete — Stable API across all stages
+**Status:** ✅ Stage 0/1/2/3 Complete — Stable API with authentication
 
 This document describes the **backend implementation** for PCG Arena. The backend is a Python/FastAPI application serving the Arena API.
 
 **Current deployment:** GCP Compute Engine (e2-micro) with Docker  
-**Clients:** Java validation client (Stage 0/1), Browser frontend (Stage 2)  
-**Key feature:** API unchanged across Stage 0 → Stage 1 → Stage 2
+**Clients:** Java validation client (Stage 0/1), Browser frontend (Stage 2/3)  
+**Key features:** 
+- Core battle/voting API (Stage 0-2)
+- Authentication system with Google OAuth and email/password (Stage 3)
+- Builder profile for generator submissions (Stage 3)
 
 ---
 

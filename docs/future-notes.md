@@ -43,3 +43,7 @@ cd client-java
 - community duty - please play 10 battles while submitting new generator
 - add statistics for builders (detailed stats on their generators/levels)
 - prepare oauth for >100 users (1-2 weeks processing)
+
+Known bugs
+- internal error occured while I tried to submit generator with two letter id
+- while opening site for the first time it asks to give permission to network devices - starge, it shouldn't be required
