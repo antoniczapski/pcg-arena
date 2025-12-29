@@ -138,11 +138,25 @@ frontend/
 │   │   ├── GameCanvas.tsx      # Canvas wrapper with game loop
 │   │   ├── VotingPanel.tsx     # Vote submission UI
 │   │   ├── Leaderboard.tsx     # Generator rankings
+│   │   ├── LevelPreview.tsx    # Static level preview rendering
 │   │   └── StatusBar.tsx       # Battle info display
+│   │
+│   ├── pages/                  # Page components
+│   │   ├── BuilderPage.tsx     # Builder profile and generator management
+│   │   ├── GeneratorPage.tsx   # Generator details with level gallery
+│   │   ├── LeaderboardPage.tsx # Full leaderboard page
+│   │   ├── VerifyEmailPage.tsx # Email verification handler
+│   │   └── ResetPasswordPage.tsx # Password reset handler
+│   │
+│   ├── contexts/               # React contexts
+│   │   └── AuthContext.tsx     # Authentication state management
 │   │
 │   ├── styles/                 # CSS stylesheets
 │   │   ├── global.css          # Base styles
-│   │   └── components.css      # Component-specific styles
+│   │   ├── components.css      # Component-specific styles
+│   │   ├── builder.css         # Builder page styles
+│   │   ├── generator.css       # Generator page styles
+│   │   └── leaderboard.css     # Leaderboard page styles
 │   │
 │   ├── App.tsx                 # Root component
 │   ├── main.tsx                # React entry point
@@ -168,13 +182,24 @@ frontend/
 ### 3.2 Component Hierarchy
 
 ```
-App
-└── BattleFlow
-    ├── StatusBar (battle info)
-    ├── GameCanvas (left level)
-    ├── GameCanvas (right level)
-    ├── VotingPanel (after both played)
-    └── Leaderboard (after vote submitted)
+App (with Router)
+├── Navigation (Play, Leaderboard, Builder Profile)
+├── BattleFlow (/)
+│   ├── Voting Phase
+│   │   ├── LevelPreview (Level A - with enemies)
+│   │   ├── LevelPreview (Level B - with enemies)
+│   │   └── VotingPanel (A/B naming)
+│   └── Auto-advance (after vote)
+├── LeaderboardPage (/leaderboard)
+│   └── Leaderboard (full list, linkable generators)
+├── BuilderPage (/builder)
+│   ├── AuthContext (login/register)
+│   └── GeneratorCard (with "View" link)
+├── GeneratorPage (/generator/:id)
+│   ├── Generator details
+│   └── Level gallery (LevelPreview grid - with enemies)
+├── VerifyEmailPage (/verify-email)
+└── ResetPasswordPage (/reset-password)
 ```
 
 ### 3.3 Data Flow
@@ -205,6 +230,8 @@ App
 | **Phase 8** | Telemetry | ✅ Complete | Event tracking in `MarioWorld.ts` |
 | **Phase 9** | Styling | ✅ Complete | `styles/*.css` |
 | **Phase 10** | Testing + deployment | ✅ Complete | Production build validated |
+| **Phase 11** | Level Preview system | ✅ Complete | `LevelPreview.tsx`, `GeneratorPage.tsx` |
+| **Phase 12** | Voting page redesign | ✅ Complete | A/B naming, inline reveals, auto-advance |
 
 ### 4.2 Development Timeline
 
@@ -597,6 +624,64 @@ interface VoteRequest {
 **Layout:**
 - Table sorted by rating (descending)
 - Highlight recently changed generators (optional future feature)
+
+---
+
+### 9.5 LevelPreview Component
+
+**Responsibility:** Render static preview of a Mario level with tiles and enemies.
+
+**Key Features:**
+- Uses Canvas for rendering
+- Displays entire level (variable width) at once
+- Renders tiles using `AssetLoader` and `TilemapRenderer`
+- Renders enemies using enemy sprite sheet
+- Scales level to fit display (configurable scale prop)
+- Shows level ID label (optional)
+
+**Usage:**
+- Generator page: Gallery of all levels (scale 0.5)
+- Voting page: Both levels displayed before voting (scale 0.5)
+
+**Props:**
+- `levelId: string` - Level identifier for display
+- `tilemap: string` - ASCII tilemap content
+- `width: number` - Level width (tiles)
+- `height: number` - Level height (tiles)
+- `scale?: number` - Rendering scale (default: 1)
+- `onClick?: () => void` - Optional click handler
+- `showLabel?: boolean` - Show level ID label (default: true)
+
+---
+
+### 9.6 GeneratorPage Component
+
+**Responsibility:** Display detailed information about a specific generator and its level gallery.
+
+**Sections:**
+1. **Header:** Generator name, version, ID, description, tags, documentation link
+2. **Statistics:** Rank, rating, games played, win/loss/tie counts, level count
+3. **Level Gallery:** Grid of all levels using `LevelPreview` components
+
+**Data Source:** `/v1/generators/{generator_id}` API endpoint
+
+**Access Points:**
+- Leaderboard: Click generator name
+- Builder Profile: Click "View Levels" button
+
+---
+
+### 9.7 LeaderboardPage Component
+
+**Responsibility:** Display full leaderboard on dedicated page.
+
+**Features:**
+- Uses existing `Leaderboard` component
+- Generator names are clickable links to `GeneratorPage`
+- Separate from battle flow (navigation menu access)
+- Full leaderboard (not preview)
+
+**Route:** `/leaderboard`
 
 ---
 

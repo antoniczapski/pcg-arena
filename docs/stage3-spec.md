@@ -565,8 +565,10 @@ environment:
 
 | Route | Component | Description |
 |-------|-----------|-------------|
-| `/` | `BattleFlow` | Play battles (existing) |
-| `/builder` | `BuilderPage` | Builder profile |
+| `/` | `BattleFlow` | Play battles with level previews and A/B naming |
+| `/leaderboard` | `LeaderboardPage` | Full leaderboard (separate from battle flow) |
+| `/builder` | `BuilderPage` | Builder profile with generator management |
+| `/generator/:id` | `GeneratorPage` | Generator details with level gallery |
 | `/verify-email` | `VerifyEmailPage` | Email verification handler |
 | `/reset-password` | `ResetPasswordPage` | Password reset handler |
 
@@ -576,6 +578,9 @@ environment:
 |-----------|----------|-------------|
 | `AuthContext` | `contexts/AuthContext.tsx` | Auth state management |
 | `BuilderPage` | `pages/BuilderPage.tsx` | Builder dashboard |
+| `LeaderboardPage` | `pages/LeaderboardPage.tsx` | Full leaderboard page |
+| `GeneratorPage` | `pages/GeneratorPage.tsx` | Generator details with level gallery |
+| `LevelPreview` | `components/LevelPreview.tsx` | Static level preview (tiles + enemies) |
 | `VerifyEmailPage` | `pages/VerifyEmailPage.tsx` | Email verification page |
 | `ResetPasswordPage` | `pages/ResetPasswordPage.tsx` | Password reset page |
 | `GeneratorCard` | (inline) | Display one generator |
@@ -841,9 +846,14 @@ Users can delete their generators. Full account deletion should be added in a fu
 | `backend/src/builders.py` | Builder profile module (generator management) |
 | `frontend/src/contexts/AuthContext.tsx` | Auth state management |
 | `frontend/src/pages/BuilderPage.tsx` | Builder dashboard page |
+| `frontend/src/pages/LeaderboardPage.tsx` | Dedicated leaderboard page |
+| `frontend/src/pages/GeneratorPage.tsx` | Generator details with level gallery |
+| `frontend/src/components/LevelPreview.tsx` | Static level preview component |
 | `frontend/src/pages/VerifyEmailPage.tsx` | Email verification handler |
 | `frontend/src/pages/ResetPasswordPage.tsx` | Password reset handler |
 | `frontend/src/styles/builder.css` | Builder page styles |
+| `frontend/src/styles/generator.css` | Generator page styles |
+| `frontend/src/styles/leaderboard.css` | Leaderboard page styles |
 | `docs/stage3-spec.md` | This specification |
 | `.env.example` | Template for local secrets |
 
@@ -853,10 +863,15 @@ Users can delete their generators. Full account deletion should be added in a fu
 |------|---------|
 | `backend/requirements.txt` | Added python-multipart, google-auth, bcrypt, sendgrid, requests |
 | `backend/src/config.py` | Added dev_auth, google_client_id, sendgrid config, frontend_url |
-| `backend/src/main.py` | Added auth and builder endpoints (10+ new endpoints) |
+| `backend/src/main.py` | Added auth and builder endpoints, generator details endpoint |
+| `frontend/src/api/client.ts` | Added getGeneratorDetails and leaderboard methods |
+| `frontend/src/api/types.ts` | Added GeneratorDetails, LevelDataWithContent, LeaderboardResponse |
 | `frontend/package.json` | Added react-router-dom |
-| `frontend/src/App.tsx` | Added routing and AuthProvider |
-| `frontend/src/styles/components.css` | Added navigation styles |
+| `frontend/src/App.tsx` | Added routing, AuthProvider, navigation reordering |
+| `frontend/src/components/BattleFlow.tsx` | Redesigned voting with level previews, A/B naming, auto-advance |
+| `frontend/src/components/VotingPanel.tsx` | Added A/B naming support |
+| `frontend/src/components/Leaderboard.tsx` | Made generator names linkable |
+| `frontend/src/styles/components.css` | Added voting page, navigation, and generator link styles |
 | `frontend/vite.config.ts` | Added proxy configuration for cookies |
 | `docker-compose.yml` | Added multiple environment variables for auth and email |
 | `README.md` | Updated Stage 3 status to COMPLETE |

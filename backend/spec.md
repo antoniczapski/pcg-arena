@@ -107,6 +107,7 @@ FastAPI application entry point. Contains:
 |--------|------|-------------|
 | GET | `/health` | Health check, returns protocol version and server time |
 | GET | `/v1/leaderboard` | JSON leaderboard: generators sorted by rating |
+| GET | `/v1/generators/{generator_id}` | Get detailed generator info with all levels |
 | GET | `/` | HTML leaderboard page for humans |
 | POST | `/v1/battles:next` | Issue a new battle with two random levels |
 | POST | `/v1/votes` | Submit vote for a battle, update ratings |
@@ -346,6 +347,46 @@ Returns generator rankings.
   ]
 }
 ```
+
+### `GET /v1/generators/{generator_id}`
+
+Returns detailed information about a specific generator including all its levels.
+
+**Response 200:**
+```json
+{
+  "protocol_version": "arena/v0",
+  "generator_id": "hopper",
+  "name": "Hopper Level Generator",
+  "version": "1.0.0",
+  "description": "Constructive left-to-right generator...",
+  "tags": ["constructive", "probabilistic"],
+  "documentation_url": "https://...",
+  "is_active": true,
+  "level_count": 100,
+  "rating": 1024.5,
+  "games_played": 42,
+  "wins": 20,
+  "losses": 18,
+  "ties": 4,
+  "skips": 0,
+  "created_at_utc": "2025-12-24T12:00:00Z",
+  "updated_at_utc": "2025-12-28T15:30:00Z",
+  "levels": [
+    {
+      "level_id": "hopper::lvl-1.txt",
+      "content_format": "ASCII_TILEMAP",
+      "width": 200,
+      "height": 16,
+      "tilemap_text": "--------------------...",
+      "content_hash": "sha256:abc123...",
+      "created_at_utc": "2025-12-24T12:00:00Z"
+    }
+  ]
+}
+```
+
+**Response 404:** Generator not found
 
 ### `GET /`
 

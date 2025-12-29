@@ -26,14 +26,15 @@ cd client-java
 
 # tech debt
 
-- score using keys (basically do everything using keys)
-- fix kill mechanics
-- level validation - check if robin agent (top 3) can pass the level
++ showcase the whole map
++ login + builder profile
++ fix kill mechanics
 - smarter generator selection (multi-arm-bandid style)
+- score using keys (basically do everything using keys)
+- level validation - check if robin agent (top 3) can pass the level
 - ability to give tags
-- showcase the whole map
+- replay option (if you want to repeate level)
 - add AI gameplay finish
-- login + builder profile
 - debug mode
 - abuse prevention 
     - scoring alignemnt (every 10 battles give one control battle between best and worst)

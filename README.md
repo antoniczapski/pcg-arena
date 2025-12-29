@@ -639,6 +639,16 @@ See `docs/stage2-spec.md` and `frontend/spec.md` for complete documentation.
   - Soft delete for generators with battles (maintains data integrity)
   - Up to 3 generators per user
   - Immediate leaderboard integration
+* **Generator View:**
+  - Dedicated page for each generator with detailed information
+  - Visual level gallery with static previews of all levels
+  - Level previews show tiles and enemies using original Mario graphics
+  - Accessible from Leaderboard (clickable generator names) and Builder Profile
+* **Enhanced Battle Experience:**
+  - Level previews on voting page (both levels displayed before voting)
+  - A/B naming (Level A, Level B) instead of directional names
+  - Generator names revealed inline after voting with auto-advance
+  - Dedicated Leaderboard page separate from battle flow
 * **User Experience:**
   - Email verification required for submissions
   - OAuth users auto-verified
@@ -647,10 +657,11 @@ See `docs/stage2-spec.md` and `frontend/spec.md` for complete documentation.
 
 **Technical implementation:**
 - Database: `users`, `user_sessions`, `email_verification_tokens`, `password_reset_tokens` tables
-- Backend: Complete `/v1/auth/*` and `/v1/builders/*` API
-- Frontend: React Router, AuthContext, BuilderPage with Google Sign-In
+- Backend: Complete `/v1/auth/*` and `/v1/builders/*` API, `/v1/generators/{id}` endpoint
+- Frontend: React Router, AuthContext, BuilderPage with Google Sign-In, GeneratorPage, LevelPreview component
 - Email: SendGrid integration for verification and password reset
 - Security: Bcrypt password hashing, token-based verification
+- UI: Level preview system using Canvas rendering with original Mario graphics
 
 See `docs/stage3-spec.md` for complete documentation.
 
