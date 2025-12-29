@@ -1234,6 +1234,245 @@ async def get_leaderboard():
     })
 
 
+@app.get("/v1/stats/confusion-matrix")
+async def get_confusion_matrix():
+    """
+    Get the confusion matrix of generator pairwise comparisons.
+    
+    Returns win rates and battle counts between all generator pairs.
+    This is useful for analyzing matchup balance and coverage.
+    """
+    conn = get_connection()
+    
+    # Get all active generators
+    cursor = conn.execute(
+        """
+        SELECT generator_id, name 
+        FROM generators 
+        WHERE is_active = 1
+        ORDER BY generator_id
+        """
+    )
+    generators = [{"id": row["generator_id"], "name": row["name"]} for row in cursor.fetchall()]
+    generator_ids = [g["id"] for g in generators]
+    
+    # Get all pair stats
+    cursor = conn.execute(
+        """
+        SELECT 
+            gen1_id, gen2_id, battle_count, 
+            gen1_wins, gen2_wins, ties, skips
+        FROM generator_pair_stats
+        """
+    )
+    
+    # Build matrix data
+    # matrix[gen1_id][gen2_id] = {battles, gen1_wins, gen2_wins, ...}
+    pair_data = {}
+    for row in cursor.fetchall():
+        key = (row["gen1_id"], row["gen2_id"])
+        pair_data[key] = {
+            "battle_count": row["battle_count"],
+            "gen1_wins": row["gen1_wins"],
+            "gen2_wins": row["gen2_wins"],
+            "ties": row["ties"],
+            "skips": row["skips"],
+        }
+    
+    # Build the matrix
+    matrix = []
+    for gen1_id in generator_ids:
+        row_data = []
+        for gen2_id in generator_ids:
+            if gen1_id == gen2_id:
+                row_data.append(None)  # Diagonal
+            else:
+                # Normalize key (gen1 < gen2)
+                if gen1_id < gen2_id:
+                    key = (gen1_id, gen2_id)
+                    data = pair_data.get(key, {})
+                    row_data.append({
+                        "battles": data.get("battle_count", 0),
+                        "wins": data.get("gen1_wins", 0),
+                        "losses": data.get("gen2_wins", 0),
+                        "ties": data.get("ties", 0),
+                        "win_rate": data.get("gen1_wins", 0) / data.get("battle_count", 1) if data.get("battle_count", 0) > 0 else None,
+                    })
+                else:
+                    key = (gen2_id, gen1_id)
+                    data = pair_data.get(key, {})
+                    row_data.append({
+                        "battles": data.get("battle_count", 0),
+                        "wins": data.get("gen2_wins", 0),  # Flipped
+                        "losses": data.get("gen1_wins", 0),  # Flipped
+                        "ties": data.get("ties", 0),
+                        "win_rate": data.get("gen2_wins", 0) / data.get("battle_count", 1) if data.get("battle_count", 0) > 0 else None,
+                    })
+        matrix.append(row_data)
+    
+    # Calculate coverage statistics
+    total_pairs = len(generator_ids) * (len(generator_ids) - 1) // 2
+    pairs_with_data = len([k for k, v in pair_data.items() if v["battle_count"] > 0])
+    target_battles = config.agis_target_battles_per_pair
+    pairs_at_target = len([k for k, v in pair_data.items() if v["battle_count"] >= target_battles])
+    
+    return JSONResponse({
+        "protocol_version": "arena/v0",
+        "generators": generators,
+        "matrix": matrix,
+        "coverage": {
+            "total_pairs": total_pairs,
+            "pairs_with_data": pairs_with_data,
+            "pairs_at_target": pairs_at_target,
+            "target_battles_per_pair": target_battles,
+            "coverage_percent": (pairs_with_data / total_pairs * 100) if total_pairs > 0 else 0,
+            "target_coverage_percent": (pairs_at_target / total_pairs * 100) if total_pairs > 0 else 0,
+        }
+    })
+
+
+def is_admin_user(user: User) -> bool:
+    """Check if a user has admin privileges based on their email."""
+    if not user:
+        return False
+    return user.email.lower() in config.admin_emails
+
+
+@app.get("/v1/admin/stats")
+async def get_admin_stats(request: Request):
+    """
+    Get admin statistics for matchmaking and coverage.
+    
+    Requires admin authentication (OAuth login with admin email).
+    """
+    user = get_current_user(request)
+    
+    if not user:
+        raise_api_error(
+            ErrorCode.INVALID_PAYLOAD,
+            "Authentication required. Please log in with Google OAuth.",
+            retryable=False,
+            status_code=401
+        )
+    
+    if not is_admin_user(user):
+        raise_api_error(
+            ErrorCode.INVALID_PAYLOAD,
+            "Admin access required. Your email is not in the admin list.",
+            retryable=False,
+            status_code=403
+        )
+    
+    conn = get_connection()
+    
+    # Get matchmaking stats
+    matchmaking_stats = get_matchmaking_stats(conn)
+    
+    # Get generator stats
+    cursor = conn.execute(
+        """
+        SELECT 
+            g.generator_id, g.name,
+            r.rating_value, r.rd, r.games_played,
+            r.wins, r.losses, r.ties, r.skips
+        FROM generators g
+        LEFT JOIN ratings r ON g.generator_id = r.generator_id
+        WHERE g.is_active = 1
+        ORDER BY r.rating_value DESC
+        """
+    )
+    
+    generators = []
+    for row in cursor.fetchall():
+        generators.append({
+            "generator_id": row["generator_id"],
+            "name": row["name"],
+            "rating": row["rating_value"] or config.initial_rating,
+            "rd": row["rd"] or config.initial_rd,
+            "games_played": row["games_played"] or 0,
+            "wins": row["wins"] or 0,
+            "losses": row["losses"] or 0,
+            "ties": row["ties"] or 0,
+            "skips": row["skips"] or 0,
+            "needs_more_games": (row["games_played"] or 0) < config.agis_min_games_for_significance,
+        })
+    
+    # Get under-covered pairs (pairs needing more battles)
+    cursor = conn.execute(
+        """
+        SELECT gen1_id, gen2_id, battle_count
+        FROM generator_pair_stats
+        WHERE battle_count < ?
+        ORDER BY battle_count ASC
+        LIMIT 20
+        """,
+        (config.agis_target_battles_per_pair,)
+    )
+    under_covered_pairs = [
+        {"gen1": row["gen1_id"], "gen2": row["gen2_id"], "battles": row["battle_count"]}
+        for row in cursor.fetchall()
+    ]
+    
+    # Get missing pairs (no battles at all)
+    cursor = conn.execute("SELECT generator_id FROM generators WHERE is_active = 1")
+    active_gen_ids = sorted([row["generator_id"] for row in cursor.fetchall()])
+    
+    cursor = conn.execute("SELECT gen1_id, gen2_id FROM generator_pair_stats")
+    existing_pairs = set((row["gen1_id"], row["gen2_id"]) for row in cursor.fetchall())
+    
+    missing_pairs = []
+    for i, g1 in enumerate(active_gen_ids):
+        for g2 in active_gen_ids[i+1:]:
+            if (g1, g2) not in existing_pairs:
+                missing_pairs.append({"gen1": g1, "gen2": g2})
+    
+    return JSONResponse({
+        "protocol_version": "arena/v0",
+        "user": {
+            "email": user.email,
+            "is_admin": True,
+        },
+        "config": {
+            "matchmaking_policy": config.matchmaking_policy,
+            "initial_rating": config.initial_rating,
+            "initial_rd": config.initial_rd,
+            "min_games_for_significance": config.agis_min_games_for_significance,
+            "target_battles_per_pair": config.agis_target_battles_per_pair,
+            "rating_similarity_sigma": config.agis_rating_similarity_sigma,
+            "quality_bias_strength": config.agis_quality_bias_strength,
+        },
+        "matchmaking": matchmaking_stats,
+        "generators": generators,
+        "coverage_gaps": {
+            "under_covered_pairs": under_covered_pairs,
+            "missing_pairs": missing_pairs[:20],  # Limit to 20
+            "total_missing": len(missing_pairs),
+        }
+    })
+
+
+@app.get("/v1/auth/me/admin")
+async def check_admin_status(request: Request):
+    """
+    Check if the current user has admin privileges.
+    
+    Returns admin status for the frontend to show/hide admin features.
+    """
+    user = get_current_user(request)
+    
+    if not user:
+        return JSONResponse({
+            "authenticated": False,
+            "is_admin": False,
+        })
+    
+    return JSONResponse({
+        "authenticated": True,
+        "is_admin": is_admin_user(user),
+        "email": user.email,
+    })
+
+
 @app.get("/v1/generators/{generator_id}")
 async def get_generator_details(generator_id: str):
     """

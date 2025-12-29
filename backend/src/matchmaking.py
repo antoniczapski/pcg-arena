@@ -26,14 +26,16 @@ from dataclasses import dataclass
 from typing import List, Tuple, Dict, Optional
 
 from glicko2 import information_gain, match_quality, DEFAULT_RD, MIN_RD, MAX_RD
+from config import load_config
 
 logger = logging.getLogger(__name__)
 
-# Matchmaking parameters (can be made configurable)
-MIN_GAMES_FOR_SIGNIFICANCE = 30  # Games before considering "converged"
-RATING_SIMILARITY_SIGMA = 150.0  # Standard deviation for rating similarity
-TARGET_BATTLES_PER_PAIR = 10  # Minimum battles per generator pair
-QUALITY_BIAS_STRENGTH = 0.2  # How much to favor high-rated after convergence
+# Load configurable AGIS parameters
+_config = load_config()
+MIN_GAMES_FOR_SIGNIFICANCE = _config.agis_min_games_for_significance
+RATING_SIMILARITY_SIGMA = _config.agis_rating_similarity_sigma
+TARGET_BATTLES_PER_PAIR = _config.agis_target_battles_per_pair
+QUALITY_BIAS_STRENGTH = _config.agis_quality_bias_strength
 
 # Weights for combining pair selection factors
 ALPHA = 0.5  # Rating similarity weight

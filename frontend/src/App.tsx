@@ -7,12 +7,36 @@ import { GeneratorPage } from './pages/GeneratorPage';
 import { LeaderboardPage } from './pages/LeaderboardPage';
 import { VerifyEmailPage } from './pages/VerifyEmailPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
-import { AuthProvider } from './contexts/AuthContext';
+import { AdminPage } from './pages/AdminPage';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import './styles/components.css';
 
 // Navigation component
 function Navigation() {
   const location = useLocation();
+  const { user } = useAuth();
+  const [isAdmin, setIsAdmin] = useState(false);
+  
+  // Check admin status
+  useEffect(() => {
+    const checkAdmin = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/v1/auth/me/admin`, {
+          credentials: 'include',
+        });
+        const data = await response.json();
+        setIsAdmin(data.is_admin);
+      } catch {
+        setIsAdmin(false);
+      }
+    };
+    
+    if (user) {
+      checkAdmin();
+    } else {
+      setIsAdmin(false);
+    }
+  }, [user]);
   
   return (
     <nav className="app-nav">
@@ -34,6 +58,14 @@ function Navigation() {
       >
         Builder Profile
       </Link>
+      {isAdmin && (
+        <Link 
+          to="/admin" 
+          className={`nav-link ${location.pathname === '/admin' ? 'active' : ''}`}
+        >
+          Admin
+        </Link>
+      )}
     </nav>
   );
 }
@@ -109,6 +141,7 @@ function AppContent() {
           <Route path="/generator/:generatorId" element={<GeneratorPage />} />
           <Route path="/verify-email" element={<VerifyEmailPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/admin" element={<AdminPage />} />
         </Routes>
       </main>
     </div>

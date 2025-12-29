@@ -57,6 +57,15 @@ class Config:
     
     # Frontend URL (for email links)
     frontend_url: str  # URL of the frontend (for verification links)
+    
+    # Admin access (Stage 4b)
+    admin_emails: list[str]  # List of admin email addresses (OAuth login required)
+    
+    # AGIS Matchmaking Parameters (Stage 4b)
+    agis_min_games_for_significance: int  # Games before generator is "converged"
+    agis_target_battles_per_pair: int  # Minimum battles for each generator pair
+    agis_rating_similarity_sigma: float  # Standard deviation for rating similarity weight
+    agis_quality_bias_strength: float  # How much to favor high-rated after convergence
 
 
 def load_config() -> Config:
@@ -96,5 +105,19 @@ def load_config() -> Config:
         sendgrid_from_email=os.environ.get("SENDGRID_FROM_EMAIL", "noreply@pcg-arena.com"),
         sendgrid_from_name=os.environ.get("SENDGRID_FROM_NAME", "PCG Arena"),
         frontend_url=os.environ.get("ARENA_FRONTEND_URL", "http://localhost:3000"),
+        # Admin access
+        admin_emails=_parse_admin_emails(os.environ.get("ARENA_ADMIN_EMAILS", "antoni.krzysztof.czapski@gmail.com")),
+        # AGIS parameters
+        agis_min_games_for_significance=int(os.environ.get("ARENA_AGIS_MIN_GAMES", "30")),
+        agis_target_battles_per_pair=int(os.environ.get("ARENA_AGIS_TARGET_BATTLES_PER_PAIR", "10")),
+        agis_rating_similarity_sigma=float(os.environ.get("ARENA_AGIS_RATING_SIGMA", "150.0")),
+        agis_quality_bias_strength=float(os.environ.get("ARENA_AGIS_QUALITY_BIAS", "0.2")),
     )
+
+
+def _parse_admin_emails(emails_str: str) -> list[str]:
+    """Parse comma-separated admin emails."""
+    if not emails_str:
+        return []
+    return [email.strip().lower() for email in emails_str.split(",") if email.strip()]
 

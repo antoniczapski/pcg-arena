@@ -25,10 +25,6 @@ export default defineConfig({
         // Ensure cookies are properly forwarded
         cookieDomainRewrite: 'localhost',
       },
-      '/admin': {
-        target: 'http://localhost:8080',
-        changeOrigin: true,
-      },
       '/debug': {
         target: 'http://localhost:8080',
         changeOrigin: true,
