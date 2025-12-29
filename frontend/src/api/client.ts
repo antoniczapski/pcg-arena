@@ -13,6 +13,7 @@ import {
   type VoteRequest,
   type VoteResponse,
   type LeaderboardResponse,
+  type GeneratorDetailsResponse,
   type ErrorResponse,
 } from './types';
 
@@ -199,6 +200,59 @@ export class ArenaApiClient {
       throw new ArenaApiException(
         'LEADERBOARD_FETCH_FAILED',
         `Failed to fetch leaderboard: ${error instanceof Error ? error.message : String(error)}`,
+        true
+      );
+    }
+  }
+
+  /**
+   * Fetch generator details with all levels
+   */
+  async getGenerator(generatorId: string): Promise<GeneratorDetailsResponse> {
+    const path = `/v1/generators/${encodeURIComponent(generatorId)}`;
+
+    try {
+      console.log('[API] GET', path);
+
+      const response = await fetch(`${this.baseUrl}${path}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+
+      console.log(`[API] Response status: ${response.status}`);
+
+      if (!response.ok) {
+        const errorBody = await response.text();
+        if (errorBody) {
+          try {
+            const errorResponse: ErrorResponse = JSON.parse(errorBody);
+            throw this.createException(errorResponse);
+          } catch (parseError) {
+            // Not JSON, throw generic error
+          }
+        }
+        throw new ArenaApiException(
+          'GENERATOR_FETCH_FAILED',
+          `Generator request failed with status ${response.status}`,
+          response.status >= 500
+        );
+      }
+
+      const data: GeneratorDetailsResponse = await response.json();
+      this.verifyProtocol(data.protocol_version);
+
+      console.log('[API] Generator received:', data.generator.generator_id, 'with', data.levels.length, 'levels');
+      return data;
+    } catch (error) {
+      if (error instanceof ArenaApiException) {
+        throw error;
+      }
+      console.error('[API] Failed to fetch generator:', error);
+      throw new ArenaApiException(
+        'GENERATOR_FETCH_FAILED',
+        `Failed to fetch generator: ${error instanceof Error ? error.message : String(error)}`,
         true
       );
     }

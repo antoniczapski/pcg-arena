@@ -1,11 +1,14 @@
+import { Link } from 'react-router-dom';
 import type { LeaderboardPreview, LeaderboardResponse } from '../api/types';
 
 interface LeaderboardProps {
   data: LeaderboardPreview | LeaderboardResponse;
   isPreview?: boolean;
+  /** Whether generator names should be clickable links to generator pages */
+  linkable?: boolean;
 }
 
-export function Leaderboard({ data, isPreview = false }: LeaderboardProps) {
+export function Leaderboard({ data, isPreview = false, linkable = true }: LeaderboardProps) {
   const generators = 'generators' in data ? data.generators : [];
 
   return (
@@ -38,7 +41,18 @@ export function Leaderboard({ data, isPreview = false }: LeaderboardProps) {
               return (
                 <tr key={gen.generator_id}>
                   <td>{'rank' in gen ? (gen as any).rank : index + 1}</td>
-                  <td className="generator-name">{gen.name}</td>
+                  <td className="generator-name">
+                    {linkable ? (
+                      <Link 
+                        to={`/generator/${gen.generator_id}`}
+                        className="generator-link"
+                      >
+                        {gen.name}
+                      </Link>
+                    ) : (
+                      gen.name
+                    )}
+                  </td>
                   <td>{gen.rating.toFixed(0)}</td>
                   <td>{gen.games_played}</td>
                   {hasWins && (

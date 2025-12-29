@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-do
 import { ArenaApiClient } from './api/client';
 import { BattleFlow } from './components/BattleFlow';
 import { BuilderPage } from './pages/BuilderPage';
+import { GeneratorPage } from './pages/GeneratorPage';
 import { VerifyEmailPage } from './pages/VerifyEmailPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { AuthProvider } from './contexts/AuthContext';
@@ -97,6 +98,7 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<BattleFlow apiClient={apiClient} />} />
           <Route path="/builder" element={<BuilderPage />} />
+          <Route path="/generator/:generatorId" element={<GeneratorPage />} />
           <Route path="/verify-email" element={<VerifyEmailPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
         </Routes>

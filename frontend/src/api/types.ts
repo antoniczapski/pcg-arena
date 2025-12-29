@@ -153,6 +153,45 @@ export interface LeaderboardResponse {
   generators: GeneratorRanking[];
 }
 
+// Generator Details Response (for generator page)
+export interface GeneratorDetails {
+  generator_id: string;
+  name: string;
+  version: string;
+  description: string;
+  tags: string[];
+  documentation_url: string | null;
+  is_active: boolean;
+  created_at_utc: string;
+  updated_at_utc: string;
+  rank: number | null;
+  rating: number;
+  games_played: number;
+  wins: number;
+  losses: number;
+  ties: number;
+  skips: number;
+  level_count: number;
+}
+
+export interface LevelPreviewData {
+  level_id: string;
+  format: {
+    type: string;
+    width: number;
+    height: number;
+  };
+  tilemap: string;
+  content_hash: string;
+  created_at_utc: string;
+}
+
+export interface GeneratorDetailsResponse {
+  protocol_version: string;
+  generator: GeneratorDetails;
+  levels: LevelPreviewData[];
+}
+
 // Error Response
 export interface ErrorInfo {
   code: string;

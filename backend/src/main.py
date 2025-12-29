@@ -1260,6 +1260,135 @@ async def get_leaderboard():
     })
 
 
+@app.get("/v1/generators/{generator_id}")
+async def get_generator_details(generator_id: str):
+    """
+    Get detailed information about a generator, including all its levels.
+    
+    This endpoint is public (no authentication required) and returns:
+    - Generator metadata (name, version, description, tags, etc.)
+    - Rating statistics (rating, games_played, wins, losses, ties)
+    - All levels with their tilemaps for preview rendering
+    
+    Used by:
+    - Generator detail page (accessible from leaderboard)
+    - Builder profile (viewing own generators)
+    """
+    from datetime import datetime, timezone
+    
+    conn = get_connection()
+    
+    # Get generator info with rating
+    cursor = conn.execute(
+        """
+        SELECT 
+            g.generator_id,
+            g.name,
+            g.version,
+            g.description,
+            g.tags_json,
+            g.documentation_url,
+            g.is_active,
+            g.owner_user_id,
+            g.created_at_utc,
+            g.updated_at_utc,
+            COALESCE(r.rating_value, 1000.0) as rating,
+            COALESCE(r.games_played, 0) as games_played,
+            COALESCE(r.wins, 0) as wins,
+            COALESCE(r.losses, 0) as losses,
+            COALESCE(r.ties, 0) as ties,
+            COALESCE(r.skips, 0) as skips
+        FROM generators g
+        LEFT JOIN ratings r ON g.generator_id = r.generator_id
+        WHERE g.generator_id = ?
+        """,
+        (generator_id,)
+    )
+    
+    row = cursor.fetchone()
+    
+    if not row:
+        raise_api_error(
+            ErrorCode.INVALID_PAYLOAD,
+            f"Generator '{generator_id}' not found",
+            retryable=False,
+            status_code=404
+        )
+    
+    # Parse tags
+    import json
+    tags = json.loads(row["tags_json"]) if row["tags_json"] else []
+    
+    # Get all levels for this generator
+    cursor = conn.execute(
+        """
+        SELECT 
+            level_id,
+            content_format,
+            width,
+            height,
+            tilemap_text,
+            content_hash,
+            created_at_utc
+        FROM levels
+        WHERE generator_id = ?
+        ORDER BY level_id ASC
+        """,
+        (generator_id,)
+    )
+    
+    levels = []
+    for level_row in cursor.fetchall():
+        levels.append({
+            "level_id": level_row["level_id"],
+            "format": {
+                "type": level_row["content_format"],
+                "width": level_row["width"],
+                "height": level_row["height"],
+            },
+            "tilemap": level_row["tilemap_text"],
+            "content_hash": level_row["content_hash"],
+            "created_at_utc": level_row["created_at_utc"],
+        })
+    
+    # Compute rank (optional, for display)
+    cursor = conn.execute(
+        """
+        SELECT COUNT(*) + 1 as rank
+        FROM ratings r
+        JOIN generators g ON r.generator_id = g.generator_id
+        WHERE r.rating_value > ? AND g.is_active = 1
+        """,
+        (row["rating"],)
+    )
+    rank_row = cursor.fetchone()
+    rank = rank_row["rank"] if rank_row else None
+    
+    return JSONResponse({
+        "protocol_version": "arena/v0",
+        "generator": {
+            "generator_id": row["generator_id"],
+            "name": row["name"],
+            "version": row["version"],
+            "description": row["description"] or "",
+            "tags": tags,
+            "documentation_url": row["documentation_url"],
+            "is_active": bool(row["is_active"]),
+            "created_at_utc": row["created_at_utc"],
+            "updated_at_utc": row["updated_at_utc"],
+            "rank": rank,
+            "rating": row["rating"],
+            "games_played": row["games_played"],
+            "wins": row["wins"],
+            "losses": row["losses"],
+            "ties": row["ties"],
+            "skips": row["skips"],
+            "level_count": len(levels),
+        },
+        "levels": levels,
+    })
+
+
 @app.get("/", response_class=HTMLResponse)
 async def leaderboard_page():
     """

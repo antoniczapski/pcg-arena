@@ -458,6 +458,17 @@ canvas {
   color: var(--color-lime);
 }
 
+.leaderboard-table .generator-link {
+  color: var(--color-lime);
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.leaderboard-table .generator-link:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
 .leaderboard .timestamp {
   text-align: center;
   font-size: 0.625rem;

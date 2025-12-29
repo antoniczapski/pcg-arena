@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth, GOOGLE_CLIENT_ID } from '../contexts/AuthContext';
 import '../styles/builder.css';
 
@@ -503,6 +504,12 @@ function GeneratorCard({ generator, onEdit, onDelete }: GeneratorCardProps) {
       </div>
 
       <div className="generator-actions">
+        <Link 
+          to={`/generator/${generator.generator_id}`} 
+          className="view-button"
+        >
+          View Levels
+        </Link>
         <button className="edit-button" onClick={onEdit}>
           Update Version
         </button>
