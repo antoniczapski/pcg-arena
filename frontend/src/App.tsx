@@ -4,6 +4,7 @@ import { ArenaApiClient } from './api/client';
 import { BattleFlow } from './components/BattleFlow';
 import { BuilderPage } from './pages/BuilderPage';
 import { GeneratorPage } from './pages/GeneratorPage';
+import { LeaderboardPage } from './pages/LeaderboardPage';
 import { VerifyEmailPage } from './pages/VerifyEmailPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { AuthProvider } from './contexts/AuthContext';
@@ -20,6 +21,12 @@ function Navigation() {
         className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}
       >
         Play
+      </Link>
+      <Link 
+        to="/leaderboard" 
+        className={`nav-link ${location.pathname === '/leaderboard' ? 'active' : ''}`}
+      >
+        Leaderboard
       </Link>
       <Link 
         to="/builder" 
@@ -97,6 +104,7 @@ function AppContent() {
       <main className="app-main">
         <Routes>
           <Route path="/" element={<BattleFlow apiClient={apiClient} />} />
+          <Route path="/leaderboard" element={<LeaderboardPage />} />
           <Route path="/builder" element={<BuilderPage />} />
           <Route path="/generator/:generatorId" element={<GeneratorPage />} />
           <Route path="/verify-email" element={<VerifyEmailPage />} />

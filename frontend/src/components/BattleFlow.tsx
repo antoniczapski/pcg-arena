@@ -1,9 +1,10 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { ArenaApiClient } from '../api/client';
-import type { Battle, LevelTelemetry, LeaderboardPreview } from '../api/types';
+import type { Battle, LevelTelemetry } from '../api/types';
 import { GameCanvas, GameResult } from './GameCanvas';
 import { VotingPanel, VoteData } from './VotingPanel';
-import { Leaderboard } from './Leaderboard';
+import { LevelPreview } from './LevelPreview';
+
 
 interface BattleFlowProps {
   apiClient: ArenaApiClient;
@@ -25,8 +26,17 @@ export function BattleFlow({ apiClient }: BattleFlowProps) {
   const [error, setError] = useState<string | null>(null);
   const [leftResult, setLeftResult] = useState<GameResult | null>(null);
   const [rightResult, setRightResult] = useState<GameResult | null>(null);
-  const [leaderboard, setLeaderboard] = useState<LeaderboardPreview | null>(null);
   const [revealNames, setRevealNames] = useState(false);
+
+  // Auto-advance from results phase after 3 seconds
+  useEffect(() => {
+    if (phase === 'results') {
+      const timer = setTimeout(() => {
+        fetchNextBattle();
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [phase]);
 
   const fetchNextBattle = async () => {
     setPhase('loading');
@@ -86,7 +96,7 @@ export function BattleFlow({ apiClient }: BattleFlowProps) {
         enemies_killed: 0,
       };
 
-      const response = await apiClient.submitVote(
+      await apiClient.submitVote(
         sessionId,
         battle.battle_id,
         vote.result,
@@ -95,7 +105,6 @@ export function BattleFlow({ apiClient }: BattleFlowProps) {
         { left: leftTelemetry, right: rightTelemetry }
       );
 
-      setLeaderboard(response.leaderboard_preview);
       setPhase('results');
     } catch (err) {
       console.error('Failed to submit vote:', err);
@@ -233,88 +242,74 @@ export function BattleFlow({ apiClient }: BattleFlowProps) {
     );
   }
 
-  // Voting phase
-  if (phase === 'voting' || phase === 'submitting') {
+  // Voting phase (includes results reveal on same page)
+  if (phase === 'voting' || phase === 'submitting' || phase === 'results') {
+    // Tilemap is plain UTF-8 text, not base64 encoded
+    const leftTilemap = battle.left.level_payload.tilemap;
+    const rightTilemap = battle.right.level_payload.tilemap;
+    const showResults = phase === 'results';
+
     return (
       <div className="battle-flow">
         <div className="battle-header">
-          <h2>Vote for Your Favorite</h2>
-          <p>Which level did you enjoy more?</p>
+          <h2>{showResults ? 'Vote Submitted!' : 'Vote for Your Favorite'}</h2>
+          <p>{showResults ? 'Generator names revealed:' : 'Which level did you enjoy more?'}</p>
         </div>
 
-        <div className="battle-screen voting-view">
-          {/* LEFT Level Summary */}
-          <div className="level-panel done">
-            <div className="level-header">
-              <span className="level-label">LEFT</span>
-              <span className="generator-hidden">Generator ???</span>
-            </div>
-            <div className="level-summary">
-              {leftResult && (
-                <>
-                  <p>{leftResult.completed ? '✓ Completed' : '✗ Failed'}</p>
-                  <p>Coins: {leftResult.coins}</p>
-                  <p>Time: {leftResult.duration.toFixed(1)}s</p>
-                </>
+        <div className="voting-levels-container">
+          {/* Level A (was LEFT) */}
+          <div className="voting-level-panel">
+            <div className="voting-level-header">
+              <span className="voting-level-label">Level A</span>
+              {showResults && (
+                <span className="voting-generator-reveal">{battle.left.generator.name}</span>
               )}
+            </div>
+            <div className="voting-level-preview">
+              <LevelPreview
+                levelId="level-a"
+                tilemap={leftTilemap}
+                width={battle.left.format.width}
+                height={battle.left.format.height}
+                scale={0.5}
+                showLabel={false}
+              />
             </div>
           </div>
 
-          {/* RIGHT Level Summary */}
-          <div className="level-panel done">
-            <div className="level-header">
-              <span className="level-label">RIGHT</span>
-              <span className="generator-hidden">Generator ???</span>
-            </div>
-            <div className="level-summary">
-              {rightResult && (
-                <>
-                  <p>{rightResult.completed ? '✓ Completed' : '✗ Failed'}</p>
-                  <p>Coins: {rightResult.coins}</p>
-                  <p>Time: {rightResult.duration.toFixed(1)}s</p>
-                </>
+          {/* Level B (was RIGHT) */}
+          <div className="voting-level-panel">
+            <div className="voting-level-header">
+              <span className="voting-level-label">Level B</span>
+              {showResults && (
+                <span className="voting-generator-reveal">{battle.right.generator.name}</span>
               )}
+            </div>
+            <div className="voting-level-preview">
+              <LevelPreview
+                levelId="level-b"
+                tilemap={rightTilemap}
+                width={battle.right.format.width}
+                height={battle.right.format.height}
+                scale={0.5}
+                showLabel={false}
+              />
             </div>
           </div>
         </div>
 
         {phase === 'voting' ? (
-          <VotingPanel onVote={handleVote} />
-        ) : (
+          <VotingPanel onVote={handleVote} useABNaming={true} />
+        ) : phase === 'submitting' ? (
           <div className="submitting-state">
             <p>Submitting vote...</p>
           </div>
+        ) : (
+          <div className="results-auto-advance">
+            <p className="auto-advance-hint">Loading next battle...</p>
+          </div>
         )}
         {error && <p className="error-message">{error}</p>}
-      </div>
-    );
-  }
-
-  // Results phase - reveal generator names
-  if (phase === 'results' && leaderboard) {
-    return (
-      <div className="battle-flow">
-        <div className="results-header">
-          <h2>Vote Submitted!</h2>
-          <p>Generator names revealed:</p>
-        </div>
-
-        <div className="generator-reveal">
-          <div className="reveal-panel">
-            <span className="reveal-label">LEFT:</span>
-            <span className="reveal-name">{battle.left.generator.name}</span>
-          </div>
-          <div className="reveal-panel">
-            <span className="reveal-label">RIGHT:</span>
-            <span className="reveal-name">{battle.right.generator.name}</span>
-          </div>
-        </div>
-
-        <Leaderboard data={leaderboard} isPreview={true} />
-
-        <button onClick={handleNextBattle} className="primary-button">
-          Next Battle
-        </button>
       </div>
     );
   }

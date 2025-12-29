@@ -8,9 +8,11 @@ export interface VoteData {
 
 interface VotingPanelProps {
   onVote: (vote: VoteData) => void;
+  /** Use A/B naming instead of Left/Right */
+  useABNaming?: boolean;
 }
 
-export function VotingPanel({ onVote }: VotingPanelProps) {
+export function VotingPanel({ onVote, useABNaming = false }: VotingPanelProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleVote = (result: VoteData['result']) => {
@@ -25,6 +27,10 @@ export function VotingPanel({ onVote }: VotingPanelProps) {
     });
   };
 
+  // Labels based on naming scheme
+  const leftLabel = useABNaming ? 'A Better' : '← Left Better';
+  const rightLabel = useABNaming ? 'B Better' : 'Right Better →';
+
   return (
     <div className="voting-panel">
       <h3>Which level did you prefer?</h3>
@@ -35,7 +41,7 @@ export function VotingPanel({ onVote }: VotingPanelProps) {
           className="vote-button left"
           disabled={isSubmitting}
         >
-          ← Left Better
+          {leftLabel}
         </button>
         <button
           onClick={() => handleVote('TIE')}
@@ -49,7 +55,7 @@ export function VotingPanel({ onVote }: VotingPanelProps) {
           className="vote-button right"
           disabled={isSubmitting}
         >
-          Right Better →
+          {rightLabel}
         </button>
       </div>
       
