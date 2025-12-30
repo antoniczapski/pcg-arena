@@ -4,6 +4,7 @@ import type { Battle, LevelTelemetry } from '../api/types';
 import { GameCanvas, GameResult } from './GameCanvas';
 import { VotingPanel, VoteData } from './VotingPanel';
 import { LevelPreview } from './LevelPreview';
+import { TaggableLevelPreview } from './TagSelector';
 import { getOrCreatePlayerId } from '../utils/playerId';
 
 
@@ -29,6 +30,8 @@ export function BattleFlow({ apiClient }: BattleFlowProps) {
   const [leftResult, setLeftResult] = useState<GameResult | null>(null);
   const [rightResult, setRightResult] = useState<GameResult | null>(null);
   const [revealNames, setRevealNames] = useState(false);
+  const [leftTags, setLeftTags] = useState<string[]>([]);
+  const [rightTags, setRightTags] = useState<string[]>([]);
 
   // Auto-advance from results phase after 3 seconds
   useEffect(() => {
@@ -46,6 +49,8 @@ export function BattleFlow({ apiClient }: BattleFlowProps) {
     setLeftResult(null);
     setRightResult(null);
     setRevealNames(false);
+    setLeftTags([]);
+    setRightTags([]);
 
     try {
       const response = await apiClient.nextBattle(sessionId, playerId);
@@ -288,14 +293,21 @@ export function BattleFlow({ apiClient }: BattleFlowProps) {
               )}
             </div>
             <div className="voting-level-preview">
-              <LevelPreview
-                levelId="level-a"
-                tilemap={leftTilemap}
-                width={battle.left.format.width}
-                height={battle.left.format.height}
-                scale={0.5}
-                showLabel={false}
-              />
+              <TaggableLevelPreview
+                selectedTags={leftTags}
+                onTagsChange={setLeftTags}
+                levelLabel="Level A"
+                disabled={showResults || phase === 'submitting'}
+              >
+                <LevelPreview
+                  levelId="level-a"
+                  tilemap={leftTilemap}
+                  width={battle.left.format.width}
+                  height={battle.left.format.height}
+                  scale={0.5}
+                  showLabel={false}
+                />
+              </TaggableLevelPreview>
             </div>
           </div>
 
@@ -308,20 +320,34 @@ export function BattleFlow({ apiClient }: BattleFlowProps) {
               )}
             </div>
             <div className="voting-level-preview">
-              <LevelPreview
-                levelId="level-b"
-                tilemap={rightTilemap}
-                width={battle.right.format.width}
-                height={battle.right.format.height}
-                scale={0.5}
-                showLabel={false}
-              />
+              <TaggableLevelPreview
+                selectedTags={rightTags}
+                onTagsChange={setRightTags}
+                levelLabel="Level B"
+                disabled={showResults || phase === 'submitting'}
+              >
+                <LevelPreview
+                  levelId="level-b"
+                  tilemap={rightTilemap}
+                  width={battle.right.format.width}
+                  height={battle.right.format.height}
+                  scale={0.5}
+                  showLabel={false}
+                />
+              </TaggableLevelPreview>
             </div>
           </div>
         </div>
 
+        <p className="tag-hint">💡 Hover over a level to add tags (optional)</p>
+
         {phase === 'voting' ? (
-          <VotingPanel onVote={handleVote} useABNaming={true} />
+          <VotingPanel 
+            onVote={handleVote} 
+            useABNaming={true}
+            leftTags={leftTags}
+            rightTags={rightTags}
+          />
         ) : phase === 'submitting' ? (
           <div className="submitting-state">
             <p>Submitting vote...</p>

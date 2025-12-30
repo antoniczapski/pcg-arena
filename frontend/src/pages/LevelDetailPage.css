@@ -188,23 +188,32 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background: #f1f5f9;
-  padding: 0.25rem 0.75rem;
-  border-radius: 16px;
-  font-size: 0.75rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 18px;
+  font-size: 0.8rem;
+  border: 2px solid #e2e8f0;
+  background: #f8fafc;
+  transition: transform 0.15s ease;
+}
+
+.tag-item:hover {
+  transform: scale(1.03);
 }
 
 .tag-name {
-  color: #374151;
-  text-transform: capitalize;
+  color: #1f2937;
+  font-weight: 500;
 }
 
 .tag-count {
   background: #667eea;
   color: white;
-  padding: 0.1rem 0.4rem;
-  border-radius: 10px;
-  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.75rem;
+  min-width: 1.5rem;
+  text-align: center;
 }
 
 .no-tags {

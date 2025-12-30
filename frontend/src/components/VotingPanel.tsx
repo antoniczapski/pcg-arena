@@ -10,20 +10,29 @@ interface VotingPanelProps {
   onVote: (vote: VoteData) => void;
   /** Use A/B naming instead of Left/Right */
   useABNaming?: boolean;
+  /** Tags already selected for left level */
+  leftTags?: string[];
+  /** Tags already selected for right level */
+  rightTags?: string[];
 }
 
-export function VotingPanel({ onVote, useABNaming = false }: VotingPanelProps) {
+export function VotingPanel({ 
+  onVote, 
+  useABNaming = false,
+  leftTags = [],
+  rightTags = [],
+}: VotingPanelProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleVote = (result: VoteData['result']) => {
     if (isSubmitting) return;
     setIsSubmitting(true);
     
-    // Submit vote with empty tags for simplicity
+    // Submit vote with selected tags
     onVote({
       result,
-      leftTags: [],
-      rightTags: [],
+      leftTags,
+      rightTags,
     });
   };
 

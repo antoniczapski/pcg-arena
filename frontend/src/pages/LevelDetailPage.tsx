@@ -10,6 +10,7 @@ import { ArenaApiClient } from '../api/client';
 import { assetLoader } from '../engine/graphics/AssetLoader';
 import { MarioLevel } from '../engine/MarioLevel';
 import { SpriteType } from '../engine/SpriteType';
+import { AVAILABLE_TAGS } from '../components/TagSelector';
 import type { LevelStatsResponse, LevelHeatmapResponse, LevelPreviewData } from '../api/types';
 import './LevelDetailPage.css';
 
@@ -317,14 +318,23 @@ export function LevelDetailPage() {
         <div className="level-card tags-card">
           <h2>Player Tags</h2>
           <div className="tags-list">
-            {Object.entries(tags || {}).map(([tag, count]) => (
-              count > 0 && (
-                <div key={tag} className="tag-item">
-                  <span className="tag-name">{tag.replace('_', ' ')}</span>
-                  <span className="tag-count">{count}</span>
+            {Object.entries(tags || {}).map(([tagId, count]) => {
+              if (count === 0) return null;
+              const tagInfo = AVAILABLE_TAGS.find(t => t.id === tagId);
+              return (
+                <div 
+                  key={tagId} 
+                  className="tag-item"
+                  style={{ 
+                    borderColor: tagInfo?.color,
+                    backgroundColor: tagInfo ? `${tagInfo.color}20` : undefined
+                  }}
+                >
+                  <span className="tag-name">{tagInfo?.label || tagId.replace('_', ' ')}</span>
+                  <span className="tag-count" style={{ backgroundColor: tagInfo?.color }}>{count}</span>
                 </div>
-              )
-            ))}
+              );
+            })}
             {Object.values(tags || {}).every(v => v === 0) && (
               <p className="no-tags">No tags yet</p>
             )}
