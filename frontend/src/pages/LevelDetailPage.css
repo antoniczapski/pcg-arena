@@ -1,0 +1,304 @@
+/**
+ * Stage 5: Level Detail Page Styles
+ */
+
+.level-detail-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+.level-header {
+  margin-bottom: 2rem;
+}
+
+.back-link {
+  color: #667eea;
+  text-decoration: none;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+  display: inline-block;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
+
+.level-header h1 {
+  font-size: 2rem;
+  color: #1a1a2e;
+  margin: 0.5rem 0;
+}
+
+.level-id {
+  font-family: monospace;
+  font-size: 0.875rem;
+  color: #64748b;
+  background: #f1f5f9;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.level-loading,
+.level-error {
+  text-align: center;
+  padding: 4rem 2rem;
+  font-size: 1.25rem;
+  color: #64748b;
+}
+
+.level-error {
+  color: #dc2626;
+}
+
+.level-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.level-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+}
+
+.level-card.full-width {
+  grid-column: 1 / -1;
+}
+
+.level-card h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 1rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.metric {
+  text-align: center;
+  padding: 0.75rem;
+  background: #f8fafc;
+  border-radius: 8px;
+}
+
+.metric .value {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.metric .label {
+  display: block;
+  font-size: 0.7rem;
+  color: #64748b;
+  text-transform: uppercase;
+  margin-top: 0.25rem;
+}
+
+/* Difficulty */
+.difficulty-display {
+  text-align: center;
+}
+
+.difficulty-badge {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.difficulty-badge.very_easy { background: #d1fae5; color: #065f46; }
+.difficulty-badge.easy { background: #e0f2fe; color: #0369a1; }
+.difficulty-badge.medium { background: #fef3c7; color: #92400e; }
+.difficulty-badge.hard { background: #fed7aa; color: #c2410c; }
+.difficulty-badge.very_hard { background: #fecaca; color: #b91c1c; }
+.difficulty-badge.unknown { background: #f1f5f9; color: #64748b; }
+
+.difficulty-bar {
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.difficulty-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #22c55e, #f59e0b, #ef4444);
+  transition: width 0.5s ease;
+}
+
+/* Outcomes */
+.outcomes-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+}
+
+.outcome {
+  text-align: center;
+  padding: 0.5rem;
+  border-radius: 8px;
+}
+
+.outcome.win { background: #d1fae5; }
+.outcome.loss { background: #fecaca; }
+.outcome.tie { background: #fef3c7; }
+.outcome.skip { background: #f1f5f9; }
+
+.outcome .count {
+  display: block;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.outcome.win .count { color: #065f46; }
+.outcome.loss .count { color: #b91c1c; }
+.outcome.tie .count { color: #92400e; }
+.outcome.skip .count { color: #374151; }
+
+.outcome .label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+/* Tags */
+.tags-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tag-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #f1f5f9;
+  padding: 0.25rem 0.75rem;
+  border-radius: 16px;
+  font-size: 0.75rem;
+}
+
+.tag-name {
+  color: #374151;
+  text-transform: capitalize;
+}
+
+.tag-count {
+  background: #667eea;
+  color: white;
+  padding: 0.1rem 0.4rem;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.no-tags {
+  color: #94a3b8;
+  font-style: italic;
+  margin: 0;
+}
+
+/* Heatmap */
+.heatmap-container {
+  background: #1a1a2e;
+  border-radius: 8px;
+  overflow-x: auto;
+  padding: 0.5rem;
+}
+
+.heatmap-layers {
+  position: relative;
+  display: inline-block;
+}
+
+.heatmap-level-canvas {
+  display: block;
+  image-rendering: pixelated;
+  border-radius: 4px;
+}
+
+.heatmap-overlay-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  image-rendering: pixelated;
+}
+
+.heatmap-description {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin: 0 0 1rem 0;
+}
+
+.no-data {
+  text-align: center;
+  color: #94a3b8;
+  font-style: italic;
+  margin-top: 1rem;
+}
+
+/* Features */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+}
+
+.feature-group {
+  text-align: center;
+  padding: 0.75rem;
+  background: #f8fafc;
+  border-radius: 8px;
+}
+
+.feature-group h3 {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: #64748b;
+  margin: 0 0 0.25rem 0;
+}
+
+.feature-group p {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+.feature-group small {
+  display: block;
+  font-size: 0.65rem;
+  color: #94a3b8;
+  margin-top: 0.25rem;
+}
+
+@media (max-width: 768px) {
+  .level-detail-page {
+    padding: 1rem;
+  }
+
+  .level-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .outcomes-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+

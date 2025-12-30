@@ -8,6 +8,8 @@ import { LeaderboardPage } from './pages/LeaderboardPage';
 import { VerifyEmailPage } from './pages/VerifyEmailPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { AdminPage } from './pages/AdminPage';
+import { StatsPage } from './components/StatsPage';
+import { LevelDetailPage } from './pages/LevelDetailPage';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import './styles/components.css';
 
@@ -51,6 +53,12 @@ function Navigation() {
         className={`nav-link ${location.pathname === '/leaderboard' ? 'active' : ''}`}
       >
         Leaderboard
+      </Link>
+      <Link 
+        to="/stats" 
+        className={`nav-link ${location.pathname === '/stats' ? 'active' : ''}`}
+      >
+        Statistics
       </Link>
       <Link 
         to="/builder" 
@@ -137,8 +145,10 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<BattleFlow apiClient={apiClient} />} />
           <Route path="/leaderboard" element={<LeaderboardPage />} />
+          <Route path="/stats" element={<StatsPage apiClient={apiClient} />} />
           <Route path="/builder" element={<BuilderPage />} />
           <Route path="/generator/:generatorId" element={<GeneratorPage />} />
+          <Route path="/level/:levelId" element={<LevelDetailPage />} />
           <Route path="/verify-email" element={<VerifyEmailPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/admin" element={<AdminPage />} />

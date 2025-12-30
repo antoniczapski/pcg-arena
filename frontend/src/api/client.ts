@@ -15,6 +15,10 @@ import {
   type LeaderboardResponse,
   type GeneratorDetailsResponse,
   type ErrorResponse,
+  type PlatformStatsResponse,
+  type GeneratorStatsResponse,
+  type LevelStatsResponse,
+  type LevelHeatmapResponse,
 } from './types';
 
 export class ArenaApiClient {
@@ -69,11 +73,11 @@ export class ArenaApiClient {
   /**
    * Request next battle
    */
-  async nextBattle(sessionId: string): Promise<BattleResponse> {
+  async nextBattle(sessionId: string, playerId?: string): Promise<BattleResponse> {
     const request: BattleRequest = {
       client_version: CLIENT_VERSION,
       session_id: sessionId,
-      player_id: null,
+      player_id: playerId || null,  // Stage 5: Include player ID if provided
       preferences: {
         mode: 'standard',
       },
@@ -119,11 +123,13 @@ export class ArenaApiClient {
     result: 'LEFT' | 'RIGHT' | 'TIE' | 'SKIP',
     leftTags: string[],
     rightTags: string[],
-    telemetry: VoteRequest['telemetry']
+    telemetry: VoteRequest['telemetry'],
+    playerId?: string  // Stage 5: Persistent player ID
   ): Promise<VoteResponse> {
     const request: VoteRequest = {
       client_version: CLIENT_VERSION,
       session_id: sessionId,
+      player_id: playerId,  // Stage 5: Include player ID
       battle_id: battleId,
       result,
       left_tags: leftTags,
@@ -253,6 +259,170 @@ export class ArenaApiClient {
       throw new ArenaApiException(
         'GENERATOR_FETCH_FAILED',
         `Failed to fetch generator: ${error instanceof Error ? error.message : String(error)}`,
+        true
+      );
+    }
+  }
+
+  // =============================================================================
+  // Stage 5: Statistics API Methods
+  // =============================================================================
+
+  /**
+   * Fetch platform-wide statistics
+   */
+  async getPlatformStats(): Promise<PlatformStatsResponse> {
+    const path = '/v1/stats/platform';
+
+    try {
+      console.log('[API] GET', path);
+
+      const response = await fetch(`${this.baseUrl}${path}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new ArenaApiException(
+          'STATS_FETCH_FAILED',
+          `Stats request failed with status ${response.status}`,
+          true
+        );
+      }
+
+      const data: PlatformStatsResponse = await response.json();
+      this.verifyProtocol(data.protocol_version);
+      return data;
+    } catch (error) {
+      if (error instanceof ArenaApiException) {
+        throw error;
+      }
+      console.error('[API] Failed to fetch platform stats:', error);
+      throw new ArenaApiException(
+        'STATS_FETCH_FAILED',
+        `Failed to fetch platform stats: ${error instanceof Error ? error.message : String(error)}`,
+        true
+      );
+    }
+  }
+
+  /**
+   * Fetch generator statistics
+   */
+  async getGeneratorStats(generatorId: string): Promise<GeneratorStatsResponse> {
+    const path = `/v1/stats/generators/${encodeURIComponent(generatorId)}`;
+
+    try {
+      console.log('[API] GET', path);
+
+      const response = await fetch(`${this.baseUrl}${path}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new ArenaApiException(
+          'GENERATOR_STATS_FETCH_FAILED',
+          `Generator stats request failed with status ${response.status}`,
+          response.status >= 500
+        );
+      }
+
+      const data: GeneratorStatsResponse = await response.json();
+      this.verifyProtocol(data.protocol_version);
+      return data;
+    } catch (error) {
+      if (error instanceof ArenaApiException) {
+        throw error;
+      }
+      console.error('[API] Failed to fetch generator stats:', error);
+      throw new ArenaApiException(
+        'GENERATOR_STATS_FETCH_FAILED',
+        `Failed to fetch generator stats: ${error instanceof Error ? error.message : String(error)}`,
+        true
+      );
+    }
+  }
+
+  /**
+   * Fetch level statistics
+   */
+  async getLevelStats(levelId: string): Promise<LevelStatsResponse> {
+    const path = `/v1/stats/levels/${encodeURIComponent(levelId)}`;
+
+    try {
+      console.log('[API] GET', path);
+
+      const response = await fetch(`${this.baseUrl}${path}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new ArenaApiException(
+          'LEVEL_STATS_FETCH_FAILED',
+          `Level stats request failed with status ${response.status}`,
+          response.status >= 500
+        );
+      }
+
+      const data: LevelStatsResponse = await response.json();
+      this.verifyProtocol(data.protocol_version);
+      return data;
+    } catch (error) {
+      if (error instanceof ArenaApiException) {
+        throw error;
+      }
+      console.error('[API] Failed to fetch level stats:', error);
+      throw new ArenaApiException(
+        'LEVEL_STATS_FETCH_FAILED',
+        `Failed to fetch level stats: ${error instanceof Error ? error.message : String(error)}`,
+        true
+      );
+    }
+  }
+
+  /**
+   * Fetch level heatmap data
+   */
+  async getLevelHeatmap(levelId: string): Promise<LevelHeatmapResponse> {
+    const path = `/v1/stats/levels/${encodeURIComponent(levelId)}/heatmap`;
+
+    try {
+      console.log('[API] GET', path);
+
+      const response = await fetch(`${this.baseUrl}${path}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new ArenaApiException(
+          'HEATMAP_FETCH_FAILED',
+          `Heatmap request failed with status ${response.status}`,
+          response.status >= 500
+        );
+      }
+
+      const data: LevelHeatmapResponse = await response.json();
+      this.verifyProtocol(data.protocol_version);
+      return data;
+    } catch (error) {
+      if (error instanceof ArenaApiException) {
+        throw error;
+      }
+      console.error('[API] Failed to fetch heatmap:', error);
+      throw new ArenaApiException(
+        'HEATMAP_FETCH_FAILED',
+        `Failed to fetch heatmap: ${error instanceof Error ? error.message : String(error)}`,
         true
       );
     }

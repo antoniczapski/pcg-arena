@@ -70,7 +70,8 @@ export function AdminPage() {
   const [confusionMatrix, setConfusionMatrix] = useState<ConfusionMatrixData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'matrix' | 'gaps'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'matrix' | 'gaps' | 'export'>('overview');
+  const [exportStatus, setExportStatus] = useState<string | null>(null);
   const googleButtonRef = useRef<HTMLDivElement>(null);
 
   // Check admin status
@@ -249,6 +250,12 @@ export function AdminPage() {
           onClick={() => setActiveTab('gaps')}
         >
           Coverage Gaps
+        </button>
+        <button 
+          className={activeTab === 'export' ? 'active' : ''} 
+          onClick={() => setActiveTab('export')}
+        >
+          Data Export
         </button>
       </div>
 
@@ -466,8 +473,136 @@ export function AdminPage() {
           </section>
         </div>
       )}
+
+      {/* Data Export Tab (Stage 5) */}
+      {activeTab === 'export' && (
+        <div className="admin-export">
+          <section className="admin-section">
+            <h3>📦 Research Data Export</h3>
+            <p className="section-description">
+              Export raw data for research analysis. Data includes votes, trajectories, and player profiles.
+            </p>
+            
+            {exportStatus && (
+              <div className="export-status">{exportStatus}</div>
+            )}
+            
+            <div className="export-grid">
+              <div className="export-card">
+                <h4>📊 Votes Export</h4>
+                <p>All vote records with full telemetry data including trajectories and events.</p>
+                <button 
+                  onClick={() => downloadExport('votes')}
+                  className="export-btn"
+                >
+                  Download Votes JSON
+                </button>
+              </div>
+              
+              <div className="export-card">
+                <h4>🗺️ Trajectories Export</h4>
+                <p>Player movement paths and death locations for heatmap analysis.</p>
+                <button 
+                  onClick={() => downloadExport('trajectories')}
+                  className="export-btn"
+                >
+                  Download Trajectories JSON
+                </button>
+              </div>
+              
+              <div className="export-card">
+                <h4>📈 Level Stats Export</h4>
+                <p>Aggregate statistics and structural features for all levels.</p>
+                <button 
+                  onClick={() => downloadExport('level-stats')}
+                  className="export-btn"
+                >
+                  Download Level Stats JSON
+                </button>
+              </div>
+              
+              <div className="export-card">
+                <h4>👥 Player Profiles Export</h4>
+                <p>Anonymous player preference patterns for clustering analysis.</p>
+                <button 
+                  onClick={() => downloadExport('player-profiles')}
+                  className="export-btn"
+                >
+                  Download Profiles JSON
+                </button>
+              </div>
+            </div>
+
+            <div className="export-actions">
+              <h4>Admin Actions</h4>
+              <button 
+                onClick={triggerFeatureExtraction}
+                className="action-btn"
+              >
+                Extract Level Features
+              </button>
+              <span className="action-hint">
+                Computes structural features for all levels that don't have them yet.
+              </span>
+            </div>
+          </section>
+        </div>
+      )}
     </div>
   );
+
+  async function downloadExport(type: 'votes' | 'trajectories' | 'level-stats' | 'player-profiles') {
+    try {
+      setExportStatus(`Downloading ${type}...`);
+      const response = await fetch(`${API_BASE_URL}/v1/admin/export/${type}`, {
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Export failed: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      // Create download
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `pcg-arena-${type}-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      setExportStatus(`✅ Downloaded ${type} (${data.total || data.data?.length || 0} records)`);
+      setTimeout(() => setExportStatus(null), 3000);
+    } catch (err) {
+      console.error('Export failed:', err);
+      setExportStatus(`❌ Export failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    }
+  }
+
+  async function triggerFeatureExtraction() {
+    try {
+      setExportStatus('Extracting features...');
+      const response = await fetch(`${API_BASE_URL}/v1/admin/extract-features`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Extraction failed: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      setExportStatus(`✅ ${data.message}`);
+      setTimeout(() => setExportStatus(null), 3000);
+    } catch (err) {
+      console.error('Feature extraction failed:', err);
+      setExportStatus(`❌ Failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    }
+  }
 }
 
 function getMatrixCellClass(cell: { battles: number; win_rate: number | null } | null): string {

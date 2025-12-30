@@ -984,3 +984,97 @@ canvas {
   background: rgba(255, 255, 255, 0.02);
 }
 
+/* Stage 5: Admin Export Styles */
+.admin-export {
+  padding: var(--spacing-md) 0;
+}
+
+.export-status {
+  padding: var(--spacing-sm) var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  border-radius: 8px;
+  background: var(--color-bg-dark);
+  border: 1px solid var(--color-lime);
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.export-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.export-card {
+  background: var(--color-bg-dark);
+  border: 1px solid rgba(153, 230, 0, 0.2);
+  border-radius: 12px;
+  padding: var(--spacing-md);
+}
+
+.export-card h4 {
+  margin: 0 0 var(--spacing-sm) 0;
+  color: var(--color-lime);
+  font-family: var(--font-display);
+  font-size: 1rem;
+}
+
+.export-card p {
+  margin: 0 0 var(--spacing-md) 0;
+  font-size: 0.85rem;
+  color: var(--color-text-dim);
+  line-height: 1.4;
+}
+
+.export-btn {
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: linear-gradient(135deg, rgba(153, 230, 0, 0.2), rgba(153, 230, 0, 0.1));
+  border: 1px solid var(--color-lime);
+  color: var(--color-lime);
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.export-btn:hover {
+  background: var(--color-lime);
+  color: var(--color-bg);
+}
+
+.export-actions {
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid rgba(153, 230, 0, 0.2);
+}
+
+.export-actions h4 {
+  margin: 0 0 var(--spacing-md) 0;
+  color: var(--color-lime);
+  font-family: var(--font-display);
+}
+
+.action-btn {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  background: rgba(255, 170, 0, 0.2);
+  border: 1px solid var(--color-warning);
+  color: var(--color-warning);
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+  margin-right: var(--spacing-md);
+}
+
+.action-btn:hover {
+  background: var(--color-warning);
+  color: var(--color-bg);
+}
+
+.action-hint {
+  font-size: 0.8rem;
+  color: var(--color-text-dim);
+}
+

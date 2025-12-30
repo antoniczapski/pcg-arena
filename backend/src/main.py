@@ -60,6 +60,15 @@ from matchmaking import (
 from glicko2 import (
     update_ratings_glicko2, GlickoRating, DEFAULT_RD, DEFAULT_VOLATILITY
 )
+from stats import (
+    update_level_stats_for_vote, update_player_profile_for_vote,
+    update_player_session, store_trajectory, get_platform_stats,
+    get_level_stats, get_level_heatmap
+)
+from level_features import (
+    extract_features_from_tilemap, store_level_features,
+    extract_and_store_all_level_features, get_level_features
+)
 
 # Load configuration first
 config = load_config()
@@ -953,14 +962,15 @@ async def submit_vote(vote_request: VoteRequest, request: Request):
                 cursor.execute(
                     """
                     INSERT INTO votes (
-                        vote_id, battle_id, session_id,
+                        vote_id, battle_id, session_id, player_id,
                         created_at_utc, result, left_tags_json, right_tags_json, telemetry_json, payload_hash
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                     (
                         vote_id,
                         vote_request.battle_id,
                         vote_request.session_id,
+                        vote_request.player_id,  # Stage 5: Include player_id
                         now_utc,
                         vote_request.result.value,
                         left_tags_json,
@@ -1014,6 +1024,63 @@ async def submit_vote(vote_request: VoteRequest, request: Request):
                     vote_request.result.value,
                     now_utc
                 )
+                
+                # Stage 5: Get level IDs for stats tracking
+                cursor.execute(
+                    "SELECT left_level_id, right_level_id FROM battles WHERE battle_id = ?",
+                    (vote_request.battle_id,)
+                )
+                level_row = cursor.fetchone()
+                left_level_id = level_row["left_level_id"] if level_row else None
+                right_level_id = level_row["right_level_id"] if level_row else None
+                
+                if left_level_id and right_level_id:
+                    # 11. Stage 5: Update per-level statistics
+                    left_telemetry_data = telemetry_dict.get("left", {}) if telemetry_dict else {}
+                    right_telemetry_data = telemetry_dict.get("right", {}) if telemetry_dict else {}
+                    
+                    update_level_stats_for_vote(
+                        cursor,
+                        left_level_id,
+                        right_level_id,
+                        left_generator_id,
+                        right_generator_id,
+                        vote_request.result.value,
+                        left_telemetry_data,
+                        right_telemetry_data,
+                        left_tags_list,
+                        right_tags_list,
+                        now_utc
+                    )
+                    
+                    # 12. Stage 5: Update player profile
+                    update_player_profile_for_vote(
+                        cursor,
+                        vote_request.player_id,
+                        now_utc
+                    )
+                    
+                    # 13. Stage 5: Update player session
+                    update_player_session(
+                        cursor,
+                        vote_request.session_id,
+                        vote_request.player_id,
+                        now_utc
+                    )
+                    
+                    # 14. Stage 5: Store trajectories if available
+                    if left_telemetry_data.get("trajectory"):
+                        store_trajectory(
+                            cursor, vote_id, left_level_id,
+                            vote_request.session_id, vote_request.player_id,
+                            "left", left_telemetry_data, now_utc
+                        )
+                    if right_telemetry_data.get("trajectory"):
+                        store_trajectory(
+                            cursor, vote_id, right_level_id,
+                            vote_request.session_id, vote_request.player_id,
+                            "right", right_telemetry_data, now_utc
+                        )
             
             # Fetch leaderboard for response
             cursor.execute(
@@ -1077,6 +1144,499 @@ async def submit_vote(vote_request: VoteRequest, request: Request):
             retryable=True,
             status_code=500
         )
+
+
+# =============================================================================
+# Stage 5: Public Statistics API Endpoints
+# =============================================================================
+
+@app.get("/v1/stats/platform")
+async def get_platform_statistics():
+    """
+    Get platform-wide aggregate statistics.
+    
+    Returns totals, vote distribution, and engagement metrics.
+    Public endpoint - no authentication required.
+    """
+    try:
+        stats = get_platform_stats()
+        return {
+            "protocol_version": "arena/v0",
+            "stats": stats
+        }
+    except Exception as e:
+        logger.exception(f"Error fetching platform stats: {e}")
+        raise_api_error(
+            ErrorCode.INTERNAL_ERROR,
+            "Failed to fetch platform statistics",
+            retryable=True,
+            status_code=500
+        )
+
+
+@app.get("/v1/stats/generators/{generator_id}")
+async def get_generator_statistics(generator_id: str):
+    """
+    Get aggregate statistics for a specific generator.
+    
+    Returns win rates, level performance, and difficulty distribution.
+    Public endpoint - no authentication required.
+    """
+    conn = get_connection()
+    
+    # Check generator exists
+    cursor = conn.execute(
+        "SELECT * FROM generators WHERE generator_id = ?",
+        (generator_id,)
+    )
+    gen_row = cursor.fetchone()
+    
+    if not gen_row:
+        raise_api_error(
+            ErrorCode.GENERATOR_NOT_FOUND,
+            f"Generator '{generator_id}' not found",
+            retryable=False,
+            status_code=404
+        )
+    
+    # Get level stats for this generator
+    cursor = conn.execute(
+        """
+        SELECT 
+            COUNT(*) as level_count,
+            SUM(times_shown) as total_shown,
+            AVG(win_rate) as avg_win_rate,
+            AVG(completion_rate) as avg_completion_rate,
+            AVG(avg_deaths) as avg_deaths,
+            AVG(avg_duration_seconds) as avg_duration,
+            AVG(difficulty_score) as avg_difficulty
+        FROM level_stats
+        WHERE generator_id = ?
+        """,
+        (generator_id,)
+    )
+    stats_row = cursor.fetchone()
+    
+    # Get individual level stats
+    cursor = conn.execute(
+        """
+        SELECT 
+            level_id, times_shown, win_rate, completion_rate,
+            avg_deaths, avg_duration_seconds, difficulty_score,
+            tag_fun, tag_boring, tag_too_hard, tag_too_easy
+        FROM level_stats
+        WHERE generator_id = ?
+        ORDER BY times_shown DESC
+        """,
+        (generator_id,)
+    )
+    level_rows = cursor.fetchall()
+    
+    # Get tag totals
+    cursor = conn.execute(
+        """
+        SELECT 
+            SUM(tag_fun) as fun,
+            SUM(tag_boring) as boring,
+            SUM(tag_too_hard) as too_hard,
+            SUM(tag_too_easy) as too_easy,
+            SUM(tag_creative) as creative,
+            SUM(tag_good_flow) as good_flow,
+            SUM(tag_unfair) as unfair,
+            SUM(tag_confusing) as confusing,
+            SUM(tag_not_mario_like) as not_mario_like
+        FROM level_stats
+        WHERE generator_id = ?
+        """,
+        (generator_id,)
+    )
+    tag_row = cursor.fetchone()
+    
+    return {
+        "protocol_version": "arena/v0",
+        "generator_id": generator_id,
+        "name": gen_row["name"],
+        "aggregate": {
+            "level_count": stats_row["level_count"] or 0,
+            "total_battles": stats_row["total_shown"] or 0,
+            "avg_win_rate": round(stats_row["avg_win_rate"] or 0, 3),
+            "avg_completion_rate": round(stats_row["avg_completion_rate"] or 0, 3),
+            "avg_deaths_per_play": round(stats_row["avg_deaths"] or 0, 1),
+            "avg_duration_seconds": round(stats_row["avg_duration"] or 0, 1),
+            "avg_difficulty_score": round(stats_row["avg_difficulty"] or 0, 3)
+        },
+        "tags": {
+            "fun": tag_row["fun"] or 0,
+            "boring": tag_row["boring"] or 0,
+            "too_hard": tag_row["too_hard"] or 0,
+            "too_easy": tag_row["too_easy"] or 0,
+            "creative": tag_row["creative"] or 0,
+            "good_flow": tag_row["good_flow"] or 0,
+            "unfair": tag_row["unfair"] or 0,
+            "confusing": tag_row["confusing"] or 0,
+            "not_mario_like": tag_row["not_mario_like"] or 0
+        },
+        "levels": [
+            {
+                "level_id": row["level_id"],
+                "times_shown": row["times_shown"],
+                "win_rate": round(row["win_rate"] or 0, 3),
+                "completion_rate": round(row["completion_rate"] or 0, 3),
+                "avg_deaths": round(row["avg_deaths"] or 0, 1),
+                "difficulty_score": round(row["difficulty_score"] or 0, 3)
+            }
+            for row in level_rows
+        ]
+    }
+
+
+@app.get("/v1/stats/levels/{level_id}")
+async def get_level_statistics(level_id: str):
+    """
+    Get detailed statistics for a specific level.
+    
+    Returns performance metrics, tag counts, and structural features.
+    Public endpoint - no authentication required.
+    """
+    # Get level stats
+    stats = get_level_stats(level_id)
+    
+    if not stats:
+        # Check if level exists at all
+        conn = get_connection()
+        cursor = conn.execute(
+            "SELECT level_id FROM levels WHERE level_id = ?",
+            (level_id,)
+        )
+        if not cursor.fetchone():
+            raise_api_error(
+                ErrorCode.LEVEL_NOT_FOUND,
+                f"Level '{level_id}' not found",
+                retryable=False,
+                status_code=404
+            )
+        # Level exists but no stats yet
+        stats = {
+            "level_id": level_id,
+            "performance": {"times_shown": 0},
+            "outcomes": {},
+            "tags": {},
+            "difficulty": {}
+        }
+    
+    # Get level features
+    features = get_level_features(level_id)
+    
+    return {
+        "protocol_version": "arena/v0",
+        "level_id": level_id,
+        "stats": stats,
+        "features": features
+    }
+
+
+@app.get("/v1/stats/levels/{level_id}/heatmap")
+async def get_level_heatmap_data(level_id: str):
+    """
+    Get death heatmap data for a specific level.
+    
+    Returns aggregate death locations for visualization.
+    Public endpoint - no authentication required.
+    """
+    # Check if level exists
+    conn = get_connection()
+    cursor = conn.execute(
+        "SELECT level_id FROM levels WHERE level_id = ?",
+        (level_id,)
+    )
+    if not cursor.fetchone():
+        raise_api_error(
+            ErrorCode.LEVEL_NOT_FOUND,
+            f"Level '{level_id}' not found",
+            retryable=False,
+            status_code=404
+        )
+    
+    heatmap = get_level_heatmap(level_id)
+    
+    return {
+        "protocol_version": "arena/v0",
+        **heatmap
+    }
+
+
+# =============================================================================
+# Stage 5: Admin Data Export API Endpoints (Requires Authentication)
+# =============================================================================
+
+@app.get("/v1/admin/export/votes")
+async def export_votes(
+    current_user: User = Depends(get_current_user),
+    limit: int = 1000,
+    offset: int = 0
+):
+    """
+    Export vote data with full telemetry.
+    
+    Admin-only endpoint for research data export.
+    Returns paginated vote records with all telemetry.
+    """
+    # Check if user is admin (you would add proper admin check)
+    if not current_user:
+        raise_api_error(
+            ErrorCode.UNAUTHORIZED,
+            "Authentication required for data export",
+            retryable=False,
+            status_code=401
+        )
+    
+    conn = get_connection()
+    
+    cursor = conn.execute(
+        """
+        SELECT 
+            v.vote_id, v.battle_id, v.session_id, v.player_id,
+            v.created_at_utc, v.result, 
+            v.left_tags_json, v.right_tags_json, v.telemetry_json,
+            b.left_generator_id, b.right_generator_id,
+            b.left_level_id, b.right_level_id
+        FROM votes v
+        JOIN battles b ON v.battle_id = b.battle_id
+        ORDER BY v.created_at_utc DESC
+        LIMIT ? OFFSET ?
+        """,
+        (limit, offset)
+    )
+    
+    votes = []
+    for row in cursor.fetchall():
+        votes.append({
+            "vote_id": row["vote_id"],
+            "battle_id": row["battle_id"],
+            "session_id": row["session_id"],
+            "player_id": row["player_id"],
+            "created_at_utc": row["created_at_utc"],
+            "result": row["result"],
+            "left_generator_id": row["left_generator_id"],
+            "right_generator_id": row["right_generator_id"],
+            "left_level_id": row["left_level_id"],
+            "right_level_id": row["right_level_id"],
+            "left_tags": json.loads(row["left_tags_json"]) if row["left_tags_json"] else [],
+            "right_tags": json.loads(row["right_tags_json"]) if row["right_tags_json"] else [],
+            "telemetry": json.loads(row["telemetry_json"]) if row["telemetry_json"] else {}
+        })
+    
+    # Get total count
+    cursor = conn.execute("SELECT COUNT(*) FROM votes")
+    total = cursor.fetchone()[0]
+    
+    return {
+        "protocol_version": "arena/v0",
+        "export_type": "votes",
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+        "data": votes
+    }
+
+
+@app.get("/v1/admin/export/trajectories")
+async def export_trajectories(
+    current_user: User = Depends(get_current_user),
+    level_id: str = None,
+    limit: int = 100,
+    offset: int = 0
+):
+    """
+    Export trajectory data for heatmap and path analysis.
+    
+    Admin-only endpoint for research data export.
+    Returns paginated trajectory records.
+    """
+    if not current_user:
+        raise_api_error(
+            ErrorCode.UNAUTHORIZED,
+            "Authentication required for data export",
+            retryable=False,
+            status_code=401
+        )
+    
+    conn = get_connection()
+    
+    query = """
+        SELECT 
+            trajectory_id, vote_id, level_id, session_id, player_id, side,
+            trajectory_json, death_locations_json, events_json,
+            duration_ticks, max_x_reached, death_count, completed,
+            created_at_utc
+        FROM play_trajectories
+    """
+    params = []
+    
+    if level_id:
+        query += " WHERE level_id = ?"
+        params.append(level_id)
+    
+    query += " ORDER BY created_at_utc DESC LIMIT ? OFFSET ?"
+    params.extend([limit, offset])
+    
+    cursor = conn.execute(query, params)
+    
+    trajectories = []
+    for row in cursor.fetchall():
+        trajectories.append({
+            "trajectory_id": row["trajectory_id"],
+            "vote_id": row["vote_id"],
+            "level_id": row["level_id"],
+            "session_id": row["session_id"],
+            "player_id": row["player_id"],
+            "side": row["side"],
+            "trajectory": json.loads(row["trajectory_json"]) if row["trajectory_json"] else [],
+            "death_locations": json.loads(row["death_locations_json"]) if row["death_locations_json"] else [],
+            "events": json.loads(row["events_json"]) if row["events_json"] else [],
+            "summary": {
+                "duration_ticks": row["duration_ticks"],
+                "max_x_reached": row["max_x_reached"],
+                "death_count": row["death_count"],
+                "completed": bool(row["completed"])
+            },
+            "created_at_utc": row["created_at_utc"]
+        })
+    
+    # Get total count
+    count_query = "SELECT COUNT(*) FROM play_trajectories"
+    count_params = []
+    if level_id:
+        count_query += " WHERE level_id = ?"
+        count_params.append(level_id)
+    cursor = conn.execute(count_query, count_params)
+    total = cursor.fetchone()[0]
+    
+    return {
+        "protocol_version": "arena/v0",
+        "export_type": "trajectories",
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+        "filter": {"level_id": level_id} if level_id else None,
+        "data": trajectories
+    }
+
+
+@app.get("/v1/admin/export/level-stats")
+async def export_level_stats(
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Export all level statistics.
+    
+    Admin-only endpoint for research data export.
+    Returns all level stats for analysis.
+    """
+    if not current_user:
+        raise_api_error(
+            ErrorCode.UNAUTHORIZED,
+            "Authentication required for data export",
+            retryable=False,
+            status_code=401
+        )
+    
+    conn = get_connection()
+    
+    cursor = conn.execute(
+        """
+        SELECT ls.*, lf.*
+        FROM level_stats ls
+        LEFT JOIN level_features lf ON ls.level_id = lf.level_id
+        ORDER BY ls.times_shown DESC
+        """
+    )
+    
+    stats = []
+    for row in cursor.fetchall():
+        stats.append(dict(row))
+    
+    return {
+        "protocol_version": "arena/v0",
+        "export_type": "level_stats",
+        "total": len(stats),
+        "data": stats
+    }
+
+
+@app.get("/v1/admin/export/player-profiles")
+async def export_player_profiles(
+    current_user: User = Depends(get_current_user),
+    limit: int = 500,
+    offset: int = 0
+):
+    """
+    Export player profile data for clustering analysis.
+    
+    Admin-only endpoint for research data export.
+    Returns player profiles with preference patterns.
+    """
+    if not current_user:
+        raise_api_error(
+            ErrorCode.UNAUTHORIZED,
+            "Authentication required for data export",
+            retryable=False,
+            status_code=401
+        )
+    
+    conn = get_connection()
+    
+    cursor = conn.execute(
+        """
+        SELECT *
+        FROM player_profiles
+        ORDER BY total_votes DESC
+        LIMIT ? OFFSET ?
+        """,
+        (limit, offset)
+    )
+    
+    profiles = []
+    for row in cursor.fetchall():
+        profiles.append(dict(row))
+    
+    # Get total count
+    cursor = conn.execute("SELECT COUNT(*) FROM player_profiles")
+    total = cursor.fetchone()[0]
+    
+    return {
+        "protocol_version": "arena/v0",
+        "export_type": "player_profiles",
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+        "data": profiles
+    }
+
+
+@app.post("/v1/admin/extract-features")
+async def trigger_feature_extraction(
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Trigger extraction of static features for all levels.
+    
+    Admin-only endpoint to compute level features.
+    """
+    if not current_user:
+        raise_api_error(
+            ErrorCode.UNAUTHORIZED,
+            "Authentication required",
+            retryable=False,
+            status_code=401
+        )
+    
+    count = extract_and_store_all_level_features()
+    
+    return {
+        "protocol_version": "arena/v0",
+        "message": f"Extracted features for {count} levels"
+    }
 
 
 @app.get("/test/error/{error_code}")

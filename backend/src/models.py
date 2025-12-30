@@ -35,6 +35,10 @@ class ErrorCode(str, Enum):
     DUPLICATE_VOTE_CONFLICT = "DUPLICATE_VOTE_CONFLICT"
     INTERNAL_ERROR = "INTERNAL_ERROR"
     UNSUPPORTED_CLIENT_VERSION = "UNSUPPORTED_CLIENT_VERSION"
+    # Stage 5: Additional error codes
+    GENERATOR_NOT_FOUND = "GENERATOR_NOT_FOUND"
+    LEVEL_NOT_FOUND = "LEVEL_NOT_FOUND"
+    UNAUTHORIZED = "UNAUTHORIZED"
 
 
 class PlayOrder(str, Enum):
@@ -66,12 +70,53 @@ class BattleRequest(BaseModel):
     preferences: Optional[BattlePreferences] = Field(default_factory=BattlePreferences, description="Optional preferences")
 
 
+class TrajectoryPoint(BaseModel):
+    """Stage 5: Position sample for trajectory tracking."""
+    tick: int
+    x: int
+    y: int
+    state: int  # 0=small, 1=large, 2=fire
+
+
+class DeathLocation(BaseModel):
+    """Stage 5: Death location with cause."""
+    x: float
+    y: float
+    tick: int
+    cause: str  # 'enemy', 'fall', 'timeout'
+
+
+class SerializedEvent(BaseModel):
+    """Stage 5: Serialized game event."""
+    type: str
+    param: int
+    x: int
+    y: int
+    tick: int
+
+
 class SideTelemetry(BaseModel):
     """Telemetry data for one side of a battle."""
     played: bool = Field(..., description="Whether the level was played")
     duration_seconds: Optional[float] = Field(default=None, description="Time spent playing (seconds)")
     completed: Optional[bool] = Field(default=None, description="Whether the level was completed")
     coins_collected: Optional[int] = Field(default=None, description="Number of coins collected")
+    deaths: Optional[int] = Field(default=None, description="Number of deaths")
+    powerups_collected: Optional[int] = Field(default=None, description="Number of powerups collected")
+    enemies_killed: Optional[int] = Field(default=None, description="Number of enemies killed")
+    
+    # Stage 5: Enhanced telemetry fields
+    level_id: Optional[str] = Field(default=None, description="Level ID")
+    jumps: Optional[int] = Field(default=None, description="Number of jumps")
+    enemies_stomped: Optional[int] = Field(default=None, description="Enemies killed by stomping")
+    enemies_fire_killed: Optional[int] = Field(default=None, description="Enemies killed by fire")
+    enemies_shell_killed: Optional[int] = Field(default=None, description="Enemies killed by shell")
+    powerups_mushroom: Optional[int] = Field(default=None, description="Mushrooms collected")
+    powerups_flower: Optional[int] = Field(default=None, description="Fire flowers collected")
+    lives_collected: Optional[int] = Field(default=None, description="1-ups collected")
+    trajectory: Optional[List[TrajectoryPoint]] = Field(default=None, description="Position samples")
+    death_locations: Optional[List[DeathLocation]] = Field(default=None, description="Death locations")
+    events: Optional[List[SerializedEvent]] = Field(default=None, description="Game events")
 
 
 class Telemetry(BaseModel):
@@ -84,6 +129,7 @@ class VoteRequest(BaseModel):
     """Request model for POST /v1/votes"""
     client_version: str = Field(..., description="Client version string")
     session_id: str = Field(..., description="Client-generated UUID matching the battle session")
+    player_id: Optional[str] = Field(default=None, description="Persistent player ID (Stage 5)")
     battle_id: str = Field(..., description="Battle ID from the battle response")
     result: VoteResult = Field(..., description="Vote outcome: LEFT, RIGHT, TIE, or SKIP")
     left_tags: Optional[List[str]] = Field(default=None, description="Optional tags describing the left level")

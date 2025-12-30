@@ -1,29 +1,45 @@
 import { useRef, useEffect, useState } from 'react';
 import { MarioGame } from '../engine/MarioGame';
-import { MarioWorld } from '../engine/MarioWorld';
+import { MarioWorld, TrajectoryPoint, DeathLocation, SerializedEvent } from '../engine/MarioWorld';
 import { GameStatus } from '../engine/GameStatus';
 import { KeyboardInput } from '../engine/input/KeyboardInput';
 import { assetLoader } from '../engine/graphics/AssetLoader';
 import { Camera } from '../engine/graphics/Camera';
 import { TilemapRenderer } from '../engine/graphics/TilemapRenderer';
 import { SpriteRenderer } from '../engine/graphics/SpriteRenderer';
+import { EventType } from '../engine/EventType';
 
+// Stage 5: Enhanced game result with full telemetry
 export interface GameResult {
   status: GameStatus;
   coins: number;
   deaths: number;
   duration: number;
   completed: boolean;
+  
+  // Stage 5: Enhanced telemetry
+  levelId: string;
+  jumps: number;
+  enemiesStomped: number;
+  enemiesFireKilled: number;
+  enemiesShellKilled: number;
+  powerupsMushroom: number;
+  powerupsFlower: number;
+  livesCollected: number;
+  trajectory: TrajectoryPoint[];
+  deathLocations: DeathLocation[];
+  events: SerializedEvent[];
 }
 
 interface GameCanvasProps {
   level: string;
+  levelId: string;  // Stage 5: Track which level is being played
   timeLimit: number;
   isActive: boolean;
   onFinish: (result: GameResult) => void;
 }
 
-export function GameCanvas({ level, timeLimit, isActive, onFinish }: GameCanvasProps) {
+export function GameCanvas({ level, levelId, timeLimit, isActive, onFinish }: GameCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [assetsLoaded, setAssetsLoaded] = useState(false);
   const [assetError, setAssetError] = useState<string | null>(null);
@@ -87,14 +103,14 @@ export function GameCanvas({ level, timeLimit, isActive, onFinish }: GameCanvasP
     // Create a temporary world just to render preview
     const tempWorld = new MarioWorld();
     tempWorld.visuals = true;
-    tempWorld.initializeLevel(level, 1000 * timeLimit);
+    tempWorld.initializeLevel(level, 1000 * timeLimit, levelId);
 
     // Render preview
     const camera = cameraRef.current;
     camera.follow(tempWorld.mario.x, tempWorld.mario.y, tempWorld.level.width, tempWorld.level.height);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     tempWorld.render(ctx, tilemapRendererRef.current!, spriteRendererRef.current!, camera);
-  }, [assetsLoaded, level, timeLimit]);
+  }, [assetsLoaded, level, levelId, timeLimit]);
 
   // Start game when active - use ref to track if started
   useEffect(() => {
@@ -125,7 +141,7 @@ export function GameCanvas({ level, timeLimit, isActive, onFinish }: GameCanvasP
     const tilemapRenderer = tilemapRendererRef.current!;
     const spriteRenderer = spriteRendererRef.current!;
 
-    // Start game
+    // Start game with levelId for telemetry tracking
     game.playGame(
       level,
       timeLimit,
@@ -140,7 +156,8 @@ export function GameCanvas({ level, timeLimit, isActive, onFinish }: GameCanvasP
         if (!world.mario.alive && world.gameStatus === GameStatus.RUNNING) {
           deathCountRef.current++;
         }
-      }
+      },
+      levelId  // Stage 5: Pass levelId for telemetry tracking
     ).then((result) => {
       // Game finished - clean up input
       if (inputRef.current) {
@@ -149,12 +166,28 @@ export function GameCanvas({ level, timeLimit, isActive, onFinish }: GameCanvasP
       }
 
       const duration = (Date.now() - startTimeRef.current) / 1000;
+      const world = result.world;
+      
+      // Stage 5: Extract enhanced telemetry from MarioWorld
       const gameResult: GameResult = {
         status: result.gameStatus,
-        coins: result.world.coins,
-        deaths: deathCountRef.current,
+        coins: world.coins,
+        deaths: world.deathLocations.length,
         duration,
         completed: result.gameStatus === GameStatus.WIN,
+        
+        // Stage 5: Enhanced telemetry
+        levelId: world.levelId,
+        jumps: world.countEvents(EventType.JUMP),
+        enemiesStomped: world.countEvents(EventType.STOMP_KILL),
+        enemiesFireKilled: world.countEvents(EventType.FIRE_KILL),
+        enemiesShellKilled: world.countEvents(EventType.SHELL_KILL),
+        powerupsMushroom: world.countEvents(EventType.COLLECT, 0),
+        powerupsFlower: world.countEvents(EventType.COLLECT, 1),
+        livesCollected: world.countEvents(EventType.COLLECT, 2),
+        trajectory: world.getTrajectory(),
+        deathLocations: world.getDeathLocations(),
+        events: world.getSerializedEvents(),
       };
       setDisplayState('finished');
       onFinishRef.current(gameResult);
@@ -173,7 +206,7 @@ export function GameCanvas({ level, timeLimit, isActive, onFinish }: GameCanvasP
         inputRef.current = null;
       }
     };
-  }, [isActive, assetsLoaded, level, timeLimit]); // Removed gameState dependency
+  }, [isActive, assetsLoaded, level, levelId, timeLimit]); // Removed gameState dependency
 
   if (assetError) {
     return (

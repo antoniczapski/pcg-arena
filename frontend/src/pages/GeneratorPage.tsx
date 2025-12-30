@@ -7,7 +7,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ArenaApiClient } from '../api/client';
 import { LevelPreviewList } from '../components/LevelPreview';
 import type { GeneratorDetails, LevelPreviewData } from '../api/types';
@@ -18,10 +18,16 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 export function GeneratorPage() {
   const { generatorId } = useParams<{ generatorId: string }>();
+  const navigate = useNavigate();
   const [generator, setGenerator] = useState<GeneratorDetails | null>(null);
   const [levels, setLevels] = useState<LevelPreviewData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Navigate to level detail page when clicking a level
+  const handleLevelClick = (levelId: string) => {
+    navigate(`/level/${encodeURIComponent(levelId)}`);
+  };
 
   useEffect(() => {
     async function fetchGenerator() {
@@ -161,7 +167,7 @@ export function GeneratorPage() {
       <div className="generator-levels-section">
         <h2>Level Gallery ({levels.length} levels)</h2>
         <p className="levels-hint">
-          These are all the levels available from this generator. 
+          Click any level to view detailed statistics and death heatmap. 
           Each level is 16 tiles tall and up to 250 tiles wide.
         </p>
         
@@ -169,6 +175,7 @@ export function GeneratorPage() {
           <LevelPreviewList 
             levels={levels}
             scale={1}
+            onLevelClick={handleLevelClick}
           />
         </div>
       </div>

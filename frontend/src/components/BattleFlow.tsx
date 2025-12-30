@@ -4,6 +4,7 @@ import type { Battle, LevelTelemetry } from '../api/types';
 import { GameCanvas, GameResult } from './GameCanvas';
 import { VotingPanel, VoteData } from './VotingPanel';
 import { LevelPreview } from './LevelPreview';
+import { getOrCreatePlayerId } from '../utils/playerId';
 
 
 interface BattleFlowProps {
@@ -21,6 +22,7 @@ type BattlePhase =
 
 export function BattleFlow({ apiClient }: BattleFlowProps) {
   const [sessionId] = useState(() => crypto.randomUUID());
+  const [playerId] = useState(() => getOrCreatePlayerId()); // Stage 5: Persistent player ID
   const [battle, setBattle] = useState<Battle | null>(null);
   const [phase, setPhase] = useState<BattlePhase>('welcome');
   const [error, setError] = useState<string | null>(null);
@@ -46,9 +48,9 @@ export function BattleFlow({ apiClient }: BattleFlowProps) {
     setRevealNames(false);
 
     try {
-      const response = await apiClient.nextBattle(sessionId);
+      const response = await apiClient.nextBattle(sessionId, playerId);
       setBattle(response.battle);
-      console.log('Battle loaded:', response.battle.battle_id);
+      console.log('Battle loaded:', response.battle.battle_id, 'player:', playerId);
       setPhase('play-left');
     } catch (err) {
       console.error('Failed to fetch battle:', err);
@@ -76,14 +78,27 @@ export function BattleFlow({ apiClient }: BattleFlowProps) {
     setRevealNames(true); // Reveal names after voting
 
     try {
+      // Stage 5: Build enhanced telemetry from GameResult
       const leftTelemetry: LevelTelemetry = {
         played: true,
         duration_seconds: leftResult.duration,
         completed: leftResult.completed,
         deaths: leftResult.deaths,
         coins_collected: leftResult.coins,
-        powerups_collected: 0,
-        enemies_killed: 0,
+        powerups_collected: leftResult.powerupsMushroom + leftResult.powerupsFlower,
+        enemies_killed: leftResult.enemiesStomped + leftResult.enemiesFireKilled + leftResult.enemiesShellKilled,
+        // Stage 5: Enhanced fields
+        level_id: leftResult.levelId,
+        jumps: leftResult.jumps,
+        enemies_stomped: leftResult.enemiesStomped,
+        enemies_fire_killed: leftResult.enemiesFireKilled,
+        enemies_shell_killed: leftResult.enemiesShellKilled,
+        powerups_mushroom: leftResult.powerupsMushroom,
+        powerups_flower: leftResult.powerupsFlower,
+        lives_collected: leftResult.livesCollected,
+        trajectory: leftResult.trajectory,
+        death_locations: leftResult.deathLocations,
+        events: leftResult.events,
       };
 
       const rightTelemetry: LevelTelemetry = {
@@ -92,8 +107,20 @@ export function BattleFlow({ apiClient }: BattleFlowProps) {
         completed: rightResult.completed,
         deaths: rightResult.deaths,
         coins_collected: rightResult.coins,
-        powerups_collected: 0,
-        enemies_killed: 0,
+        powerups_collected: rightResult.powerupsMushroom + rightResult.powerupsFlower,
+        enemies_killed: rightResult.enemiesStomped + rightResult.enemiesFireKilled + rightResult.enemiesShellKilled,
+        // Stage 5: Enhanced fields
+        level_id: rightResult.levelId,
+        jumps: rightResult.jumps,
+        enemies_stomped: rightResult.enemiesStomped,
+        enemies_fire_killed: rightResult.enemiesFireKilled,
+        enemies_shell_killed: rightResult.enemiesShellKilled,
+        powerups_mushroom: rightResult.powerupsMushroom,
+        powerups_flower: rightResult.powerupsFlower,
+        lives_collected: rightResult.livesCollected,
+        trajectory: rightResult.trajectory,
+        death_locations: rightResult.deathLocations,
+        events: rightResult.events,
       };
 
       await apiClient.submitVote(
@@ -102,7 +129,8 @@ export function BattleFlow({ apiClient }: BattleFlowProps) {
         vote.result,
         vote.leftTags,
         vote.rightTags,
-        { left: leftTelemetry, right: rightTelemetry }
+        { left: leftTelemetry, right: rightTelemetry },
+        playerId  // Stage 5: Include player ID
       );
 
       setPhase('results');
@@ -174,6 +202,7 @@ export function BattleFlow({ apiClient }: BattleFlowProps) {
             </div>
             <GameCanvas
               level={battle.left.level_payload.tilemap}
+              levelId={battle.left.level_id}
               timeLimit={battle.presentation.suggested_time_limit_seconds}
               isActive={phase === 'play-left'}
               onFinish={handleLeftFinish}
@@ -203,6 +232,7 @@ export function BattleFlow({ apiClient }: BattleFlowProps) {
             </div>
             <GameCanvas
               level={battle.right.level_payload.tilemap}
+              levelId={battle.right.level_id}
               timeLimit={battle.presentation.suggested_time_limit_seconds}
               isActive={phase === 'play-right'}
               onFinish={handleRightFinish}

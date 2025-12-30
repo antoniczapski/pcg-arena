@@ -21,6 +21,34 @@ import { TileFeature, getTileType, hasTileFeature } from './TileFeature';
 const TILE_WIDTH = GAME_WIDTH / 16;
 const TILE_HEIGHT = GAME_HEIGHT / 16;
 
+// Position sample interval (every N ticks = every N/30 seconds)
+const TRAJECTORY_SAMPLE_INTERVAL = 15; // Sample every 0.5 seconds
+
+// Trajectory point for position history
+export interface TrajectoryPoint {
+  tick: number;
+  x: number;
+  y: number;
+  state: number; // 0=small, 1=large, 2=fire
+}
+
+// Death location with cause
+export interface DeathLocation {
+  x: number;
+  y: number;
+  tick: number;
+  cause: 'enemy' | 'fall' | 'timeout';
+}
+
+// Serialized event for telemetry
+export interface SerializedEvent {
+  type: string;
+  param: number;
+  x: number;
+  y: number;
+  tick: number;
+}
+
 export class MarioWorld {
   gameStatus: GameStatus = GameStatus.RUNNING;
   pauseTimer: number = 0;
@@ -35,6 +63,13 @@ export class MarioWorld {
   coins: number = 0;
   lives: number = 0;
   lastFrameEvents: MarioEvent[] = [];
+  
+  // Stage 5: Enhanced telemetry tracking
+  levelId: string = '';                           // Track which level is being played
+  allEvents: MarioEvent[] = [];                   // Accumulate ALL events (not just last frame)
+  positionHistory: TrajectoryPoint[] = [];        // Sampled positions for trajectory
+  deathLocations: DeathLocation[] = [];           // Death locations with causes
+  private lastDeathCause: 'enemy' | 'fall' | 'timeout' = 'enemy';
 
   private killEvents: MarioEvent[] | null = null;
   private sprites: MarioSprite[] = [];
@@ -53,20 +88,35 @@ export class MarioWorld {
     this.removedSprites = [];
     this.lastFrameEvents = [];
     this.killEvents = killEvents;
+    
+    // Stage 5: Initialize telemetry tracking
+    this.allEvents = [];
+    this.positionHistory = [];
+    this.deathLocations = [];
+    this.levelId = '';
 
     // Mario will be initialized in initializeLevel
     this.mario = new Mario(false, 0, 0);
     this.level = new MarioLevel('', false);
   }
 
-  initializeLevel(level: string, timer: number): void {
+  initializeLevel(level: string, timer: number, levelId: string = ''): void {
     this.currentTimer = timer;
     this.level = new MarioLevel(level, this.visuals);
+    
+    // Stage 5: Store level ID and reset telemetry
+    this.levelId = levelId;
+    this.allEvents = [];
+    this.positionHistory = [];
+    this.deathLocations = [];
 
     this.mario = new Mario(this.visuals, this.level.marioTileX * 16, this.level.marioTileY * 16);
     this.mario.alive = true;
     this.mario.world = this;
     this.sprites.push(this.mario);
+    
+    // Stage 5: Record initial position
+    this.samplePosition();
   }
 
   getEnemies(): MarioSprite[] {
@@ -111,9 +161,11 @@ export class MarioWorld {
     if (this.mario.isFire) {
       marioState = 2;
     }
-    this.lastFrameEvents.push(
-      new MarioEvent(eventType, eventParam, this.mario.x, this.mario.y, marioState, this.currentTick)
-    );
+    const event = new MarioEvent(eventType, eventParam, this.mario.x, this.mario.y, marioState, this.currentTick);
+    this.lastFrameEvents.push(event);
+    
+    // Stage 5: Also add to allEvents for complete telemetry
+    this.allEvents.push(event);
   }
 
   addSprite(sprite: MarioSprite): void {
@@ -148,11 +200,46 @@ export class MarioWorld {
     this.addEvent(EventType.LOSE, 0);
     this.gameStatus = GameStatus.LOSE;
     this.mario.alive = false;
+    
+    // Stage 5: Record death location
+    this.deathLocations.push({
+      x: this.mario.x,
+      y: this.mario.y,
+      tick: this.currentTick,
+      cause: this.lastDeathCause
+    });
   }
 
   timeout(): void {
     this.gameStatus = GameStatus.TIME_OUT;
     this.mario.alive = false;
+    
+    // Stage 5: Record timeout death
+    this.deathLocations.push({
+      x: this.mario.x,
+      y: this.mario.y,
+      tick: this.currentTick,
+      cause: 'timeout'
+    });
+  }
+  
+  // Stage 5: Set the cause for the next death (called before lose())
+  setDeathCause(cause: 'enemy' | 'fall' | 'timeout'): void {
+    this.lastDeathCause = cause;
+  }
+  
+  // Stage 5: Sample current position for trajectory
+  private samplePosition(): void {
+    let marioState = 0;
+    if (this.mario.isLarge) marioState = 1;
+    if (this.mario.isFire) marioState = 2;
+    
+    this.positionHistory.push({
+      tick: this.currentTick,
+      x: Math.round(this.mario.x),
+      y: Math.round(this.mario.y),
+      state: marioState
+    });
   }
 
   getSceneObservation(centerX: number, centerY: number, _detail: number): number[][] {
@@ -195,6 +282,12 @@ export class MarioWorld {
     }
 
     this.currentTick += 1;
+    
+    // Stage 5: Sample position for trajectory every TRAJECTORY_SAMPLE_INTERVAL ticks
+    if (this.currentTick % TRAJECTORY_SAMPLE_INTERVAL === 0) {
+      this.samplePosition();
+    }
+    
     this.cameraX = this.mario.x - GAME_WIDTH / 2;
     if (this.cameraX + GAME_WIDTH > this.level.width) {
       this.cameraX = this.level.width - GAME_WIDTH;
@@ -220,6 +313,8 @@ export class MarioWorld {
         sprite.y > this.level.height + 32
       ) {
         if (sprite.type === SpriteType.MARIO) {
+          // Stage 5: Set death cause to fall before calling lose()
+          this.setDeathCause('fall');
           this.lose();
         }
         this.removeSprite(sprite);
@@ -403,6 +498,40 @@ export class MarioWorld {
 
     // Update sprite animations
     spriteRenderer.updateAnimations();
+  }
+  
+  // Stage 5: Get all events for telemetry
+  getAllEvents(): MarioEvent[] {
+    return this.allEvents;
+  }
+  
+  // Stage 5: Get serialized events for JSON transmission
+  getSerializedEvents(): SerializedEvent[] {
+    return this.allEvents.map(e => ({
+      type: EventType[e.eventType],
+      param: e.eventParam,
+      x: Math.round(e.marioX),
+      y: Math.round(e.marioY),
+      tick: e.tick
+    }));
+  }
+  
+  // Stage 5: Get trajectory for telemetry
+  getTrajectory(): TrajectoryPoint[] {
+    return this.positionHistory;
+  }
+  
+  // Stage 5: Get death locations for telemetry
+  getDeathLocations(): DeathLocation[] {
+    return this.deathLocations;
+  }
+  
+  // Stage 5: Count specific event types
+  countEvents(eventType: EventType, param?: number): number {
+    return this.allEvents.filter(e => 
+      e.eventType === eventType && 
+      (param === undefined || e.eventParam === param)
+    ).length;
   }
 
   private isEnemy(sprite: MarioSprite): boolean {

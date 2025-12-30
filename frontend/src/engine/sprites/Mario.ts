@@ -311,6 +311,8 @@ export class Mario extends MarioSprite {
       this.invulnerableTime = 32;
     } else {
       if (this.world) {
+        // Stage 5: Set death cause to enemy before dying
+        this.world.setDeathCause('enemy');
         this.world.lose();
       }
     }

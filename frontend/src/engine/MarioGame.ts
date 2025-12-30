@@ -44,7 +44,8 @@ export class MarioGame {
     marioState: number = 0,
     fps: number = 30,
     getActions: () => boolean[],
-    onUpdate?: (world: MarioWorld) => void
+    onUpdate?: (world: MarioWorld) => void,
+    levelId: string = ''  // Stage 5: Track which level is being played
   ): Promise<MarioResult> {
     return new Promise((resolve) => {
       this.fps = fps;
@@ -52,7 +53,7 @@ export class MarioGame {
 
       this.world = new MarioWorld(this.killEvents);
       this.world.visuals = true;
-      this.world.initializeLevel(level, 1000 * timer);
+      this.world.initializeLevel(level, 1000 * timer, levelId);
 
       // Set Mario's initial state
       this.world.mario.isLarge = marioState > 0;

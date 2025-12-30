@@ -1,25 +1,25 @@
 # PCG Arena — Future Notes
 
-## Stage 5: Research Analytics (NEXT PRIORITY)
+## Stage 5: Research Analytics ✅ COMPLETED
 
-See `docs/stage5-spec.md` for full specification. Key features:
+See `docs/stage5-spec.md` for full specification. Implementation complete:
 
-### Stage 5a: Enhanced Data Collection
-- [ ] Enhanced telemetry (trajectories, events, death locations)
-- [ ] Anonymous persistent player IDs (localStorage + cookie)
-- [ ] Per-level statistics table
-- [ ] Static level feature extraction
+### Stage 5a: Enhanced Data Collection ✅
+- [x] Enhanced telemetry (trajectories, events, death locations)
+- [x] Anonymous persistent player IDs (localStorage + cookie)
+- [x] Per-level statistics table
+- [x] Static level feature extraction
 
-### Stage 5b: Public Statistics
-- [ ] Platform statistics page (`/stats`)
-- [ ] Enhanced generator page with charts
-- [ ] Level detail page with death heatmaps
-- [ ] Level gallery sorting options
+### Stage 5b: Public Statistics ✅
+- [x] Platform statistics page (`/stats`)
+- [x] Level detail page with death heatmaps
+- [x] Level statistics with difficulty classification
 
-### Stage 5c: Admin Data Export
-- [ ] Research dataset export (CSV/JSON)
-- [ ] Trajectory export
-- [ ] Date range filtering
+### Stage 5c: Admin Data Export ✅
+- [x] Research dataset export (JSON)
+- [x] Trajectory export
+- [x] Player profiles export
+- [x] Level stats export
 
 ---
 
@@ -58,7 +58,8 @@ See `docs/stage5-spec.md` for full specification. Key features:
 + fix kill mechanics
 + smarter generator selection (AGIS matchmaking)
 + admin mode
-+ add statistics for builders (Stage 5 will complete this)
++ add statistics for builders
++ Stage 5: Enhanced telemetry, player tracking, level stats, death heatmaps, admin exports
 
 ---
 

@@ -202,6 +202,40 @@
   border-radius: 8px;
   padding: 0.5rem;
   overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  border: 2px solid transparent;
+}
+
+/* Clickable level preview hover effects */
+.level-preview[style*="cursor: pointer"]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  border-color: var(--primary-color, #4ecdc4);
+}
+
+.level-preview[style*="cursor: pointer"]:hover .level-preview-label {
+  background: var(--primary-color, #4ecdc4);
+  color: #000;
+}
+
+.level-preview[style*="cursor: pointer"]::after {
+  content: 'Click for stats →';
+  position: absolute;
+  bottom: 0.75rem;
+  right: 0.75rem;
+  background: rgba(78, 205, 196, 0.9);
+  color: #000;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 1;
+}
+
+.level-preview[style*="cursor: pointer"]:hover::after {
+  opacity: 1;
 }
 
 .level-preview canvas {
@@ -221,6 +255,7 @@
   font-size: 0.7rem;
   font-family: 'JetBrains Mono', 'Fira Code', monospace;
   z-index: 1;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
 .level-preview-loading,
