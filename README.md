@@ -711,6 +711,41 @@ See `docs/stage3-spec.md` for complete documentation.
 
 ---
 
+### Stage 5 (Research Analytics) — 📋 PLANNED
+
+**Purpose:** Enable research-grade data collection for academic publication
+
+**Status:** Specification complete, implementation pending
+
+#### Stage 5a: Enhanced Data Collection
+- **Enhanced Telemetry:** Full event streams, position trajectories, death locations
+- **Anonymous Player IDs:** Persistent tracking via localStorage + cookie fallback
+- **Per-Level Statistics:** Win rates, completion rates, tag distributions per level
+- **Static Level Features:** Structural analysis (gaps, enemies, platforms, complexity)
+
+#### Stage 5b: Public Statistics
+- **Platform Statistics Page:** Total battles, vote distribution, engagement metrics
+- **Enhanced Generator Page:** Performance charts, tag distributions, consistency scores
+- **Level Detail Page:** Deep-dive with death heatmaps, structural analysis
+- **Level Gallery Sorting:** Sort by win rate, difficulty, times played
+
+#### Stage 5c: Admin Data Export
+- **Research Dataset Export:** CSV/JSON download of all data
+- **Trajectory Export:** Position data for heatmap analysis
+- **Player Profile Export:** Anonymous preference patterns
+- **Date Range Filtering:** Export specific time periods
+
+**Research Hypotheses Enabled:**
+- H1: Moderate difficulty maximizes engagement
+- H2: Path variability correlates with higher ratings
+- H3: Player preferences cluster into distinct types
+- H4: Tags can be predicted from gameplay telemetry
+- H5: Generators have distinguishable gameplay signatures
+
+See `docs/stage5-spec.md` for complete specification.
+
+---
+
 ## License and contribution philosophy
 
 * Stage 0 is built to be open-source friendly: clear API, clear data model, minimal dependencies.

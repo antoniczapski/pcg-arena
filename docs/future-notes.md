@@ -1,50 +1,89 @@
-- each level should be validated before uploaded to the database - run Robin agent and check if it is passable
-- once the user losses, the Robin agent should continue the game to showcase the rest of the map (transition should be very smooth to be UX friendly
-- Calibration battles
-- TrueSkill/Bradley–Terry preference model
-- Stronger level validation (pipes, solvability)
-- Hosted deployment with Postgres/managed storage
-- Accounts and anti-abuse at scale)
+# PCG Arena — Future Notes
 
+## Stage 5: Research Analytics (NEXT PRIORITY)
 
+See `docs/stage5-spec.md` for full specification. Key features:
 
-DB hard reset:
-```
+### Stage 5a: Enhanced Data Collection
+- [ ] Enhanced telemetry (trajectories, events, death locations)
+- [ ] Anonymous persistent player IDs (localStorage + cookie)
+- [ ] Per-level statistics table
+- [ ] Static level feature extraction
+
+### Stage 5b: Public Statistics
+- [ ] Platform statistics page (`/stats`)
+- [ ] Enhanced generator page with charts
+- [ ] Level detail page with death heatmaps
+- [ ] Level gallery sorting options
+
+### Stage 5c: Admin Data Export
+- [ ] Research dataset export (CSV/JSON)
+- [ ] Trajectory export
+- [ ] Date range filtering
+
+---
+
+## Future Ideas (Post Stage 5)
+
+### Level Validation & AI
+- [ ] Validate levels with Robin agent (check if passable)
+- [ ] AI gameplay finish after player dies (smooth transition)
+- [ ] Calibration battles (control battles between best/worst)
+
+### Anti-Abuse
+- [ ] IP address rate limiting (hashed, not stored)
+- [ ] Scoring alignment verification
+- [ ] Admin: kickout builders, delete generators, ban users
+- [ ] Throttling per session
+- [ ] CAPTCHA for suspicious activity
+
+### UX Improvements
+- [ ] Replay option (repeat current level)
+- [ ] Score using arrow keys (no mouse required)
+- [ ] PCG audio for engagement
+- [ ] Exclude repeated level playing
+
+### Platform Growth
+- [ ] Community duty: play 10 battles when submitting generator
+- [ ] Prepare OAuth for >100 users (Google verification)
+- [ ] Hosted deployment with Postgres/managed storage
+- [ ] TrueSkill/Bradley-Terry preference model comparison
+
+---
+
+## Completed Items ✅
+
++ showcase the whole map
++ login + builder profile
++ fix kill mechanics
++ smarter generator selection (AGIS matchmaking)
++ admin mode
++ add statistics for builders (Stage 5 will complete this)
+
+---
+
+## Commands Reference
+
+### DB hard reset
+```bash
 # Delete database
 docker compose down
-Remove-Item db\local\arena.sqlite
+Remove-Item db\local\arena.sqlite  # PowerShell
+# rm db/local/arena.sqlite          # Bash
 
 # Recreate everything from scratch
 docker compose up --build
 ```
 
-```
+### Run Java client against remote
+```bash
 cd client-java
 ./gradlew run --args="--base-url http://34.116.232.204:8080"     
 ```
 
+---
 
-# tech debt
+## Known Bugs
 
-+ showcase the whole map
-+ login + builder profile
-+ fix kill mechanics
-- smarter generator selection (multi-arm-bandid style)
-- score using keys (basically do everything using keys)
-- level validation - check if robin agent (top 3) can pass the level
-- ability to give tags
-- replay option (if you want to repeate level)
-- add AI gameplay finish
-- debug mode
-- abuse prevention 
-    - scoring alignemnt (every 10 battles give one control battle between best and worst)
-
-- excluding repeated level playing
-- pcg audio overview for engagement
-- community duty - please play 10 battles while submitting new generator
-- add statistics for builders (detailed stats on their generators/levels)
-- prepare oauth for >100 users (1-2 weeks processing)
-
-Known bugs
-- internal error occured while I tried to submit generator with two letter id
-- while opening site for the first time it asks to give permission to network devices - starge, it shouldn't be required
+- [ ] Internal error when submitting generator with two-letter ID (need min length validation)
+- [ ] Site asks for network device permission on first load (investigate)

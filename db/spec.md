@@ -1,12 +1,15 @@
 # PCG Arena — Database Spec
 **Location:** `./db/spec.md`  
 **Protocol:** `arena/v0`  
-**Status:** ✅ Stage 0/1/2/3/4 Complete — Schema stable with Glicko-2 extensions
+**Status:** ✅ Stage 0/1/2/3/4 Complete — Schema stable with Glicko-2 extensions  
+**Next:** Stage 5 — Research Analytics (see `docs/stage5-spec.md`)
 
 This document defines the **database responsibilities** and the exact **data model** for PCG Arena. The schema is designed to be stable across stages (backend/client changes don't require schema migrations).
 
 **Current deployment:** SQLite on GCP VM with daily backups  
 **Clients:** Java validation client (Stage 0/1), Browser frontend (Stage 2/3/4)
+
+**Stage 5 planned tables:** `level_stats`, `player_profiles`, `player_sessions`, `play_trajectories`, `level_features`
 
 ---
 

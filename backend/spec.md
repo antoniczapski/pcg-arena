@@ -2,7 +2,8 @@
 
 **Location:** `./backend/spec.md`  
 **Protocol:** `arena/v0`  
-**Status:** ✅ Stage 0/1/2/3/4 Complete — Stable API with advanced matchmaking
+**Status:** ✅ Stage 0/1/2/3/4 Complete — Stable API with advanced matchmaking  
+**Next:** Stage 5 — Research Analytics (see `docs/stage5-spec.md`)
 
 This document describes the **backend implementation** for PCG Arena. The backend is a Python/FastAPI application serving the Arena API.
 
@@ -14,6 +15,7 @@ This document describes the **backend implementation** for PCG Arena. The backen
 - Builder profile for generator submissions (Stage 3)
 - Glicko-2 rating system and AGIS matchmaking (Stage 4a)
 - Admin dashboard and confusion matrix (Stage 4b)
+- *(Stage 5 planned)* Enhanced telemetry, per-level stats, research data export
 
 ---
 

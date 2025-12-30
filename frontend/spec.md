@@ -1,9 +1,10 @@
 # PCG Arena - Frontend Specification
 
 **Created:** 2025-12-26  
-**Updated:** 2025-12-30 (Stage 4)  
+**Updated:** 2025-12-30 (Stage 4 complete, Stage 5 planned)  
 **Protocol:** arena/v0  
-**Status:** ✅ COMPLETE (Stage 2/3/4 deployed and operational)
+**Status:** ✅ COMPLETE (Stage 2/3/4 deployed and operational)  
+**Next:** Stage 5 — Research Analytics (see `docs/stage5-spec.md`)
 
 ---
 
@@ -34,7 +35,8 @@ The browser frontend is a TypeScript/React implementation that allows users to p
 
 **Stage 2 (2025-12-26):** Battle flow and gameplay  
 **Stage 3 (2025-12-28):** Authentication and builder profile  
-**Stage 4 (2025-12-30):** AGIS matchmaking and admin dashboard
+**Stage 4 (2025-12-30):** AGIS matchmaking and admin dashboard  
+**Stage 5 (Planned):** Research analytics — enhanced telemetry, per-level stats, heatmaps
 
 ### 1.2 Key Features
 
