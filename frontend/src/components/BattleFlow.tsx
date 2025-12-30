@@ -113,14 +113,6 @@ export function BattleFlow({ apiClient }: BattleFlowProps) {
     }
   };
 
-  const handleNextBattle = () => {
-    setBattle(null);
-    setLeftResult(null);
-    setRightResult(null);
-    setLeaderboard(null);
-    setRevealNames(false);
-    fetchNextBattle();
-  };
 
   // Welcome screen
   if (phase === 'welcome') {
