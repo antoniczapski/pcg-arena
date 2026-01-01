@@ -296,7 +296,6 @@ export function BattleFlow({ apiClient }: BattleFlowProps) {
               <TaggableLevelPreview
                 selectedTags={leftTags}
                 onTagsChange={setLeftTags}
-                levelLabel="Level A"
                 disabled={showResults || phase === 'submitting'}
               >
                 <LevelPreview
@@ -323,7 +322,6 @@ export function BattleFlow({ apiClient }: BattleFlowProps) {
               <TaggableLevelPreview
                 selectedTags={rightTags}
                 onTagsChange={setRightTags}
-                levelLabel="Level B"
                 disabled={showResults || phase === 'submitting'}
               >
                 <LevelPreview
