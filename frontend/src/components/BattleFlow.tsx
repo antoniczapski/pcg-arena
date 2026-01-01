@@ -76,6 +76,59 @@ export function BattleFlow({ apiClient }: BattleFlowProps) {
     setPhase('voting');
   }, []);
 
+  // Skip handlers for levels
+  const handleSkipLeft = useCallback(() => {
+    if (!battle) return;
+    console.log('Left level skipped');
+    const skippedResult: GameResult = {
+      status: 0 as any, // Not used for skipped
+      coins: 0,
+      deaths: 0,
+      duration: 0,
+      completed: false,
+      skipped: true,
+      levelId: battle.left.level_id,
+      jumps: 0,
+      enemiesStomped: 0,
+      enemiesFireKilled: 0,
+      enemiesShellKilled: 0,
+      powerupsMushroom: 0,
+      powerupsFlower: 0,
+      livesCollected: 0,
+      trajectory: [],
+      deathLocations: [],
+      events: [],
+    };
+    setLeftResult(skippedResult);
+    setPhase('play-right');
+  }, [battle]);
+
+  const handleSkipRight = useCallback(() => {
+    if (!battle) return;
+    console.log('Right level skipped');
+    const skippedResult: GameResult = {
+      status: 0 as any, // Not used for skipped
+      coins: 0,
+      deaths: 0,
+      duration: 0,
+      completed: false,
+      skipped: true,
+      levelId: battle.right.level_id,
+      jumps: 0,
+      enemiesStomped: 0,
+      enemiesFireKilled: 0,
+      enemiesShellKilled: 0,
+      powerupsMushroom: 0,
+      powerupsFlower: 0,
+      livesCollected: 0,
+      trajectory: [],
+      deathLocations: [],
+      events: [],
+    };
+    setRightResult(skippedResult);
+    setPhase('voting');
+  }, [battle]);
+
   const handleVote = async (vote: VoteData) => {
     if (!battle || !leftResult || !rightResult) return;
 
@@ -85,7 +138,8 @@ export function BattleFlow({ apiClient }: BattleFlowProps) {
     try {
       // Stage 5: Build enhanced telemetry from GameResult
       const leftTelemetry: LevelTelemetry = {
-        played: true,
+        played: !leftResult.skipped,
+        skipped: leftResult.skipped,
         duration_seconds: leftResult.duration,
         completed: leftResult.completed,
         deaths: leftResult.deaths,
@@ -107,7 +161,8 @@ export function BattleFlow({ apiClient }: BattleFlowProps) {
       };
 
       const rightTelemetry: LevelTelemetry = {
-        played: true,
+        played: !rightResult.skipped,
+        skipped: rightResult.skipped,
         duration_seconds: rightResult.duration,
         completed: rightResult.completed,
         deaths: rightResult.deaths,
@@ -199,11 +254,11 @@ export function BattleFlow({ apiClient }: BattleFlowProps) {
           <div className={`level-panel ${phase === 'play-left' ? 'active' : 'done'}`}>
             <div className="level-header">
               <span className="level-label">LEFT</span>
-              {revealNames ? (
+              {phase === 'play-left' && !leftResult ? (
+                <button className="skip-button" onClick={handleSkipLeft}>Skip →</button>
+              ) : revealNames ? (
                 <span className="generator-name">{battle.left.generator.name}</span>
-              ) : (
-                <span className="generator-hidden">Generator ???</span>
-              )}
+              ) : null}
             </div>
             <GameCanvas
               level={battle.left.level_payload.tilemap}
@@ -215,7 +270,7 @@ export function BattleFlow({ apiClient }: BattleFlowProps) {
             <div className="level-status">
               {leftResult ? (
                 <span className="status-complete">
-                  ✓ {leftResult.completed ? 'WIN' : 'LOSE'} | {leftResult.coins} coins
+                  ✓ {leftResult.skipped ? 'SKIPPED' : leftResult.completed ? 'WIN' : 'LOSE'} {!leftResult.skipped && `| ${leftResult.coins} coins`}
                 </span>
               ) : phase === 'play-left' ? (
                 <span className="status-playing">▶ PLAYING NOW</span>
@@ -229,11 +284,11 @@ export function BattleFlow({ apiClient }: BattleFlowProps) {
           <div className={`level-panel ${phase === 'play-right' ? 'active' : ''} ${rightResult ? 'done' : ''}`}>
             <div className="level-header">
               <span className="level-label">RIGHT</span>
-              {revealNames ? (
+              {phase === 'play-right' && !rightResult ? (
+                <button className="skip-button" onClick={handleSkipRight}>Skip →</button>
+              ) : revealNames ? (
                 <span className="generator-name">{battle.right.generator.name}</span>
-              ) : (
-                <span className="generator-hidden">Generator ???</span>
-              )}
+              ) : null}
             </div>
             <GameCanvas
               level={battle.right.level_payload.tilemap}
@@ -245,7 +300,7 @@ export function BattleFlow({ apiClient }: BattleFlowProps) {
             <div className="level-status">
               {rightResult ? (
                 <span className="status-complete">
-                  ✓ {rightResult.completed ? 'WIN' : 'LOSE'} | {rightResult.coins} coins
+                  ✓ {rightResult.skipped ? 'SKIPPED' : rightResult.completed ? 'WIN' : 'LOSE'} {!rightResult.skipped && `| ${rightResult.coins} coins`}
                 </span>
               ) : phase === 'play-right' ? (
                 <span className="status-playing">▶ PLAYING NOW</span>

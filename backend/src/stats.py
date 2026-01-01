@@ -99,6 +99,7 @@ def _update_single_level_stats(
     completed = telemetry.get("completed", False)
     deaths = telemetry.get("deaths", 0)
     duration = telemetry.get("duration_seconds", 0)
+    play_skipped = telemetry.get("skipped", False)  # Player skipped playing this level
     
     # Build tag updates
     tag_updates = []
@@ -109,34 +110,66 @@ def _update_single_level_stats(
         if tag in ["fun", "boring", "too_hard", "too_easy", "creative", "good_flow", "unfair", "confusing", "not_mario_like"]:
             tag_updates.append(f"{column} = {column} + 1")
     
-    # Build SQL update
-    cursor.execute(
-        f"""
-        UPDATE level_stats SET
-            times_shown = times_shown + 1,
-            times_won = times_won + ?,
-            times_lost = times_lost + ?,
-            times_tied = times_tied + ?,
-            times_skipped = times_skipped + ?,
-            times_completed = times_completed + ?,
-            total_deaths = total_deaths + ?,
-            total_play_time_seconds = total_play_time_seconds + ?,
-            {', '.join(tag_updates) + ',' if tag_updates else ''}
-            updated_at_utc = ?
-        WHERE level_id = ?
-        """,
-        (
-            1 if won else 0,
-            1 if lost else 0,
-            1 if tied else 0,
-            1 if skipped else 0,
-            1 if completed else 0,
-            deaths,
-            duration,
-            now_utc,
-            level_id
+    # Build SQL update (times_play_skipped may not exist in older DBs, handle gracefully)
+    try:
+        cursor.execute(
+            f"""
+            UPDATE level_stats SET
+                times_shown = times_shown + 1,
+                times_won = times_won + ?,
+                times_lost = times_lost + ?,
+                times_tied = times_tied + ?,
+                times_skipped = times_skipped + ?,
+                times_play_skipped = times_play_skipped + ?,
+                times_completed = times_completed + ?,
+                total_deaths = total_deaths + ?,
+                total_play_time_seconds = total_play_time_seconds + ?,
+                {', '.join(tag_updates) + ',' if tag_updates else ''}
+                updated_at_utc = ?
+            WHERE level_id = ?
+            """,
+            (
+                1 if won else 0,
+                1 if lost else 0,
+                1 if tied else 0,
+                1 if skipped else 0,
+                1 if play_skipped else 0,
+                1 if completed else 0,
+                deaths,
+                duration,
+                now_utc,
+                level_id
+            )
         )
-    )
+    except sqlite3.OperationalError:
+        # Fallback for DBs without times_play_skipped column
+        cursor.execute(
+            f"""
+            UPDATE level_stats SET
+                times_shown = times_shown + 1,
+                times_won = times_won + ?,
+                times_lost = times_lost + ?,
+                times_tied = times_tied + ?,
+                times_skipped = times_skipped + ?,
+                times_completed = times_completed + ?,
+                total_deaths = total_deaths + ?,
+                total_play_time_seconds = total_play_time_seconds + ?,
+                {', '.join(tag_updates) + ',' if tag_updates else ''}
+                updated_at_utc = ?
+            WHERE level_id = ?
+            """,
+            (
+                1 if won else 0,
+                1 if lost else 0,
+                1 if tied else 0,
+                1 if skipped else 0,
+                1 if completed else 0,
+                deaths,
+                duration,
+                now_utc,
+                level_id
+            )
+        )
     
     # Recompute derived metrics
     cursor.execute(
@@ -406,7 +439,8 @@ def get_level_stats(level_id: str) -> Optional[dict]:
             "wins": row["times_won"],
             "losses": row["times_lost"],
             "ties": row["times_tied"],
-            "skips": row["times_skipped"]
+            "skips": row["times_skipped"],
+            "play_skipped": row["times_play_skipped"] if "times_play_skipped" in row.keys() else 0
         },
         "tags": {
             "fun": row["tag_fun"],

@@ -309,7 +309,11 @@ export function LevelDetailPage() {
             </div>
             <div className="outcome skip">
               <span className="count">{outcomes.skips || 0}</span>
-              <span className="label">Skips</span>
+              <span className="label">Vote Skips</span>
+            </div>
+            <div className="outcome play-skipped">
+              <span className="count">{outcomes.play_skipped || 0}</span>
+              <span className="label">Play Skipped</span>
             </div>
           </div>
         </div>

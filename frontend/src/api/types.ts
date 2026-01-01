@@ -110,6 +110,7 @@ export interface SerializedEvent {
 // Vote Request/Response - Stage 5: Enhanced telemetry
 export interface LevelTelemetry {
   played: boolean;
+  skipped: boolean;  // True if player skipped before finishing
   duration_seconds: number;
   completed: boolean;
   deaths: number;
@@ -338,6 +339,7 @@ export interface LevelStatsResponse {
       losses: number;
       ties: number;
       skips: number;
+      play_skipped: number;  // Times player skipped playing this level
     };
     tags: Record<string, number>;
     difficulty: {

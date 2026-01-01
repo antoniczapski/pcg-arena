@@ -159,6 +159,7 @@
 .outcome.loss { background: #fecaca; }
 .outcome.tie { background: #fef3c7; }
 .outcome.skip { background: #f1f5f9; }
+.outcome.play-skipped { background: #fce7f3; }
 
 .outcome .count {
   display: block;
@@ -170,6 +171,7 @@
 .outcome.loss .count { color: #b91c1c; }
 .outcome.tie .count { color: #92400e; }
 .outcome.skip .count { color: #374151; }
+.outcome.play-skipped .count { color: #9d174d; }
 
 .outcome .label {
   font-size: 0.65rem;

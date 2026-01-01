@@ -98,6 +98,7 @@ class SerializedEvent(BaseModel):
 class SideTelemetry(BaseModel):
     """Telemetry data for one side of a battle."""
     played: bool = Field(..., description="Whether the level was played")
+    skipped: Optional[bool] = Field(default=False, description="Whether player skipped before finishing")
     duration_seconds: Optional[float] = Field(default=None, description="Time spent playing (seconds)")
     completed: Optional[bool] = Field(default=None, description="Whether the level was completed")
     coins_collected: Optional[int] = Field(default=None, description="Number of coins collected")

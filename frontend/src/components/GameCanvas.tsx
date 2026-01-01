@@ -16,6 +16,7 @@ export interface GameResult {
   deaths: number;
   duration: number;
   completed: boolean;
+  skipped: boolean;  // True if player skipped before finishing
   
   // Stage 5: Enhanced telemetry
   levelId: string;
@@ -175,6 +176,7 @@ export function GameCanvas({ level, levelId, timeLimit, isActive, onFinish }: Ga
         deaths: world.deathLocations.length,
         duration,
         completed: result.gameStatus === GameStatus.WIN,
+        skipped: false,  // Not skipped - completed normally
         
         // Stage 5: Enhanced telemetry
         levelId: world.levelId,
