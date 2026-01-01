@@ -23,7 +23,7 @@ from pydantic import BaseModel, Field
 
 from config import load_config
 from db import get_connection, transaction
-from db.seed import validate_level, compute_content_hash, LevelValidationError, LEVEL_HEIGHT
+from db.seed import validate_level, compute_content_hash, LevelValidationError
 
 logger = logging.getLogger(__name__)
 config = load_config()
@@ -226,11 +226,11 @@ async def process_levels_zip(zip_file: UploadFile) -> List[tuple]:
                     # Get just the filename without path
                     base_filename = filename.split('/')[-1]
                     
-                    # Validate level
-                    tilemap, width = validate_level(raw_content, base_filename)
+                    # Validate level (returns tilemap, width, height)
+                    tilemap, width, height = validate_level(raw_content, base_filename)
                     content_hash = compute_content_hash(tilemap)
                     
-                    levels.append((base_filename, tilemap, width, content_hash))
+                    levels.append((base_filename, tilemap, width, height, content_hash))
                     
                 except LevelValidationError as e:
                     errors.append(str(e))
@@ -330,7 +330,7 @@ async def create_generator(
             )
             
             # Insert levels
-            for filename, tilemap, width, content_hash in levels:
+            for filename, tilemap, width, height, content_hash in levels:
                 level_id = f"{metadata.generator_id}::{filename}"
                 cursor.execute(
                     """
@@ -339,7 +339,7 @@ async def create_generator(
                         tilemap_text, content_hash, seed, controls_json, created_at_utc
                     ) VALUES (?, ?, 'ASCII_TILEMAP', ?, ?, ?, ?, NULL, '{}', ?)
                     """,
-                    (level_id, metadata.generator_id, width, LEVEL_HEIGHT, tilemap, content_hash, now_utc)
+                    (level_id, metadata.generator_id, width, height, tilemap, content_hash, now_utc)
                 )
             
             # Initialize Glicko-2 rating
@@ -464,7 +464,7 @@ async def update_generator(
             # Insert or replace new levels
             # Using INSERT OR REPLACE to handle levels that might already exist
             # (e.g., if same filename as a level referenced by battles)
-            for filename, tilemap, width, content_hash in levels:
+            for filename, tilemap, width, height, content_hash in levels:
                 level_id = f"{generator_id}::{filename}"
                 cursor.execute(
                     """
@@ -473,7 +473,7 @@ async def update_generator(
                         tilemap_text, content_hash, seed, controls_json, created_at_utc
                     ) VALUES (?, ?, 'ASCII_TILEMAP', ?, ?, ?, ?, NULL, '{}', ?)
                     """,
-                    (level_id, generator_id, width, LEVEL_HEIGHT, tilemap, content_hash, now_utc)
+                    (level_id, generator_id, width, height, tilemap, content_hash, now_utc)
                 )
         
         logger.info(f"Updated generator: generator_id={generator_id} owner={user_id} new_levels={len(levels)}")

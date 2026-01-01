@@ -49,10 +49,10 @@ CREATE TABLE IF NOT EXISTS levels (
     -- Foreign keys
     FOREIGN KEY (generator_id) REFERENCES generators(generator_id),
 
-    -- Constraints (Stage 0: variable width up to 250, fixed height)
+    -- Constraints (Stage 0: variable width up to 250, variable height 10-20)
     CHECK (content_format = 'ASCII_TILEMAP'),
     CHECK (width >= 1 AND width <= 250),
-    CHECK (height = 16)
+    CHECK (height >= 10 AND height <= 20)
 );
 
 --------------------------------------------------------------------------------

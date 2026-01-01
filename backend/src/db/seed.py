@@ -19,7 +19,9 @@ logger = logging.getLogger(__name__)
 # Level format constants (Stage 0)
 MAX_LEVEL_WIDTH = 250
 MIN_LEVEL_WIDTH = 1
-LEVEL_HEIGHT = 16
+MIN_LEVEL_HEIGHT = 10
+MAX_LEVEL_HEIGHT = 20
+DEFAULT_LEVEL_HEIGHT = 16  # For backward compatibility
 
 # Allowed tile characters (Stage 0 strict alphabet from spec)
 ALLOWED_TILES = set(
@@ -208,16 +210,16 @@ class LevelValidationError(Exception):
     pass
 
 
-def validate_level(content: str, filename: str) -> tuple[str, int]:
+def validate_level(content: str, filename: str) -> tuple[str, int, int]:
     """
-    Validate a level file and return the canonical tilemap with its width.
+    Validate a level file and return the canonical tilemap with its dimensions.
     
     Args:
         content: Raw file content (may have \\r\\n newlines).
         filename: Filename for error messages.
         
     Returns:
-        Tuple of (canonical tilemap with \\n newlines, width).
+        Tuple of (canonical tilemap with \\n newlines, width, height).
         
     Raises:
         LevelValidationError: If validation fails.
@@ -231,11 +233,16 @@ def validate_level(content: str, filename: str) -> tuple[str, int]:
     
     # Split into lines
     lines = content.split("\n")
+    height = len(lines)
     
-    # Check line count
-    if len(lines) != LEVEL_HEIGHT:
+    # Check height bounds (variable height: 10-20)
+    if height < MIN_LEVEL_HEIGHT:
         raise LevelValidationError(
-            f"{filename}: Expected {LEVEL_HEIGHT} lines, got {len(lines)}"
+            f"{filename}: Height {height} is below minimum {MIN_LEVEL_HEIGHT}"
+        )
+    if height > MAX_LEVEL_HEIGHT:
+        raise LevelValidationError(
+            f"{filename}: Height {height} exceeds maximum {MAX_LEVEL_HEIGHT}"
         )
     
     # Determine width from first line
@@ -271,7 +278,7 @@ def validate_level(content: str, filename: str) -> tuple[str, int]:
     # Check at least one X exists (ground block)
     full_content = "\n".join(lines)
 
-    return full_content, width
+    return full_content, width, height
 
 
 def compute_content_hash(tilemap: str) -> str:
@@ -348,8 +355,8 @@ def import_levels(seed_path: str) -> int:
                 # Read file content
                 raw_content = level_file.read_text(encoding="utf-8")
                 
-                # Validate and normalize (returns tilemap and detected width)
-                tilemap, width = validate_level(raw_content, level_file.name)
+                # Validate and normalize (returns tilemap, width, and height)
+                tilemap, width, height = validate_level(raw_content, level_file.name)
                 
                 # Compute hash
                 content_hash = compute_content_hash(tilemap)
@@ -367,9 +374,10 @@ def import_levels(seed_path: str) -> int:
                     ON CONFLICT(level_id) DO UPDATE SET
                         tilemap_text = excluded.tilemap_text,
                         content_hash = excluded.content_hash,
-                        width = excluded.width
+                        width = excluded.width,
+                        height = excluded.height
                     """,
-                    (level_id, generator_id, width, LEVEL_HEIGHT,
+                    (level_id, generator_id, width, height,
                      tilemap, content_hash, now)
                 )
                 

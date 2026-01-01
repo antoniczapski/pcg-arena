@@ -151,7 +151,7 @@ class LevelFormat(BaseModel):
     """Level format metadata."""
     type: LevelFormatType = Field(..., description="Format type (ASCII_TILEMAP for Stage 0)")
     width: int = Field(..., description="Level width in characters", ge=1, le=250)
-    height: int = Field(..., description="Level height in lines (must be 16)", ge=16, le=16)
+    height: int = Field(..., description="Level height in lines (10-20)", ge=10, le=20)
     newline: str = Field(default="\n", description="Newline character used")
 
 
