@@ -23,7 +23,7 @@ export interface HealthResponse {
 export interface BattleRequest {
   client_version: string;
   session_id: string;
-  player_id: null;
+  player_id: string | null;
   preferences: {
     mode: string;
   };

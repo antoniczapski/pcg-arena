@@ -5,7 +5,6 @@
  * Allows selecting up to 3 tags per level.
  */
 
-import { useState } from 'react';
 import './TagSelector.css';
 
 // Available tags matching backend ALLOWED_TAGS
@@ -82,7 +81,6 @@ interface TaggableLevelPreviewProps {
   children: React.ReactNode;
   selectedTags: string[];
   onTagsChange: (tags: string[]) => void;
-  levelLabel: string;
   disabled?: boolean;
 }
 
@@ -90,7 +88,6 @@ export function TaggableLevelPreview({
   children,
   selectedTags,
   onTagsChange,
-  levelLabel,
   disabled = false
 }: TaggableLevelPreviewProps) {
   const hasTags = selectedTags.length > 0;
