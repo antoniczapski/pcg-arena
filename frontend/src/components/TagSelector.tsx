@@ -86,36 +86,32 @@ interface TaggableLevelPreviewProps {
   disabled?: boolean;
 }
 
-export function TaggableLevelPreview({ 
-  children, 
-  selectedTags, 
-  onTagsChange, 
+export function TaggableLevelPreview({
+  children,
+  selectedTags,
+  onTagsChange,
   levelLabel,
-  disabled = false 
+  disabled = false
 }: TaggableLevelPreviewProps) {
-  const [isHovered, setIsHovered] = useState(false);
+  const hasTags = selectedTags.length > 0;
 
   return (
-    <div 
-      className={`taggable-level-preview ${isHovered ? 'hovered' : ''} ${selectedTags.length > 0 ? 'has-tags' : ''}`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
+    <div className={`taggable-level-preview ${hasTags ? 'has-tags' : ''}`}>
       <div className="level-content">
         {children}
       </div>
-      
-      {/* Tag overlay - visible on hover */}
-      <div className={`tag-overlay ${isHovered || selectedTags.length > 0 ? 'visible' : ''}`}>
-        <TagSelector 
+
+      {/* Tag overlay - visible ONLY on hover via CSS */}
+      <div className="tag-overlay">
+        <TagSelector
           selectedTags={selectedTags}
           onTagsChange={onTagsChange}
           disabled={disabled}
         />
       </div>
 
-      {/* Selected tags badge (when not hovered) */}
-      {!isHovered && selectedTags.length > 0 && (
+      {/* Selected tags badge (hidden on hover via CSS) */}
+      {hasTags && (
         <div className="selected-tags-badge">
           {selectedTags.length} tag{selectedTags.length > 1 ? 's' : ''} selected
         </div>
