@@ -5,13 +5,13 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ArenaApiClient } from '../api/client';
 import { assetLoader } from '../engine/graphics/AssetLoader';
 import { MarioLevel } from '../engine/MarioLevel';
 import { SpriteType } from '../engine/SpriteType';
 import { AVAILABLE_TAGS } from '../components/TagSelector';
-import type { LevelStatsResponse, LevelHeatmapResponse, LevelPreviewData } from '../api/types';
+import type { LevelStatsResponse, LevelHeatmapResponse, LevelTrajectoriesResponse } from '../api/types';
 import './LevelDetailPage.css';
 
 // Create singleton API client
@@ -22,13 +22,23 @@ const SKY_COLOR = '#5c94fc';
 
 export function LevelDetailPage() {
   const { levelId } = useParams<{ levelId: string }>();
+  const navigate = useNavigate();
   const [stats, setStats] = useState<LevelStatsResponse | null>(null);
   const [heatmap, setHeatmap] = useState<LevelHeatmapResponse | null>(null);
+  const [trajectories, setTrajectories] = useState<LevelTrajectoriesResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [assetsLoaded, setAssetsLoaded] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const overlayRef = useRef<HTMLCanvasElement>(null);
+  const trajectoryCanvasRef = useRef<HTMLCanvasElement>(null);
+  const trajectoryOverlayRef = useRef<HTMLCanvasElement>(null);
+
+  const handlePlayLevel = () => {
+    if (levelId) {
+      navigate(`/?practice=${encodeURIComponent(levelId)}`);
+    }
+  };
 
   // Load assets on mount
   useEffect(() => {
@@ -44,12 +54,14 @@ export function LevelDetailPage() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [statsRes, heatmapRes] = await Promise.all([
+        const [statsRes, heatmapRes, trajectoriesRes] = await Promise.all([
           apiClient.getLevelStats(levelId),
-          apiClient.getLevelHeatmap(levelId)
+          apiClient.getLevelHeatmap(levelId),
+          apiClient.getLevelTrajectories(levelId)
         ]);
         setStats(statsRes);
         setHeatmap(heatmapRes);
+        setTrajectories(trajectoriesRes);
         setError(null);
       } catch (err) {
         console.error('Failed to fetch level data:', err);
@@ -132,20 +144,80 @@ export function LevelDetailPage() {
       }
     }
 
-    // Add heatmap legend on overlay
-    if (heatmap) {
-      overlayCtx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-      overlayCtx.fillRect(5, overlay.height - 22, 180, 18);
-      overlayCtx.fillStyle = '#fff';
-      overlayCtx.font = 'bold 11px sans-serif';
-      overlayCtx.fillText(
-        `☠ Deaths: ${heatmap.death_heatmap.total_deaths} | Samples: ${heatmap.sample_count}`,
-        10,
-        overlay.height - 8
-      );
+  }, [assetsLoaded, stats, heatmap]);
+
+  // Render trajectory visualization
+  useEffect(() => {
+    if (!assetsLoaded || !stats || !trajectoryCanvasRef.current || !trajectoryOverlayRef.current) return;
+
+    const canvas = trajectoryCanvasRef.current;
+    const overlay = trajectoryOverlayRef.current;
+    const ctx = canvas.getContext('2d');
+    const overlayCtx = overlay.getContext('2d');
+    if (!ctx || !overlayCtx) return;
+
+    // Parse level from stats response
+    const level = new MarioLevel(stats.level.tilemap, true);
+    const tileWidth = level.tileWidth;
+    const tileHeight = level.tileHeight;
+
+    // Set canvas dimensions
+    canvas.width = tileWidth * TILE_SIZE;
+    canvas.height = tileHeight * TILE_SIZE;
+    overlay.width = tileWidth * TILE_SIZE;
+    overlay.height = tileHeight * TILE_SIZE;
+
+    // Draw level background
+    ctx.fillStyle = SKY_COLOR;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw tiles
+    for (let tileY = 0; tileY < tileHeight; tileY++) {
+      for (let tileX = 0; tileX < tileWidth; tileX++) {
+        const tileIndex = level.getBlock(tileX, tileY);
+        if (tileIndex !== 0) {
+          assetLoader.drawTile(ctx, tileIndex, tileX * TILE_SIZE, tileY * TILE_SIZE);
+        }
+      }
     }
 
-  }, [assetsLoaded, stats, heatmap]);
+    // Draw enemies
+    for (let tileY = 0; tileY < tileHeight; tileY++) {
+      for (let tileX = 0; tileX < tileWidth; tileX++) {
+        const spriteType = level.getSpriteType(tileX, tileY);
+        if (spriteType !== SpriteType.NONE) {
+          drawEnemy(ctx, spriteType, tileX, tileY);
+        }
+      }
+    }
+
+    // Clear overlay
+    overlayCtx.clearRect(0, 0, overlay.width, overlay.height);
+
+    // Draw trajectories as thin, translucent red lines
+    if (trajectories && trajectories.trajectories.length > 0) {
+      overlayCtx.strokeStyle = 'rgba(255, 50, 50, 0.35)';
+      overlayCtx.lineWidth = 2;
+      overlayCtx.lineCap = 'round';
+      overlayCtx.lineJoin = 'round';
+
+      for (const traj of trajectories.trajectories) {
+        if (traj.points.length < 2) continue;
+
+        overlayCtx.beginPath();
+        // First point - trajectory coordinates are in pixels
+        overlayCtx.moveTo(traj.points[0].x, traj.points[0].y);
+
+        // Draw connected line segments through all points
+        for (let i = 1; i < traj.points.length; i++) {
+          overlayCtx.lineTo(traj.points[i].x, traj.points[i].y);
+        }
+
+        overlayCtx.stroke();
+      }
+    }
+
+  }, [assetsLoaded, stats, trajectories]);
 
   function drawEnemy(ctx: CanvasRenderingContext2D, spriteType: SpriteType, tileX: number, tileY: number) {
     let frameY = 0;
@@ -215,11 +287,19 @@ export function LevelDetailPage() {
   return (
     <div className="level-detail-page">
       <div className="level-header">
-        <Link to={`/generator/${stats.stats.generator_id}`} className="back-link">
-          ← Back to Generator
-        </Link>
         <h1>Level Statistics</h1>
         <p className="level-id">{stats.level_id}</p>
+      </div>
+
+      <div className="level-subheader">
+        <div className="level-header-top">
+          <Link to={`/generator/${stats.stats.generator_id}`} className="back-link">
+            ← Back to Generator
+          </Link>
+          <button onClick={handlePlayLevel} className="play-level-btn">
+            ▶ Play This Level
+          </button>
+        </div>
       </div>
 
       <div className="level-grid">
@@ -258,24 +338,6 @@ export function LevelDetailPage() {
           </div>
         </div>
 
-        {/* Difficulty Card */}
-        <div className="level-card difficulty-card">
-          <h2>Difficulty</h2>
-          <div className="difficulty-display">
-            <span className={`difficulty-badge ${difficulty.classification}`}>
-              {difficulty.classification?.replace('_', ' ').toUpperCase() || 'UNKNOWN'}
-            </span>
-            {difficulty.score !== undefined && (
-              <div className="difficulty-bar">
-                <div 
-                  className="difficulty-fill"
-                  style={{ width: `${difficulty.score * 100}%` }}
-                />
-              </div>
-            )}
-          </div>
-        </div>
-
         {/* Battle Outcomes */}
         <div className="level-card outcomes-card">
           <h2>Battle Outcomes</h2>
@@ -300,6 +362,24 @@ export function LevelDetailPage() {
               <span className="count">{outcomes.play_skipped || 0}</span>
               <span className="label">Play Skipped</span>
             </div>
+          </div>
+        </div>
+
+        {/* Difficulty Card - second row */}
+        <div className="level-card difficulty-card">
+          <h2>Difficulty</h2>
+          <div className="difficulty-display">
+            <span className={`difficulty-badge ${difficulty.classification}`}>
+              {difficulty.classification?.replace('_', ' ').toUpperCase() || 'UNKNOWN'}
+            </span>
+            {difficulty.score !== undefined && (
+              <div className="difficulty-bar">
+                <div 
+                  className="difficulty-fill"
+                  style={{ width: `${difficulty.score * 100}%` }}
+                />
+              </div>
+            )}
           </div>
         </div>
 
@@ -344,6 +424,23 @@ export function LevelDetailPage() {
           </div>
           {heatmap && heatmap.sample_count === 0 && stats && (
             <p className="no-data">No death data yet - play some games!</p>
+          )}
+        </div>
+
+        {/* Trajectory Map */}
+        <div className="level-card trajectory-card full-width">
+          <h2>Player Trajectories</h2>
+          <p className="trajectory-description">
+            Red lines show player movement paths across all recorded games. Overlapping paths appear brighter.
+          </p>
+          <div className="heatmap-container">
+            <div className="heatmap-layers">
+              <canvas ref={trajectoryCanvasRef} className="heatmap-level-canvas" />
+              <canvas ref={trajectoryOverlayRef} className="heatmap-overlay-canvas" />
+            </div>
+          </div>
+          {trajectories && trajectories.trajectory_count === 0 && stats && (
+            <p className="no-data">No trajectory data yet - play some games!</p>
           )}
         </div>
 

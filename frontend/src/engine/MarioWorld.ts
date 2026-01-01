@@ -22,7 +22,7 @@ const TILE_WIDTH = GAME_WIDTH / 16;
 const TILE_HEIGHT = GAME_HEIGHT / 16;
 
 // Position sample interval (every N ticks = every N/30 seconds)
-const TRAJECTORY_SAMPLE_INTERVAL = 15; // Sample every 0.5 seconds
+const TRAJECTORY_SAMPLE_INTERVAL = 8; // Sample every ~0.27 seconds (2x more frequent)
 
 // Trajectory point for position history
 export interface TrajectoryPoint {

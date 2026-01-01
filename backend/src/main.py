@@ -19,12 +19,14 @@ import hashlib
 import math
 import time
 from datetime import datetime, timezone
+from typing import Optional
 
 import uvicorn
 from fastapi import FastAPI, Request, Response, Header, Depends, UploadFile, Form, File
 from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.exceptions import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
@@ -36,7 +38,7 @@ from middleware import RequestLoggingMiddleware
 from models import (
     BattleRequest, BattleResponse, Battle, BattleSide, GeneratorInfo, LevelFormat, LevelPayload, LevelMetadata, 
     BattlePresentation, PlayOrder, LevelFormatType, Encoding, VoteRequest, VoteResponse, VoteResult,
-    LeaderboardPreview, LeaderboardGeneratorPreview
+    LeaderboardPreview, LeaderboardGeneratorPreview, Telemetry
 )
 from auth import (
     User, DevLoginRequest, GoogleLoginRequest, EmailRegisterRequest, EmailLoginRequest,
@@ -457,6 +459,246 @@ async def fetch_next_battle(battle_request: BattleRequest, request: Request):
     )
     
     return battle_response
+
+
+class PracticeBattleRequest(BaseModel):
+    """Request for a practice battle with a specific level."""
+    session_id: str
+    level_id: str
+    player_id: Optional[str] = None
+
+
+@app.post("/v1/battles:practice", response_model=BattleResponse)
+@app.post("/v1/battles%3Apractice", response_model=BattleResponse)  # Handle URL-encoded version
+async def create_practice_battle(request_data: PracticeBattleRequest, request: Request):
+    """
+    Create a practice battle with the same level on both sides.
+    
+    Practice battles allow players to play a specific level without affecting ratings.
+    The same level is used for both left and right sides.
+    Only trajectories and death data are recorded - no rating updates.
+    """
+    conn = get_connection()
+    
+    # Validate session_id
+    try:
+        uuid.UUID(request_data.session_id)
+    except (ValueError, AttributeError):
+        raise_api_error(
+            ErrorCode.INVALID_PAYLOAD,
+            f"Invalid session_id format: must be a valid UUID",
+            retryable=False,
+            status_code=400
+        )
+    
+    # Fetch level data
+    cursor = conn.execute(
+        """
+        SELECT 
+            l.level_id, l.generator_id, l.width, l.height, l.tilemap_text, 
+            l.content_hash, l.seed, l.controls_json,
+            g.generator_id, g.name, g.version, g.documentation_url
+        FROM levels l
+        JOIN generators g ON l.generator_id = g.generator_id
+        WHERE l.level_id = ?
+        """,
+        (request_data.level_id,)
+    )
+    level_data = cursor.fetchone()
+    
+    if not level_data:
+        raise_api_error(
+            ErrorCode.LEVEL_NOT_FOUND,
+            f"Level '{request_data.level_id}' not found",
+            retryable=False,
+            status_code=404
+        )
+    
+    # Create practice battle
+    battle_id = f"btl_practice_{uuid.uuid4()}"
+    now_utc = datetime.now(timezone.utc).isoformat()
+    generator_id = level_data["generator_id"]
+    
+    try:
+        with transaction() as cursor:
+            cursor.execute(
+                """
+                INSERT INTO battles (
+                    battle_id, session_id, issued_at_utc, expires_at_utc, status,
+                    left_level_id, right_level_id,
+                    left_generator_id, right_generator_id,
+                    matchmaking_policy, is_practice, created_at_utc, updated_at_utc
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    battle_id,
+                    request_data.session_id,
+                    now_utc,
+                    None,
+                    "ISSUED",
+                    request_data.level_id,
+                    request_data.level_id,  # Same level for both sides
+                    generator_id,
+                    generator_id,  # Same generator for both sides
+                    "practice",
+                    1,  # is_practice = true
+                    now_utc,
+                    now_utc,
+                )
+            )
+    except sqlite3.IntegrityError as e:
+        logger.error(f"Failed to create practice battle: {e}")
+        raise_api_error(
+            ErrorCode.INTERNAL_ERROR,
+            "Failed to create practice battle",
+            retryable=True,
+            status_code=500
+        )
+    
+    # Parse controls
+    controls = json.loads(level_data["controls_json"]) if level_data["controls_json"] else {}
+    
+    # Build response (same level data for both sides)
+    battle_side = BattleSide(
+        level_id=level_data["level_id"],
+        generator=GeneratorInfo(
+            generator_id=level_data["generator_id"],
+            name=level_data["name"],
+            version=level_data["version"],
+            documentation_url=level_data["documentation_url"]
+        ),
+        format=LevelFormat(
+            type=LevelFormatType.ASCII_TILEMAP,
+            width=level_data["width"],
+            height=level_data["height"],
+            newline="\n"
+        ),
+        level_payload=LevelPayload(
+            encoding=Encoding.UTF8,
+            tilemap=level_data["tilemap_text"]
+        ),
+        content_hash=level_data["content_hash"],
+        metadata=LevelMetadata(
+            seed=level_data["seed"],
+            controls=controls
+        )
+    )
+    
+    battle_response = BattleResponse(
+        protocol_version="arena/v0",
+        battle=Battle(
+            battle_id=battle_id,
+            issued_at_utc=now_utc,
+            expires_at_utc=None,
+            presentation=BattlePresentation(
+                play_order=PlayOrder.LEFT_THEN_RIGHT,
+                reveal_generator_names_after_vote=True,  # Always reveal for practice
+                suggested_time_limit_seconds=300
+            ),
+            left=battle_side,
+            right=battle_side  # Same level on both sides
+        )
+    )
+    
+    logger.info(f"Practice battle issued: battle_id={battle_id} level={request_data.level_id}")
+    
+    return battle_response
+
+
+class PracticeCompleteRequest(BaseModel):
+    """Request to complete a practice battle (log trajectories only)."""
+    session_id: str
+    battle_id: str
+    player_id: Optional[str] = None
+    telemetry: Optional[Telemetry] = None
+
+
+@app.post("/v1/battles:practice-complete")
+@app.post("/v1/battles%3Apractice-complete")  # Handle URL-encoded version
+async def complete_practice_battle(request_data: PracticeCompleteRequest, request: Request):
+    """
+    Complete a practice battle by logging trajectories.
+    
+    Unlike regular votes, practice battles:
+    - Don't update ratings
+    - Don't create vote records
+    - Only store trajectory and death data for analytics
+    """
+    conn = get_connection()
+    now_utc = datetime.now(timezone.utc).isoformat()
+    
+    # Validate battle exists and is a practice battle
+    cursor = conn.execute(
+        "SELECT * FROM battles WHERE battle_id = ?",
+        (request_data.battle_id,)
+    )
+    battle_row = cursor.fetchone()
+    
+    if not battle_row:
+        raise_api_error(
+            ErrorCode.BATTLE_NOT_FOUND,
+            f"Battle with ID '{request_data.battle_id}' not found",
+            retryable=False,
+            status_code=404
+        )
+    
+    is_practice = battle_row["is_practice"] if "is_practice" in battle_row.keys() else 0
+    if not is_practice:
+        raise_api_error(
+            ErrorCode.INVALID_PAYLOAD,
+            "This endpoint is only for practice battles",
+            retryable=False,
+            status_code=400
+        )
+    
+    left_level_id = battle_row["left_level_id"]
+    
+    try:
+        with transaction() as cursor:
+            # Mark battle as completed
+            cursor.execute(
+                "UPDATE battles SET status = 'COMPLETED', updated_at_utc = ? WHERE battle_id = ?",
+                (now_utc, request_data.battle_id)
+            )
+            
+            # Store trajectories if available
+            if request_data.telemetry:
+                telemetry_dict = request_data.telemetry.model_dump()
+                left_telemetry = telemetry_dict.get("left", {})
+                right_telemetry = telemetry_dict.get("right", {})
+                
+                # Generate a pseudo vote_id for trajectory storage
+                pseudo_vote_id = f"practice_{request_data.battle_id}"
+                
+                if left_telemetry.get("trajectory"):
+                    store_trajectory(
+                        cursor, pseudo_vote_id, left_level_id,
+                        request_data.session_id, request_data.player_id or "anonymous",
+                        "left", left_telemetry, now_utc
+                    )
+                if right_telemetry.get("trajectory"):
+                    store_trajectory(
+                        cursor, pseudo_vote_id, left_level_id,  # Same level for both
+                        request_data.session_id, request_data.player_id or "anonymous",
+                        "right", right_telemetry, now_utc
+                    )
+                    
+    except Exception as e:
+        logger.exception(f"Error completing practice battle: {e}")
+        raise_api_error(
+            ErrorCode.INTERNAL_ERROR,
+            "Failed to complete practice battle",
+            retryable=True,
+            status_code=500
+        )
+    
+    logger.info(f"Practice battle completed: battle_id={request_data.battle_id}")
+    
+    return {
+        "protocol_version": "arena/v0",
+        "accepted": True,
+        "battle_id": request_data.battle_id
+    }
 
 
 def compute_payload_hash(battle_id: str, session_id: str, result: str, left_tags: list, right_tags: list, telemetry: dict) -> str:
@@ -1395,6 +1637,59 @@ async def get_level_heatmap_data(level_id: str):
     return {
         "protocol_version": "arena/v0",
         **heatmap
+    }
+
+
+@app.get("/v1/stats/levels/{level_id}/trajectories")
+async def get_level_trajectories(level_id: str, limit: int = 100):
+    """
+    Get trajectory data for a specific level.
+    
+    Returns all recorded player trajectories for visualization.
+    Public endpoint - no authentication required.
+    """
+    # Check if level exists
+    conn = get_connection()
+    cursor = conn.execute(
+        "SELECT level_id FROM levels WHERE level_id = ?",
+        (level_id,)
+    )
+    if not cursor.fetchone():
+        raise_api_error(
+            ErrorCode.LEVEL_NOT_FOUND,
+            f"Level '{level_id}' not found",
+            retryable=False,
+            status_code=404
+        )
+    
+    # Fetch trajectories for this level
+    cursor = conn.execute(
+        """
+        SELECT trajectory_json, completed, duration_ticks, max_x_reached
+        FROM play_trajectories
+        WHERE level_id = ?
+        ORDER BY created_at_utc DESC
+        LIMIT ?
+        """,
+        (level_id, limit)
+    )
+    
+    trajectories = []
+    for row in cursor.fetchall():
+        trajectory_data = json.loads(row["trajectory_json"]) if row["trajectory_json"] else []
+        if trajectory_data:  # Only include non-empty trajectories
+            trajectories.append({
+                "points": trajectory_data,
+                "completed": bool(row["completed"]),
+                "duration_ticks": row["duration_ticks"],
+                "max_x_reached": row["max_x_reached"]
+            })
+    
+    return {
+        "protocol_version": "arena/v0",
+        "level_id": level_id,
+        "trajectory_count": len(trajectories),
+        "trajectories": trajectories
     }
 
 

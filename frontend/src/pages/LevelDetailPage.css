@@ -10,25 +10,62 @@
 }
 
 .level-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.level-header h1 {
+  font-size: 2rem;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+.level-header .level-id {
+  margin: 0;
+}
+
+.level-subheader {
   margin-bottom: 2rem;
+}
+
+.level-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
 }
 
 .back-link {
   color: #667eea;
   text-decoration: none;
   font-size: 0.875rem;
-  margin-bottom: 0.5rem;
-  display: inline-block;
 }
 
 .back-link:hover {
   text-decoration: underline;
 }
 
-.level-header h1 {
-  font-size: 2rem;
-  color: #1a1a2e;
-  margin: 0.5rem 0;
+.play-level-btn {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.play-level-btn:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
 .level-id {
@@ -252,6 +289,12 @@
 }
 
 .heatmap-description {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin: 0 0 1rem 0;
+}
+
+.trajectory-description {
   font-size: 0.875rem;
   color: #64748b;
   margin: 0 0 1rem 0;

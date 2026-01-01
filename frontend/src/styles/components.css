@@ -209,6 +209,13 @@ canvas {
   font-size: 0.625rem;
 }
 
+.battle-header .practice-hint {
+  font-family: var(--font-pixel);
+  font-size: 0.75rem;
+  color: var(--color-coin);
+  margin-bottom: var(--spacing-xs);
+}
+
 /* Battle Screen - Side by Side Layout */
 .battle-screen {
   display: grid;

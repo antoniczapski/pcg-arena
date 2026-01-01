@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { ArenaApiClient } from '../api/client';
 import type { Battle, LevelTelemetry } from '../api/types';
 import { GameCanvas, GameResult } from './GameCanvas';
@@ -19,9 +20,11 @@ type BattlePhase =
   | 'play-right'
   | 'voting'
   | 'submitting'
-  | 'results';
+  | 'results'
+  | 'practice-complete';  // New phase for practice mode
 
 export function BattleFlow({ apiClient }: BattleFlowProps) {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [sessionId] = useState(() => crypto.randomUUID());
   const [playerId] = useState(() => getOrCreatePlayerId()); // Stage 5: Persistent player ID
   const [battle, setBattle] = useState<Battle | null>(null);
@@ -32,6 +35,116 @@ export function BattleFlow({ apiClient }: BattleFlowProps) {
   const [revealNames, setRevealNames] = useState(false);
   const [leftTags, setLeftTags] = useState<string[]>([]);
   const [rightTags, setRightTags] = useState<string[]>([]);
+  const [isPracticeMode, setIsPracticeMode] = useState(false);
+
+  // Check for practice mode on mount
+  useEffect(() => {
+    const practiceLevel = searchParams.get('practice');
+    if (practiceLevel) {
+      startPracticeBattle(practiceLevel);
+    }
+  }, []);
+
+  const startPracticeBattle = async (levelId: string) => {
+    setPhase('loading');
+    setError(null);
+    setLeftResult(null);
+    setRightResult(null);
+    setRevealNames(true);  // Always reveal generator name in practice mode
+    setLeftTags([]);
+    setRightTags([]);
+    setIsPracticeMode(true);
+
+    try {
+      const response = await apiClient.createPracticeBattle(sessionId, levelId, playerId);
+      setBattle(response.battle);
+      console.log('Practice battle loaded:', response.battle.battle_id, 'level:', levelId);
+      setPhase('play-left');
+    } catch (err) {
+      console.error('Failed to create practice battle:', err);
+      setError(err instanceof Error ? err.message : 'Failed to create practice battle');
+      setPhase('welcome');
+    }
+  };
+
+  // Handle practice-complete phase: submit trajectories then start regular battle
+  useEffect(() => {
+    if (phase === 'practice-complete' && battle && leftResult && rightResult) {
+      const completePractice = async () => {
+        try {
+          // Build telemetry for practice battle
+          const leftTelemetry: LevelTelemetry = {
+            played: !leftResult.skipped,
+            skipped: leftResult.skipped,
+            duration_seconds: leftResult.duration,
+            completed: leftResult.completed,
+            deaths: leftResult.deaths,
+            coins_collected: leftResult.coins,
+            powerups_collected: leftResult.powerupsMushroom + leftResult.powerupsFlower,
+            enemies_killed: leftResult.enemiesStomped + leftResult.enemiesFireKilled + leftResult.enemiesShellKilled,
+            level_id: leftResult.levelId,
+            jumps: leftResult.jumps,
+            enemies_stomped: leftResult.enemiesStomped,
+            enemies_fire_killed: leftResult.enemiesFireKilled,
+            enemies_shell_killed: leftResult.enemiesShellKilled,
+            powerups_mushroom: leftResult.powerupsMushroom,
+            powerups_flower: leftResult.powerupsFlower,
+            lives_collected: leftResult.livesCollected,
+            trajectory: leftResult.trajectory,
+            death_locations: leftResult.deathLocations,
+            events: leftResult.events,
+          };
+
+          const rightTelemetry: LevelTelemetry = {
+            played: !rightResult.skipped,
+            skipped: rightResult.skipped,
+            duration_seconds: rightResult.duration,
+            completed: rightResult.completed,
+            deaths: rightResult.deaths,
+            coins_collected: rightResult.coins,
+            powerups_collected: rightResult.powerupsMushroom + rightResult.powerupsFlower,
+            enemies_killed: rightResult.enemiesStomped + rightResult.enemiesFireKilled + rightResult.enemiesShellKilled,
+            level_id: rightResult.levelId,
+            jumps: rightResult.jumps,
+            enemies_stomped: rightResult.enemiesStomped,
+            enemies_fire_killed: rightResult.enemiesFireKilled,
+            enemies_shell_killed: rightResult.enemiesShellKilled,
+            powerups_mushroom: rightResult.powerupsMushroom,
+            powerups_flower: rightResult.powerupsFlower,
+            lives_collected: rightResult.livesCollected,
+            trajectory: rightResult.trajectory,
+            death_locations: rightResult.deathLocations,
+            events: rightResult.events,
+          };
+
+          // Submit practice completion with trajectories
+          await apiClient.completePracticeBattle(
+            sessionId,
+            battle.battle_id,
+            { left: leftTelemetry, right: rightTelemetry },
+            playerId
+          );
+
+          console.log('Practice battle completed, starting regular battle');
+          
+          // Clear practice mode and URL parameter
+          setIsPracticeMode(false);
+          setSearchParams({});
+          
+          // Start regular battle
+          fetchNextBattle();
+        } catch (err) {
+          console.error('Failed to complete practice battle:', err);
+          // Even if practice submission fails, still start regular battle
+          setIsPracticeMode(false);
+          setSearchParams({});
+          fetchNextBattle();
+        }
+      };
+
+      completePractice();
+    }
+  }, [phase, battle, leftResult, rightResult]);
 
   // Auto-advance from results phase after 3 seconds (or on key press)
   useEffect(() => {
@@ -90,8 +203,13 @@ export function BattleFlow({ apiClient }: BattleFlowProps) {
   const handleRightFinish = useCallback((result: GameResult) => {
     console.log('Right level finished:', result);
     setRightResult(result);
-    setPhase('voting');
-  }, []);
+    // In practice mode, skip voting and go directly to practice-complete
+    if (isPracticeMode) {
+      setPhase('practice-complete');
+    } else {
+      setPhase('voting');
+    }
+  }, [isPracticeMode]);
 
   // Skip handlers for levels
   const handleSkipLeft = useCallback(() => {
@@ -143,8 +261,13 @@ export function BattleFlow({ apiClient }: BattleFlowProps) {
       events: [],
     };
     setRightResult(skippedResult);
-    setPhase('voting');
-  }, [battle]);
+    // In practice mode, skip voting and go directly to practice-complete
+    if (isPracticeMode) {
+      setPhase('practice-complete');
+    } else {
+      setPhase('voting');
+    }
+  }, [battle, isPracticeMode]);
 
   const handleVote = async (vote: VoteData) => {
     if (!battle || !leftResult || !rightResult) return;
@@ -240,7 +363,19 @@ export function BattleFlow({ apiClient }: BattleFlowProps) {
     return (
       <div className="battle-flow">
         <div className="welcome-state">
-          <p>Loading battle...</p>
+          <p>{isPracticeMode ? 'Loading practice level...' : 'Loading battle...'}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Practice complete - transitional state
+  if (phase === 'practice-complete') {
+    return (
+      <div className="battle-flow">
+        <div className="welcome-state">
+          <h2>Practice Complete!</h2>
+          <p>Starting regular battle...</p>
         </div>
       </div>
     );
@@ -262,7 +397,8 @@ export function BattleFlow({ apiClient }: BattleFlowProps) {
     return (
       <div className="battle-flow">
         <div className="battle-header">
-          <h2>Battle Mode</h2>
+          <h2>{isPracticeMode ? 'Practice Mode' : 'Battle Mode'}</h2>
+          {isPracticeMode && <p className="practice-hint">Playing the same level on both sides. No voting required.</p>}
           <p className="controls-hint">Controls: Arrow Keys = Move, S = Jump, A = Run/Fire</p>
         </div>
 

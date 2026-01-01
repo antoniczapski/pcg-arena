@@ -19,6 +19,7 @@ import {
   type GeneratorStatsResponse,
   type LevelStatsResponse,
   type LevelHeatmapResponse,
+  type LevelTrajectoriesResponse,
 } from './types';
 
 export class ArenaApiClient {
@@ -163,6 +164,89 @@ export class ArenaApiClient {
       throw new ArenaApiException(
         'SUBMIT_VOTE_FAILED',
         `Failed to submit vote: ${error instanceof Error ? error.message : String(error)}`,
+        true
+      );
+    }
+  }
+
+  /**
+   * Create a practice battle for a specific level
+   * Practice battles allow playing a level without affecting ratings
+   */
+  async createPracticeBattle(sessionId: string, levelId: string, playerId?: string): Promise<BattleResponse> {
+    const path = '/v1/battles:practice';
+    const request = {
+      session_id: sessionId,
+      level_id: levelId,
+      player_id: playerId
+    };
+
+    try {
+      console.log('[API] POST', path, 'levelId:', levelId);
+      const responseBody = await this.sendJson('POST', path, JSON.stringify(request));
+
+      if (responseBody.includes('"error"')) {
+        const errorResponse: ErrorResponse = JSON.parse(responseBody);
+        this.verifyProtocol(errorResponse.protocol_version);
+        throw this.createException(errorResponse);
+      }
+
+      const battleResponse: BattleResponse = JSON.parse(responseBody);
+      this.verifyProtocol(battleResponse.protocol_version);
+
+      console.log('[API] Practice battle received:', battleResponse.battle.battle_id);
+      return battleResponse;
+    } catch (error) {
+      if (error instanceof ArenaApiException) {
+        throw error;
+      }
+      console.error('[API] Failed to create practice battle:', error);
+      throw new ArenaApiException(
+        'PRACTICE_BATTLE_FAILED',
+        `Failed to create practice battle: ${error instanceof Error ? error.message : String(error)}`,
+        true
+      );
+    }
+  }
+
+  /**
+   * Complete a practice battle (log trajectories only, no voting)
+   */
+  async completePracticeBattle(
+    sessionId: string,
+    battleId: string,
+    telemetry: VoteRequest['telemetry'],
+    playerId?: string
+  ): Promise<{ accepted: boolean; battle_id: string }> {
+    const path = '/v1/battles:practice-complete';
+    const request = {
+      session_id: sessionId,
+      battle_id: battleId,
+      player_id: playerId,
+      telemetry: telemetry
+    };
+
+    try {
+      console.log('[API] POST', path);
+      const responseBody = await this.sendJson('POST', path, JSON.stringify(request));
+
+      if (responseBody.includes('"error"')) {
+        const errorResponse: ErrorResponse = JSON.parse(responseBody);
+        this.verifyProtocol(errorResponse.protocol_version);
+        throw this.createException(errorResponse);
+      }
+
+      const response = JSON.parse(responseBody);
+      console.log('[API] Practice battle completed:', battleId);
+      return response;
+    } catch (error) {
+      if (error instanceof ArenaApiException) {
+        throw error;
+      }
+      console.error('[API] Failed to complete practice battle:', error);
+      throw new ArenaApiException(
+        'PRACTICE_COMPLETE_FAILED',
+        `Failed to complete practice battle: ${error instanceof Error ? error.message : String(error)}`,
         true
       );
     }
@@ -387,7 +471,45 @@ export class ArenaApiClient {
       );
     }
   }
+  /**
+   * Fetch level trajectories data
+   */
+  async getLevelTrajectories(levelId: string): Promise<LevelTrajectoriesResponse> {
+    const path = `/v1/stats/levels/${encodeURIComponent(levelId)}/trajectories`;
 
+    try {
+      console.log('[API] GET', path);
+
+      const response = await fetch(`${this.baseUrl}${path}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new ArenaApiException(
+          'LEVEL_TRAJECTORIES_FETCH_FAILED',
+          `Level trajectories request failed with status ${response.status}`,
+          response.status >= 500
+        );
+      }
+
+      const data: LevelTrajectoriesResponse = await response.json();
+      this.verifyProtocol(data.protocol_version);
+      return data;
+    } catch (error) {
+      if (error instanceof ArenaApiException) {
+        throw error;
+      }
+      console.error('[API] Failed to fetch level trajectories:', error);
+      throw new ArenaApiException(
+        'LEVEL_TRAJECTORIES_FETCH_FAILED',
+        `Failed to fetch level trajectories: ${error instanceof Error ? error.message : String(error)}`,
+        true
+      );
+    }
+  }
   /**
    * Fetch level heatmap data
    */

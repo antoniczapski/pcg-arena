@@ -380,3 +380,18 @@ export interface LevelHeatmapResponse {
   };
 }
 
+// Stage 5: Trajectory response for level detail page
+export interface LevelTrajectoryData {
+  points: TrajectoryPoint[];
+  completed: boolean;
+  duration_ticks: number;
+  max_x_reached: number;
+}
+
+export interface LevelTrajectoriesResponse {
+  protocol_version: string;
+  level_id: string;
+  trajectory_count: number;
+  trajectories: LevelTrajectoryData[];
+}
+
