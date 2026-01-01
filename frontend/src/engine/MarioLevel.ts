@@ -8,6 +8,7 @@ import { TileFeature, getTileType, hasTileFeature } from './TileFeature';
 
 export const GAME_WIDTH = 256;
 export const GAME_HEIGHT = 256;
+export const MIN_LEVEL_HEIGHT_TILES = 16;  // Minimum height for gameplay (pad shorter levels)
 
 export class MarioLevel {
   width: number = GAME_WIDTH;
@@ -35,12 +36,18 @@ export class MarioLevel {
     }
 
     const lines = level.split(/\r?\n/);
+    const actualTileHeight = lines.length;
     this.tileWidth = lines[0].length;
     this.width = this.tileWidth * 16;
-    this.tileHeight = lines.length;
+    
+    // Use minimum height of 16 tiles for gameplay, padding shorter levels at the top
+    this.tileHeight = Math.max(actualTileHeight, MIN_LEVEL_HEIGHT_TILES);
     this.height = this.tileHeight * 16;
+    
+    // Calculate vertical offset: for shorter levels, content goes at the bottom
+    const yOffset = this.tileHeight - actualTileHeight;
 
-    // Initialize arrays
+    // Initialize arrays with the padded height
     this.levelTiles = Array(this.tileWidth)
       .fill(null)
       .map(() => Array(this.tileHeight).fill(0));
@@ -54,8 +61,9 @@ export class MarioLevel {
     let marioLocInit = false;
     let exitLocInit = false;
 
-    // Parse tilemap
+    // Parse tilemap - apply yOffset so shorter levels appear at the bottom
     for (let y = 0; y < lines.length; y++) {
+      const tileY = y + yOffset;  // Offset for shorter levels
       for (let x = 0; x < lines[y].length; x++) {
         const c = lines[y].charAt(x);
         let tempIndex = 0;
@@ -64,46 +72,46 @@ export class MarioLevel {
         switch (c) {
           case 'M':
             this.marioTileX = x;
-            this.marioTileY = y;
+            this.marioTileY = tileY;
             marioLocInit = true;
             break;
           case 'F':
             this.exitTileX = x;
-            this.exitTileY = y;
+            this.exitTileY = tileY;
             exitLocInit = true;
             break;
           case 'y':
-            this.spriteTemplates[x][y] = SpriteType.SPIKY;
+            this.spriteTemplates[x][tileY] = SpriteType.SPIKY;
             break;
           case 'Y':
-            this.spriteTemplates[x][y] = SpriteType.SPIKY_WINGED;
+            this.spriteTemplates[x][tileY] = SpriteType.SPIKY_WINGED;
             break;
           case 'E':
           case 'g':
-            this.spriteTemplates[x][y] = SpriteType.GOOMBA;
+            this.spriteTemplates[x][tileY] = SpriteType.GOOMBA;
             break;
           case 'G':
-            this.spriteTemplates[x][y] = SpriteType.GOOMBA_WINGED;
+            this.spriteTemplates[x][tileY] = SpriteType.GOOMBA_WINGED;
             break;
           case 'k':
-            this.spriteTemplates[x][y] = SpriteType.GREEN_KOOPA;
+            this.spriteTemplates[x][tileY] = SpriteType.GREEN_KOOPA;
             break;
           case 'K':
-            this.spriteTemplates[x][y] = SpriteType.GREEN_KOOPA_WINGED;
+            this.spriteTemplates[x][tileY] = SpriteType.GREEN_KOOPA_WINGED;
             break;
           case 'r':
-            this.spriteTemplates[x][y] = SpriteType.RED_KOOPA;
+            this.spriteTemplates[x][tileY] = SpriteType.RED_KOOPA;
             break;
           case 'R':
-            this.spriteTemplates[x][y] = SpriteType.RED_KOOPA_WINGED;
+            this.spriteTemplates[x][tileY] = SpriteType.RED_KOOPA_WINGED;
             break;
           case 'X':
             // floor
-            this.levelTiles[x][y] = 1;
+            this.levelTiles[x][tileY] = 1;
             break;
           case '#':
             // pyramid block
-            this.levelTiles[x][y] = 2;
+            this.levelTiles[x][tileY] = 2;
             break;
           case '%':
             // jump through block
@@ -114,11 +122,11 @@ export class MarioLevel {
             if (x < this.levelTiles.length - 1 && lines[y].charAt(x + 1) === '%') {
               tempIndex += 1;
             }
-            this.levelTiles[x][y] = 43 + tempIndex;
+            this.levelTiles[x][tileY] = 43 + tempIndex;
             break;
           case '|':
             // background for jump through block
-            this.levelTiles[x][y] = 47;
+            this.levelTiles[x][tileY] = 47;
             break;
           case '*':
             // bullet bill
@@ -129,11 +137,11 @@ export class MarioLevel {
             if (y > 1 && lines[y - 2].charAt(x) === '*') {
               tempIndex += 1;
             }
-            this.levelTiles[x][y] = 3 + tempIndex;
+            this.levelTiles[x][tileY] = 3 + tempIndex;
             break;
           case 'B':
             // bullet bill head
-            this.levelTiles[x][y] = 3;
+            this.levelTiles[x][tileY] = 3;
             break;
           case 'b':
             // bullet bill neck and body
@@ -141,53 +149,53 @@ export class MarioLevel {
             if (y > 1 && lines[y - 2].charAt(x) === 'B') {
               tempIndex += 1;
             }
-            this.levelTiles[x][y] = 4 + tempIndex;
+            this.levelTiles[x][tileY] = 4 + tempIndex;
             break;
           case '?':
           case '@':
             // mushroom question block
-            this.levelTiles[x][y] = 8;
+            this.levelTiles[x][tileY] = 8;
             break;
           case 'Q':
           case '!':
             // coin question block
             this.totalCoins += 1;
-            this.levelTiles[x][y] = 11;
+            this.levelTiles[x][tileY] = 11;
             break;
           case '1':
             // invisible 1 up block
-            this.levelTiles[x][y] = 48;
+            this.levelTiles[x][tileY] = 48;
             break;
           case '2':
             // invisible coin block
             this.totalCoins += 1;
-            this.levelTiles[x][y] = 49;
+            this.levelTiles[x][tileY] = 49;
             break;
           case 'D':
             // used
-            this.levelTiles[x][y] = 14;
+            this.levelTiles[x][tileY] = 14;
             break;
           case 'S':
             // normal block
-            this.levelTiles[x][y] = 6;
+            this.levelTiles[x][tileY] = 6;
             break;
           case 'C':
             // coin block
             this.totalCoins += 1;
-            this.levelTiles[x][y] = 7;
+            this.levelTiles[x][tileY] = 7;
             break;
           case 'U':
             // mushroom block
-            this.levelTiles[x][y] = 50;
+            this.levelTiles[x][tileY] = 50;
             break;
           case 'L':
             // 1up block
-            this.levelTiles[x][y] = 51;
+            this.levelTiles[x][tileY] = 51;
             break;
           case 'o':
             // coin
             this.totalCoins += 1;
-            this.levelTiles[x][y] = 15;
+            this.levelTiles[x][tileY] = 15;
             break;
           case 't':
             // empty pipe
@@ -201,7 +209,7 @@ export class MarioLevel {
             ) {
               singlePipe = true;
             }
-            if (x > 0 && (this.levelTiles[x - 1][y] === 18 || this.levelTiles[x - 1][y] === 20)) {
+            if (x > 0 && (this.levelTiles[x - 1][tileY] === 18 || this.levelTiles[x - 1][tileY] === 20)) {
               tempIndex += 1;
             }
             if (y > 0 && lines[y - 1].charAt(x).toLowerCase() === 't') {
@@ -212,9 +220,9 @@ export class MarioLevel {
               }
             }
             if (singlePipe) {
-              this.levelTiles[x][y] = 52 + tempIndex;
+              this.levelTiles[x][tileY] = 52 + tempIndex;
             } else {
-              this.levelTiles[x][y] = 18 + tempIndex;
+              this.levelTiles[x][tileY] = 18 + tempIndex;
             }
             break;
           case 'T':
@@ -225,7 +233,7 @@ export class MarioLevel {
               lines[y].charAt(x + 1).toLowerCase() !== 't' &&
               x > 0 &&
               lines[y].charAt(x - 1).toLowerCase() !== 't';
-            if (x > 0 && (this.levelTiles[x - 1][y] === 18 || this.levelTiles[x - 1][y] === 20)) {
+            if (x > 0 && (this.levelTiles[x - 1][tileY] === 18 || this.levelTiles[x - 1][tileY] === 20)) {
               tempIndex += 1;
             }
             if (y > 0 && lines[y - 1].charAt(x).toLowerCase() === 't') {
@@ -236,29 +244,29 @@ export class MarioLevel {
               }
             }
             if (singlePipe) {
-              this.levelTiles[x][y] = 52 + tempIndex;
+              this.levelTiles[x][tileY] = 52 + tempIndex;
             } else {
               if (tempIndex === 0) {
-                this.spriteTemplates[x][y] = SpriteType.ENEMY_FLOWER;
+                this.spriteTemplates[x][tileY] = SpriteType.ENEMY_FLOWER;
               }
-              this.levelTiles[x][y] = 18 + tempIndex;
+              this.levelTiles[x][tileY] = 18 + tempIndex;
             }
             break;
           case '<':
             // pipe top left
-            this.levelTiles[x][y] = 18;
+            this.levelTiles[x][tileY] = 18;
             break;
           case '>':
             // pipe top right
-            this.levelTiles[x][y] = 19;
+            this.levelTiles[x][tileY] = 19;
             break;
           case '[':
             // pipe body left
-            this.levelTiles[x][y] = 20;
+            this.levelTiles[x][tileY] = 20;
             break;
           case ']':
             // pipe body right
-            this.levelTiles[x][y] = 21;
+            this.levelTiles[x][tileY] = 21;
             break;
         }
       }
@@ -267,20 +275,22 @@ export class MarioLevel {
     // Set default Mario position if not found
     if (!marioLocInit) {
       this.marioTileX = 0;
-      this.marioTileY = this.findFirstFloor(lines, this.marioTileX);
+      const floorY = this.findFirstFloor(lines, this.marioTileX);
+      this.marioTileY = floorY >= 0 ? floorY + yOffset : yOffset;
     }
 
     // Set default exit position if not found
     if (!exitLocInit) {
       this.exitTileX = lines[0].length - 1;
-      this.exitTileY = this.findFirstFloor(lines, this.exitTileX);
+      const floorY = this.findFirstFloor(lines, this.exitTileX);
+      this.exitTileY = floorY >= 0 ? floorY + yOffset : yOffset;
     }
 
     // Add flag pole at exit
-    for (let y = this.exitTileY; y > Math.max(1, this.exitTileY - 11); y--) {
+    for (let y = this.exitTileY; y > Math.max(1 + yOffset, this.exitTileY - 11); y--) {
       this.levelTiles[this.exitTileX][y] = 40;
     }
-    this.levelTiles[this.exitTileX][Math.max(1, this.exitTileY - 11)] = 39;
+    this.levelTiles[this.exitTileX][Math.max(1 + yOffset, this.exitTileY - 11)] = 39;
   }
 
   clone(): MarioLevel {

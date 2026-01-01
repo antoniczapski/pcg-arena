@@ -13,11 +13,11 @@ import { SpriteType } from '../engine/SpriteType';
 interface LevelPreviewProps {
   /** The level ID (used for identification) */
   levelId: string;
-  /** ASCII tilemap string (16 lines) */
+  /** ASCII tilemap string (10-20 lines) */
   tilemap: string;
   /** Width of the level in tiles */
   width: number;
-  /** Height of the level in tiles (always 16) */
+  /** Height of the level in tiles (10-20) */
   height: number;
   /** Scale factor for rendering (default: 1 = 16px per tile) */
   scale?: number;

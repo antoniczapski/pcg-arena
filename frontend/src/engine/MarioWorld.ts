@@ -318,7 +318,7 @@ export class MarioWorld {
           this.lose();
         }
         this.removeSprite(sprite);
-        if (this.isEnemy(sprite) && sprite.y > GAME_HEIGHT + 32) {
+        if (this.isEnemy(sprite) && sprite.y > this.level.height + 32) {
           this.addEvent(EventType.FALL_KILL, sprite.type);
         }
         continue;
