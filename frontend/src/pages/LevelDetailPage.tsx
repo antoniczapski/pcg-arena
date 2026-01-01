@@ -24,7 +24,6 @@ export function LevelDetailPage() {
   const { levelId } = useParams<{ levelId: string }>();
   const [stats, setStats] = useState<LevelStatsResponse | null>(null);
   const [heatmap, setHeatmap] = useState<LevelHeatmapResponse | null>(null);
-  const [levelData, setLevelData] = useState<LevelPreviewData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [assetsLoaded, setAssetsLoaded] = useState(false);
@@ -51,20 +50,6 @@ export function LevelDetailPage() {
         ]);
         setStats(statsRes);
         setHeatmap(heatmapRes);
-        
-        // Fetch the level tilemap from generator details
-        if (statsRes.stats.generator_id) {
-          try {
-            const genResponse = await apiClient.getGenerator(statsRes.stats.generator_id);
-            const level = genResponse.levels.find(l => l.level_id === levelId);
-            if (level) {
-              setLevelData(level);
-            }
-          } catch (genErr) {
-            console.error('Failed to fetch level tilemap:', genErr);
-          }
-        }
-        
         setError(null);
       } catch (err) {
         console.error('Failed to fetch level data:', err);
@@ -79,7 +64,7 @@ export function LevelDetailPage() {
 
   // Render level and heatmap overlay
   useEffect(() => {
-    if (!assetsLoaded || !levelData || !canvasRef.current || !overlayRef.current) return;
+    if (!assetsLoaded || !stats || !canvasRef.current || !overlayRef.current) return;
 
     const canvas = canvasRef.current;
     const overlay = overlayRef.current;
@@ -87,8 +72,8 @@ export function LevelDetailPage() {
     const overlayCtx = overlay.getContext('2d');
     if (!ctx || !overlayCtx) return;
 
-    // Parse level
-    const level = new MarioLevel(levelData.tilemap, true);
+    // Parse level from stats response
+    const level = new MarioLevel(stats.level.tilemap, true);
     const tileWidth = level.tileWidth;
     const tileHeight = level.tileHeight;
 
@@ -160,7 +145,7 @@ export function LevelDetailPage() {
       );
     }
 
-  }, [assetsLoaded, levelData, heatmap]);
+  }, [assetsLoaded, stats, heatmap]);
 
   function drawEnemy(ctx: CanvasRenderingContext2D, spriteType: SpriteType, tileX: number, tileY: number) {
     let frameY = 0;
@@ -357,10 +342,7 @@ export function LevelDetailPage() {
               <canvas ref={overlayRef} className="heatmap-overlay-canvas" />
             </div>
           </div>
-          {!levelData && !loading && (
-            <p className="no-data">Level preview not available</p>
-          )}
-          {heatmap && heatmap.sample_count === 0 && levelData && (
+          {heatmap && heatmap.sample_count === 0 && stats && (
             <p className="no-data">No death data yet - play some games!</p>
           )}
         </div>

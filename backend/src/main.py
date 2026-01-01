@@ -1298,40 +1298,73 @@ async def get_level_statistics(level_id: str):
     Returns performance metrics, tag counts, and structural features.
     Public endpoint - no authentication required.
     """
+    conn = get_connection()
+    
+    # Fetch level data from database (always needed for preview)
+    cursor = conn.execute(
+        "SELECT level_id, generator_id, tilemap_text, width, height FROM levels WHERE level_id = ?",
+        (level_id,)
+    )
+    level_row = cursor.fetchone()
+    
+    if not level_row:
+        raise_api_error(
+            ErrorCode.LEVEL_NOT_FOUND,
+            f"Level '{level_id}' not found",
+            retryable=False,
+            status_code=404
+        )
+    
     # Get level stats
     stats = get_level_stats(level_id)
     
     if not stats:
-        # Check if level exists at all
-        conn = get_connection()
-        cursor = conn.execute(
-            "SELECT level_id FROM levels WHERE level_id = ?",
-            (level_id,)
-        )
-        if not cursor.fetchone():
-            raise_api_error(
-                ErrorCode.LEVEL_NOT_FOUND,
-                f"Level '{level_id}' not found",
-                retryable=False,
-                status_code=404
-            )
-        # Level exists but no stats yet
+        # Level exists but no stats yet - create minimal stats with generator_id
         stats = {
             "level_id": level_id,
+            "generator_id": level_row["generator_id"],
             "performance": {"times_shown": 0},
-            "outcomes": {},
-            "tags": {},
-            "difficulty": {}
+            "outcomes": {
+                "wins": 0,
+                "losses": 0,
+                "ties": 0,
+                "skips": 0,
+                "play_skipped": 0
+            },
+            "tags": {
+                "fun": 0,
+                "boring": 0,
+                "too_hard": 0,
+                "too_easy": 0,
+                "creative": 0,
+                "good_flow": 0,
+                "unfair": 0,
+                "confusing": 0,
+                "not_mario_like": 0
+            },
+            "difficulty": {
+                "score": None,
+                "classification": "unknown"
+            }
         }
     
     # Get level features
     features = get_level_features(level_id)
     
+    # Include level data for preview rendering
+    level_data = {
+        "level_id": level_row["level_id"],
+        "tilemap": level_row["tilemap_text"],
+        "width": level_row["width"],
+        "height": level_row["height"]
+    }
+    
     return {
         "protocol_version": "arena/v0",
         "level_id": level_id,
         "stats": stats,
-        "features": features
+        "features": features,
+        "level": level_data
     }
 
 

@@ -355,6 +355,12 @@ export interface LevelStatsResponse {
     structure: Record<string, number>;
     metrics: Record<string, number>;
   };
+  level: {
+    level_id: string;
+    tilemap: string;
+    width: number;
+    height: number;
+  };
 }
 
 export interface HeatmapDataPoint {
