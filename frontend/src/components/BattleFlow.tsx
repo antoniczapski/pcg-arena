@@ -33,13 +33,30 @@ export function BattleFlow({ apiClient }: BattleFlowProps) {
   const [leftTags, setLeftTags] = useState<string[]>([]);
   const [rightTags, setRightTags] = useState<string[]>([]);
 
-  // Auto-advance from results phase after 3 seconds
+  // Auto-advance from results phase after 3 seconds (or on key press)
   useEffect(() => {
     if (phase === 'results') {
+      let skipped = false;
+
+      const handleKeyPress = () => {
+        if (!skipped) {
+          skipped = true;
+          fetchNextBattle();
+        }
+      };
+
       const timer = setTimeout(() => {
-        fetchNextBattle();
+        if (!skipped) {
+          fetchNextBattle();
+        }
       }, 3000);
-      return () => clearTimeout(timer);
+
+      window.addEventListener('keydown', handleKeyPress);
+
+      return () => {
+        clearTimeout(timer);
+        window.removeEventListener('keydown', handleKeyPress);
+      };
     }
   }, [phase]);
 
@@ -407,7 +424,7 @@ export function BattleFlow({ apiClient }: BattleFlowProps) {
           </div>
         ) : (
           <div className="results-auto-advance">
-            <p className="auto-advance-hint">Loading next battle...</p>
+            <p className="auto-advance-hint">Loading next battle... (press any key to skip)</p>
           </div>
         )}
         {error && <p className="error-message">{error}</p>}
