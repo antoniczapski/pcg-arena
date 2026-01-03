@@ -1,0 +1,14 @@
+------------------------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------xxxxxxxxxxxxxxxxxxxxxxxxxxxxx-------------------------------------------------xx-----------------------------
+-----------------------------------------xXXXXXXXXXXXXXXXXXXXXXXXXXXX-x------------SSSSSSSSSSSSSSSSSSSSSSSSSSS--------xx-x---SSSSSSSSSSSSSSSS---------
+----------------------------------------xxXXXXXXXXXXXXXXXXXXXXXXXXXXX--x-------------[]----[]------------------------xx---x--SSSS---------------------
+-----------------------E---------------xx-XXXXXXXXXXXXXXXXXXXXXXXXXXX---x------------[]----[]-------E-----------XXX-xx-----x-SSSS---------------------
+------------------SSSS-----------------xS-XXXXXXXXXXXXXXXXXXXXXXXXXXX----x-----------[]----[]---QQQQQQ---------xxxx-xSSS----xSSSS-------------xx------
+---------------------------------------x--XXXXXXXXXXXXXXXXXXXXXXXXXXX-----x----------<>----[]-----------------xx---xx--------x---------------xx-x-----
+--------------------------------------xx--XXXXXXXXXXXXXXXXXXXXXXXXXXX------x---------------[]----------------xx-----xS--------x-------------xx---x----
+-------------------------------------xxS--XXXXXXXXXXXXXXXXXXXXXXXXXXX-------x--------------[]--xxxxxx-----xxxx------S-S-------oxxx------xxxxx-----x---
+xx-----------------------------------x----XXXXXXXXXXXXXXXXXXXXXXXXXXX--------x-------------[]-xxSSSSSxxxxxS-SS---------S?S---S?SS-x----xx-XXX------x--
+X-x-------xxx----------------------x-x----XXXXXXXXXXXXXXXXXXXXXXXXXXX---------x------------<>xx-SSSSSSSSSSSSSS---------------SSS---x--xx------------x-
+X--x-----xxB-x--------------------xx----E-XXXXXXXXXXXXXXXXXXXXXXXXXXX----------x----xxx-----xx--SSSSSSSSSSSSSS---------------SS-----xxx--------------x
+X---xxxxxx-b--xxxxxxxxxxxxxxxxxxxxx-------XXXXXXXXXXXXXXXXXXXXXXXXXXX---------X-xxxxx--xxxxxx---SSSSSSSSSSSSSS-----------------E-EE--xX---------------
+X---XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX--XXXXXXE--XXXXXXXXXXXXXX------XXXXXXXXXXX-XXXXXXX---------XXX---

@@ -79,6 +79,21 @@
       "description": "Pattern-based evolutionary generator variant where meso-pattern counts are weighted by rarity, rewarding inclusion of rarer patterns more strongly than common ones.",
       "tags": ["evolutionary", "pattern-based", "rarity-weighted", "meso-patterns", "fitness-weighted-count"],
       "documentation_url": "https://julian.togelius.com/Dahlskog2013Patterns.pdf"
+    },
+    {
+      "generator_id": "mariogpt",
+      "name": "MarioGPT (Text2Level via GPT-2)",
+      "version": "1.0.0",
+      "description": "LLM-based, text-promptable level generator for Super Mario Bros. Uses a fine-tuned GPT-2 (distilgpt2) to generate tile-based levels from short natural-language prompts; designed for controllable generation and diversity (paper: NeurIPS 2023). Reference implementation: https://github.com/shyamsn97/mario-gpt",
+      "tags": [
+        "llm",
+        "gpt-2",
+        "text-to-level",
+        "promptable",
+        "neural",
+        "neurips-2023"
+      ],
+      "documentation_url": "https://openreview.net/attachment?id=dcA1jWmVX5&name=pdf"
     }
   ]
 }
