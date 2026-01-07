@@ -80,7 +80,7 @@
 /* Battle Flow */
 .battle-flow {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1600px;
   margin: 0 auto;
 }
 
@@ -140,11 +140,15 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 100%;
 }
 
 .game-canvas {
-  width: 256px;
-  height: 256px;
+  width: 100%;
+  max-width: 800px; /* Prevent it from getting too large on huge screens */
+  max-height: 70vh; /* Prevent it from being too tall on small vertical screens (laptops) */
+  aspect-ratio: 1 / 1;
+  height: auto;
   border: 2px solid var(--color-lime);
   background-color: #5c94fc; /* Mario sky blue */
   image-rendering: pixelated;
@@ -153,8 +157,10 @@
 
 .game-canvas-loading,
 .game-canvas-error {
-  width: 256px;
-  height: 256px;
+  width: 100%;
+  max-width: 800px;
+  aspect-ratio: 1 / 1;
+  height: auto;
   border: 4px solid var(--color-lime);
   background-color: var(--color-bg-medium);
   display: flex;

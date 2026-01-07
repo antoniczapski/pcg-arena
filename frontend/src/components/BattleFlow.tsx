@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ArenaApiClient } from '../api/client';
 import type { Battle, LevelTelemetry } from '../api/types';
@@ -36,6 +36,16 @@ export function BattleFlow({ apiClient }: BattleFlowProps) {
   const [leftTags, setLeftTags] = useState<string[]>([]);
   const [rightTags, setRightTags] = useState<string[]>([]);
   const [isPracticeMode, setIsPracticeMode] = useState(false);
+  const battleHeaderRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to battle when starting
+  useEffect(() => {
+    if (phase === 'play-left' && battleHeaderRef.current) {
+      setTimeout(() => {
+        battleHeaderRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+  }, [phase]);
 
   // Check for practice mode on mount
   useEffect(() => {
@@ -396,7 +406,7 @@ export function BattleFlow({ apiClient }: BattleFlowProps) {
   if (phase === 'play-left' || phase === 'play-right') {
     return (
       <div className="battle-flow">
-        <div className="battle-header">
+        <div className="battle-header" ref={battleHeaderRef}>
           <h2>{isPracticeMode ? 'Practice Mode' : 'Battle Mode'}</h2>
           {isPracticeMode && <p className="practice-hint">Playing the same level on both sides. No voting required.</p>}
           <p className="controls-hint">Controls: Arrow Keys = Move, S = Jump, A = Run/Fire</p>
