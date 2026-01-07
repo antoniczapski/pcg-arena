@@ -1,10 +1,9 @@
 # PCG Arena - Frontend Specification
 
 **Created:** 2025-12-26  
-**Updated:** 2025-12-30 (Stage 4 complete, Stage 5 planned)  
+**Updated:** 2025-01-03 (All stages complete, Stage 5 implemented)  
 **Protocol:** arena/v0  
-**Status:** ✅ COMPLETE (Stage 2/3/4 deployed and operational)  
-**Next:** Stage 5 — Research Analytics (see `docs/stage5-spec.md`)
+**Status:** ✅ COMPLETE (All stages 2/3/4/5 deployed and operational at pcg-arena.com)
 
 ---
 
@@ -36,7 +35,7 @@ The browser frontend is a TypeScript/React implementation that allows users to p
 **Stage 2 (2025-12-26):** Battle flow and gameplay  
 **Stage 3 (2025-12-28):** Authentication and builder profile  
 **Stage 4 (2025-12-30):** AGIS matchmaking and admin dashboard  
-**Stage 5 (Planned):** Research analytics — enhanced telemetry, per-level stats, heatmaps
+**Stage 5 (2025-01-03):** Research analytics — enhanced telemetry, per-level stats, heatmaps, trajectories
 
 ### 1.2 Key Features
 
@@ -198,14 +197,23 @@ App (with Router)
 ├── BuilderPage (/builder)
 │   ├── AuthContext (login/register)
 │   └── GeneratorCard (with "View" link)
-├── AdminPage (/admin) [Stage 4b]
+├── AdminPage (/admin) [Stage 4/5]
 │   ├── AuthContext (OAuth required)
 │   ├── Overview Tab (config, matchmaking stats, generators)
 │   ├── Confusion Matrix Tab (pairwise win rates)
-│   └── Coverage Gaps Tab (under-covered and missing pairs)
+│   ├── Coverage Gaps Tab (under-covered and missing pairs)
+│   ├── Builders Tab (list all builders, ban functionality)
+│   └── Generators Tab (list all generators, delete functionality)
 ├── GeneratorPage (/generator/:id)
 │   ├── Generator details
 │   └── Level gallery (LevelPreview grid - with enemies)
+├── LevelPage (/level/:id) [Stage 5]
+│   ├── Level details
+│   ├── Statistics (plays, completions, deaths)
+│   ├── Death heatmap visualization
+│   └── Player trajectories
+├── PlatformStatsPage (/stats) [Stage 5]
+│   └── Platform-wide metrics and analytics
 ├── VerifyEmailPage (/verify-email)
 └── ResetPasswordPage (/reset-password)
 ```

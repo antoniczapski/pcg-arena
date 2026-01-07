@@ -2,17 +2,21 @@
 
 **Location:** `./backend/spec.md`  
 **Protocol:** `arena/v0`  
-**Status:** ✅ Stage 0/1/2/3/4 Complete — Stable API with advanced matchmaking  
-**Next:** Stage 5 — Research Analytics (see `docs/stage5-spec.md`)
+**Status:** ✅ All Stages Complete (Stage 0/1/2/3/4/5) — Deployed at pcg-arena.com  
+**Last updated:** 2025-01-03
 
 This document describes the **backend implementation** for PCG Arena. The backend is a Python/FastAPI application serving the Arena API.
 
 **Current deployment:** GCP Compute Engine (e2-micro) with Docker  
-**Clients:** Java validation client (Stage 0/1), Browser frontend (Stage 2/3/4)  
+**Clients:** Java validation client (Stage 0/1), Browser frontend (Stage 2/3/4/5)  
 **Key features:** 
 - Core battle/voting API (Stage 0-2)
 - Authentication system with Google OAuth and email/password (Stage 3)
 - Builder profile for generator submissions (Stage 3)
+- Glicko-2 rating system with AGIS matchmaking (Stage 4)
+- Admin dashboard with comprehensive analytics (Stage 4)
+- Research telemetry, trajectories, heatmaps, and data export (Stage 5)
+- Practice battles for focused playtesting (Stage 5)
 - Glicko-2 rating system and AGIS matchmaking (Stage 4a)
 - Admin dashboard and confusion matrix (Stage 4b)
 - *(Stage 5 planned)* Enhanced telemetry, per-level stats, research data export
@@ -266,14 +270,24 @@ CMD ["python", "main.py"]
 | Configurable AGIS parameters | ✅ Complete | `config.py` |
 | Admin email configuration | ✅ Complete | `config.py` |
 
-### Future Tasks
+### Stage 5 Features (Complete)
 
-| Feature | Stage | Notes |
-|---------|-------|-------|
-| Browser frontend | Stage 2 | JavaScript/Canvas Mario game |
-| Advanced matchmaking | Stage 3 | Uncertainty-aware pairing |
-| Battle expiration | Stage 3 | Mark old battles as EXPIRED |
-| OpenAPI spec | Stage 3 | Formal API documentation |
+| Feature | Status | Location |
+|---------|--------|----------|
+| Enhanced telemetry collection | ✅ Complete | `main.py` (vote endpoint) |
+| Level statistics tracking | ✅ Complete | `stats.py`, `db/migrations/008_level_stats.sql` |
+| Player profile tracking | ✅ Complete | `db/migrations/009_player_profiles.sql` |
+| Trajectory recording | ✅ Complete | `db/migrations/010_trajectories.sql` |
+| Level feature extraction | ✅ Complete | `level_features.py`, `db/migrations/011_level_features.sql` |
+| Practice battles | ✅ Complete | `main.py` (/v1/battles:practice) |
+| Statistics endpoints | ✅ Complete | `stats.py`, `main.py` (/v1/stats/*) |
+| Death heatmap generation | ✅ Complete | `stats.py` |
+| Trajectory visualization data | ✅ Complete | `stats.py` |
+| Data export endpoints | ✅ Complete | `main.py` (/v1/admin/export/*) |
+| Platform metrics | ✅ Complete | `stats.py` |
+| Admin builder management | ✅ Complete | `main.py` (/v1/admin/builders, /v1/admin/generators) |
+
+### All Core Features Complete
 | Generator versioning | Stage 3 | Season archives, A/B testing |
 | User accounts | Stage 4 | Authentication and profiles |
 

@@ -1,15 +1,15 @@
 # PCG Arena — Database Spec
 **Location:** `./db/spec.md`  
 **Protocol:** `arena/v0`  
-**Status:** ✅ Stage 0/1/2/3/4 Complete — Schema stable with Glicko-2 extensions  
-**Next:** Stage 5 — Research Analytics (see `docs/stage5-spec.md`)
+**Status:** ✅ All Stages Complete (Stage 0/1/2/3/4/5) — Schema stable with Stage 5 extensions  
+**Last updated:** 2025-01-03
 
 This document defines the **database responsibilities** and the exact **data model** for PCG Arena. The schema is designed to be stable across stages (backend/client changes don't require schema migrations).
 
 **Current deployment:** SQLite on GCP VM with daily backups  
-**Clients:** Java validation client (Stage 0/1), Browser frontend (Stage 2/3/4)
+**Clients:** Java validation client (Stage 0/1), Browser frontend (Stage 2/3/4/5)
 
-**Stage 5 planned tables:** `level_stats`, `player_profiles`, `player_sessions`, `play_trajectories`, `level_features`
+**Stage 5 completed tables:** `level_stats`, `player_profiles`, `player_sessions`, `play_trajectories`, `level_features`
 
 ---
 
@@ -90,7 +90,7 @@ db/
 
 Contains ordered, versioned migration scripts.
 
-**Current migrations:**
+**Current migrations (17 total):**
 - `001_init.sql` — Creates tables: `schema_migrations`, `generators`, `levels`, `battles`, `votes`, `ratings`, `rating_events`
 - `002_indexes.sql` — Creates indexes for: `generators.is_active`, `levels.generator_id`, `levels.content_hash`, `battles.status`, `battles.session_id`, `battles.generator_pair`, `votes.created_at_utc`, `votes.session_id`
 - `003_users.sql` — Users and sessions tables (Stage 3)
@@ -98,6 +98,16 @@ Contains ordered, versioned migration scripts.
 - `005_email_verification.sql` — Email verification tokens (Stage 3)
 - `006_password_reset.sql` — Password reset tokens (Stage 3)
 - `007_glicko_matchmaking.sql` — Glicko-2 rating system and generator pair statistics (Stage 4)
+- `008_level_stats.sql` — Level statistics tracking (Stage 5)
+- `009_player_profiles.sql` — Anonymous player tracking (Stage 5)
+- `010_trajectories.sql` — Player movement and death tracking (Stage 5)
+- `011_level_features.sql` — Level feature extraction for research (Stage 5)
+- `012_vote_player_id.sql` — Link votes to player profiles (Stage 5)
+- `013_play_skipped.sql` — Add play_skipped column to battles (Stage 5)
+- `014_practice_battles.sql` — Practice mode support (Stage 5)
+- `015_relax_battle_constraints.sql` — Allow same-level practice battles (Stage 5)
+- `016_trajectories_nullable_vote.sql` — Allow trajectories without votes (Stage 5)
+- `017_add_new_tags.sql` — Expand tag vocabulary (Stage 5)
 
 **Functional requirements:**
 - Migrations run from scratch on empty DB
