@@ -94,6 +94,30 @@
         "neurips-2023"
       ],
       "documentation_url": "https://openreview.net/attachment?id=dcA1jWmVX5&name=pdf"
+    },
+    {
+      "generator_id": "mariogan",
+      "name": "MarioGAN (DCGAN + CMA-ES Latent-Space Generator)",
+      "version": "1.0.0",
+      "description": "GAN-based Mario level generator from Volz et al. (GECCO 2018). Trains a Deep Convolutional GAN (DCGAN) on real Super Mario Bros level segments (Video Game Level Corpus), then generates new segments from latent vectors; optionally uses CMA-ES to search the latent space for segments optimizing tile-distribution goals or agent-performance objectives. Reference implementation (includes pretrained netG model + tooling): https://github.com/CIGbalance/DagstuhlGAN",
+      "tags": [
+        "gan",
+        "deep-learning",
+        "dcgan",
+        "latent-space",
+        "cma-es",
+        "evolutionary",
+        "gecco-2018"
+      ],
+      "documentation_url": "https://dl.acm.org/doi/10.1145/3205455.3205517"
+    },
+    {
+      "generator_id": "marioDiffusion",
+      "name": "MarioDiffusion (Text-to-Level Diffusion)",
+      "version": "1.0.0",
+      "description": "Text-conditioned diffusion models for Super Mario Bros level scenes. Generates tile-based scenes guided by natural-language captions (with multiple text-encoder variants); includes pretrained models and tooling for sampling and interactive composition. Code: https://github.com/schrum2/MarioDiffusion",
+      "tags": ["diffusion", "text-conditioned", "deep-learning", "generative-model", "aiide-2025"],
+      "documentation_url": "https://arxiv.org/abs/2507.00184"
     }
   ]
 }
