@@ -2339,6 +2339,360 @@ async def get_admin_stats(request: Request):
     })
 
 
+@app.get("/v1/admin/builders")
+async def get_admin_builders(request: Request):
+    """
+    Get all registered builders (users) with their generator statistics.
+    
+    Requires admin authentication.
+    Returns list of builders sorted by their best generator rating.
+    """
+    user = get_current_user(request)
+    
+    if not user:
+        raise_api_error(
+            ErrorCode.INVALID_PAYLOAD,
+            "Authentication required. Please log in with Google OAuth.",
+            retryable=False,
+            status_code=401
+        )
+    
+    if not is_admin_user(user):
+        raise_api_error(
+            ErrorCode.INVALID_PAYLOAD,
+            "Admin access required.",
+            retryable=False,
+            status_code=403
+        )
+    
+    conn = get_connection()
+    
+    # Get all users with their generator counts and best ratings
+    cursor = conn.execute(
+        """
+        SELECT 
+            u.user_id,
+            u.email,
+            u.display_name,
+            u.created_at_utc,
+            COUNT(g.generator_id) as generator_count,
+            GROUP_CONCAT(g.name, '|||') as generator_names,
+            MAX(r.rating_value) as best_rating
+        FROM users u
+        LEFT JOIN generators g ON u.user_id = g.owner_user_id AND g.is_active = 1
+        LEFT JOIN ratings r ON g.generator_id = r.generator_id
+        GROUP BY u.user_id
+        ORDER BY best_rating DESC NULLS LAST, u.created_at_utc DESC
+        """
+    )
+    
+    builders = []
+    for row in cursor.fetchall():
+        gen_names = row["generator_names"].split("|||") if row["generator_names"] else []
+        builders.append({
+            "user_id": row["user_id"],
+            "email": row["email"],
+            "display_name": row["display_name"],
+            "created_at": row["created_at_utc"],
+            "generator_count": row["generator_count"],
+            "generator_names": gen_names[:3],  # First 3 generators
+            "best_rating": row["best_rating"] or 0,
+        })
+    
+    return JSONResponse({
+        "protocol_version": "arena/v0",
+        "builders": builders,
+        "total": len(builders),
+    })
+
+
+@app.delete("/v1/admin/builders/{user_id}")
+async def admin_delete_builder(request: Request, user_id: str):
+    """
+    Ban/delete a builder and all their generators.
+    
+    This is an admin-only action that:
+    1. Soft-deletes all generators owned by the user (preserves battle history)
+    2. Deletes all user sessions
+    3. Deletes the user account
+    
+    Generators with battles are soft-deleted (marked inactive, owner removed).
+    Generators without battles are hard-deleted.
+    """
+    admin = get_current_user(request)
+    
+    if not admin:
+        raise_api_error(
+            ErrorCode.INVALID_PAYLOAD,
+            "Authentication required.",
+            retryable=False,
+            status_code=401
+        )
+    
+    if not is_admin_user(admin):
+        raise_api_error(
+            ErrorCode.INVALID_PAYLOAD,
+            "Admin access required.",
+            retryable=False,
+            status_code=403
+        )
+    
+    conn = get_connection()
+    
+    # Check if user exists
+    user_row = conn.execute(
+        "SELECT user_id, email, display_name FROM users WHERE user_id = ?",
+        (user_id,)
+    ).fetchone()
+    
+    if not user_row:
+        raise_api_error(
+            ErrorCode.INVALID_PAYLOAD,
+            "User not found.",
+            retryable=False,
+            status_code=404
+        )
+    
+    # Prevent admin from deleting themselves
+    if user_id == admin.user_id:
+        raise_api_error(
+            ErrorCode.INVALID_PAYLOAD,
+            "Cannot delete your own account.",
+            retryable=False,
+            status_code=400
+        )
+    
+    try:
+        with transaction() as cursor:
+            # Get all generators owned by this user
+            gens = cursor.execute(
+                "SELECT generator_id FROM generators WHERE owner_user_id = ?",
+                (user_id,)
+            ).fetchall()
+            
+            deleted_gens = 0
+            soft_deleted_gens = 0
+            
+            for gen in gens:
+                gen_id = gen["generator_id"]
+                
+                # Check if generator has battles
+                has_battles = cursor.execute(
+                    """
+                    SELECT COUNT(*) as count FROM battles 
+                    WHERE left_generator_id = ? OR right_generator_id = ?
+                    """,
+                    (gen_id, gen_id)
+                ).fetchone()["count"] > 0
+                
+                if has_battles:
+                    # Soft delete: mark as inactive and remove owner
+                    cursor.execute(
+                        """
+                        UPDATE generators 
+                        SET is_active = 0, 
+                            owner_user_id = NULL,
+                            name = name || ' [banned]',
+                            updated_at_utc = ?
+                        WHERE generator_id = ?
+                        """,
+                        (datetime.now(timezone.utc).isoformat(), gen_id)
+                    )
+                    soft_deleted_gens += 1
+                else:
+                    # Hard delete
+                    cursor.execute("DELETE FROM levels WHERE generator_id = ?", (gen_id,))
+                    cursor.execute("DELETE FROM ratings WHERE generator_id = ?", (gen_id,))
+                    cursor.execute("DELETE FROM generators WHERE generator_id = ?", (gen_id,))
+                    deleted_gens += 1
+            
+            # Delete user sessions
+            cursor.execute("DELETE FROM user_sessions WHERE user_id = ?", (user_id,))
+            
+            # Delete user
+            cursor.execute("DELETE FROM users WHERE user_id = ?", (user_id,))
+            
+            logger.info(f"Admin {admin.email} banned user {user_row['email']}: "
+                       f"deleted {deleted_gens} generators, soft-deleted {soft_deleted_gens} generators")
+        
+        return JSONResponse({
+            "protocol_version": "arena/v0",
+            "message": f"User '{user_row['email']}' has been banned",
+            "deleted_generators": deleted_gens,
+            "soft_deleted_generators": soft_deleted_gens,
+        })
+    
+    except Exception as e:
+        logger.error(f"Failed to ban user: {e}")
+        raise_api_error(
+            ErrorCode.INTERNAL_ERROR,
+            "Failed to ban user.",
+            retryable=True,
+            status_code=500
+        )
+
+
+@app.get("/v1/admin/generators")
+async def get_admin_generators(request: Request):
+    """
+    Get all generators with owner information.
+    
+    Requires admin authentication.
+    Returns list of generators sorted by rating.
+    """
+    user = get_current_user(request)
+    
+    if not user:
+        raise_api_error(
+            ErrorCode.INVALID_PAYLOAD,
+            "Authentication required.",
+            retryable=False,
+            status_code=401
+        )
+    
+    if not is_admin_user(user):
+        raise_api_error(
+            ErrorCode.INVALID_PAYLOAD,
+            "Admin access required.",
+            retryable=False,
+            status_code=403
+        )
+    
+    conn = get_connection()
+    
+    cursor = conn.execute(
+        """
+        SELECT 
+            g.generator_id,
+            g.name,
+            g.is_active,
+            g.created_at_utc,
+            u.user_id as owner_id,
+            u.email as owner_email,
+            u.display_name as owner_name,
+            r.rating_value,
+            r.games_played
+        FROM generators g
+        LEFT JOIN users u ON g.owner_user_id = u.user_id
+        LEFT JOIN ratings r ON g.generator_id = r.generator_id
+        ORDER BY r.rating_value DESC NULLS LAST
+        """
+    )
+    
+    generators = []
+    for row in cursor.fetchall():
+        generators.append({
+            "generator_id": row["generator_id"],
+            "name": row["name"],
+            "is_active": row["is_active"] == 1,
+            "created_at": row["created_at_utc"],
+            "owner_id": row["owner_id"],
+            "owner_email": row["owner_email"] or "System",
+            "owner_name": row["owner_name"] or "Original",
+            "rating": row["rating_value"] or config.initial_rating,
+            "games_played": row["games_played"] or 0,
+        })
+    
+    return JSONResponse({
+        "protocol_version": "arena/v0",
+        "generators": generators,
+        "total": len(generators),
+    })
+
+
+@app.delete("/v1/admin/generators/{generator_id}")
+async def admin_delete_generator(request: Request, generator_id: str):
+    """
+    Admin delete a generator.
+    
+    This bypasses ownership checks and allows admins to delete any generator.
+    Generators with battles are soft-deleted (marked inactive).
+    Generators without battles are hard-deleted.
+    """
+    admin = get_current_user(request)
+    
+    if not admin:
+        raise_api_error(
+            ErrorCode.INVALID_PAYLOAD,
+            "Authentication required.",
+            retryable=False,
+            status_code=401
+        )
+    
+    if not is_admin_user(admin):
+        raise_api_error(
+            ErrorCode.INVALID_PAYLOAD,
+            "Admin access required.",
+            retryable=False,
+            status_code=403
+        )
+    
+    conn = get_connection()
+    
+    # Check if generator exists
+    gen_row = conn.execute(
+        "SELECT generator_id, name FROM generators WHERE generator_id = ?",
+        (generator_id,)
+    ).fetchone()
+    
+    if not gen_row:
+        raise_api_error(
+            ErrorCode.INVALID_PAYLOAD,
+            "Generator not found.",
+            retryable=False,
+            status_code=404
+        )
+    
+    # Check if generator has battles
+    has_battles = conn.execute(
+        """
+        SELECT COUNT(*) as count FROM battles 
+        WHERE left_generator_id = ? OR right_generator_id = ?
+        """,
+        (generator_id, generator_id)
+    ).fetchone()["count"] > 0
+    
+    try:
+        with transaction() as cursor:
+            if has_battles:
+                # Soft delete
+                cursor.execute(
+                    """
+                    UPDATE generators 
+                    SET is_active = 0, 
+                        owner_user_id = NULL,
+                        name = name || ' [deleted by admin]',
+                        updated_at_utc = ?
+                    WHERE generator_id = ?
+                    """,
+                    (datetime.now(timezone.utc).isoformat(), generator_id)
+                )
+                logger.info(f"Admin {admin.email} soft-deleted generator {generator_id}")
+                delete_type = "soft"
+            else:
+                # Hard delete
+                cursor.execute("DELETE FROM levels WHERE generator_id = ?", (generator_id,))
+                cursor.execute("DELETE FROM ratings WHERE generator_id = ?", (generator_id,))
+                cursor.execute("DELETE FROM generators WHERE generator_id = ?", (generator_id,))
+                logger.info(f"Admin {admin.email} hard-deleted generator {generator_id}")
+                delete_type = "hard"
+        
+        return JSONResponse({
+            "protocol_version": "arena/v0",
+            "message": f"Generator '{gen_row['name']}' has been deleted",
+            "delete_type": delete_type,
+        })
+    
+    except Exception as e:
+        logger.error(f"Failed to delete generator: {e}")
+        raise_api_error(
+            ErrorCode.INTERNAL_ERROR,
+            "Failed to delete generator.",
+            retryable=True,
+            status_code=500
+        )
+
+
 @app.get("/v1/auth/me/admin")
 async def check_admin_status(request: Request):
     """

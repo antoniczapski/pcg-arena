@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth, GOOGLE_CLIENT_ID } from '../contexts/AuthContext';
 
 // API base URL
@@ -63,15 +64,40 @@ interface ConfusionMatrixData {
   };
 }
 
+interface BuilderData {
+  user_id: string;
+  email: string;
+  display_name: string;
+  created_at: string;
+  generator_count: number;
+  generator_names: string[];
+  best_rating: number;
+}
+
+interface GeneratorData {
+  generator_id: string;
+  name: string;
+  is_active: boolean;
+  created_at: string;
+  owner_id: string | null;
+  owner_email: string;
+  owner_name: string;
+  rating: number;
+  games_played: number;
+}
+
 export function AdminPage() {
   const { user, isLoading: authLoading, isGoogleReady, renderGoogleButton } = useAuth();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [adminStats, setAdminStats] = useState<AdminStats | null>(null);
   const [confusionMatrix, setConfusionMatrix] = useState<ConfusionMatrixData | null>(null);
+  const [builders, setBuilders] = useState<BuilderData[]>([]);
+  const [allGenerators, setAllGenerators] = useState<GeneratorData[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'matrix' | 'gaps' | 'export'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'matrix' | 'gaps' | 'export' | 'builders' | 'generators'>('overview');
   const [exportStatus, setExportStatus] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<{ type: 'builder' | 'generator'; id: string; name: string } | null>(null);
   const googleButtonRef = useRef<HTMLDivElement>(null);
 
   // Check admin status
@@ -121,6 +147,24 @@ export function AdminPage() {
         if (matrixResponse.ok) {
           const matrixData = await matrixResponse.json();
           setConfusionMatrix(matrixData);
+        }
+
+        // Load builders
+        const buildersResponse = await fetch(`${API_BASE_URL}/v1/admin/builders`, {
+          credentials: 'include',
+        });
+        if (buildersResponse.ok) {
+          const buildersData = await buildersResponse.json();
+          setBuilders(buildersData.builders);
+        }
+
+        // Load all generators
+        const generatorsResponse = await fetch(`${API_BASE_URL}/v1/admin/generators`, {
+          credentials: 'include',
+        });
+        if (generatorsResponse.ok) {
+          const generatorsData = await generatorsResponse.json();
+          setAllGenerators(generatorsData.generators);
         }
       } catch (err) {
         console.error('Failed to load admin data:', err);
@@ -257,7 +301,54 @@ export function AdminPage() {
         >
           Data Export
         </button>
+        <button 
+          className={activeTab === 'builders' ? 'active' : ''} 
+          onClick={() => setActiveTab('builders')}
+        >
+          Builders
+        </button>
+        <button 
+          className={activeTab === 'generators' ? 'active' : ''} 
+          onClick={() => setActiveTab('generators')}
+        >
+          Generators
+        </button>
       </div>
+
+      {/* Confirmation Modal */}
+      {confirmDelete && (
+        <div className="confirm-modal-overlay">
+          <div className="confirm-modal">
+            <h3>⚠️ Confirm Deletion</h3>
+            <p>
+              Are you sure you want to {confirmDelete.type === 'builder' ? 'ban' : 'delete'}{' '}
+              <strong>{confirmDelete.name}</strong>?
+            </p>
+            {confirmDelete.type === 'builder' && (
+              <p className="warning-text">
+                This will remove the user account and all their generators. 
+                Generators with battle history will be soft-deleted to preserve data.
+              </p>
+            )}
+            {confirmDelete.type === 'generator' && (
+              <p className="warning-text">
+                This action cannot be undone. If this generator has battles, it will be marked inactive instead.
+              </p>
+            )}
+            <div className="confirm-actions">
+              <button className="cancel-btn" onClick={() => setConfirmDelete(null)}>
+                Cancel
+              </button>
+              <button 
+                className="danger-btn" 
+                onClick={() => executeDelete(confirmDelete.type, confirmDelete.id)}
+              >
+                {confirmDelete.type === 'builder' ? 'Ban User' : 'Delete Generator'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Overview Tab */}
       {activeTab === 'overview' && (
@@ -548,8 +639,161 @@ export function AdminPage() {
           </section>
         </div>
       )}
+
+      {/* Builders Tab */}
+      {activeTab === 'builders' && (
+        <div className="admin-builders">
+          <section className="admin-section">
+            <h3>👥 Registered Builders ({builders.length})</h3>
+            <p className="section-description">
+              All registered users sorted by their best generator rating.
+            </p>
+            {builders.length === 0 ? (
+              <p className="no-data">No registered builders yet.</p>
+            ) : (
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th># Generators</th>
+                    <th>Generator Names</th>
+                    <th>Best Rating</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {builders.map((builder) => (
+                    <tr key={builder.user_id}>
+                      <td>{builder.display_name}</td>
+                      <td>{builder.email}</td>
+                      <td>{builder.generator_count}</td>
+                      <td>
+                        {builder.generator_names.length > 0 
+                          ? builder.generator_names.join(', ')
+                          : <span className="dim">None</span>
+                        }
+                      </td>
+                      <td className={builder.best_rating > 0 ? 'rating-value' : 'dim'}>
+                        {builder.best_rating > 0 ? Math.round(builder.best_rating) : '—'}
+                      </td>
+                      <td>
+                        <button 
+                          className="ban-btn"
+                          onClick={() => setConfirmDelete({ 
+                            type: 'builder', 
+                            id: builder.user_id, 
+                            name: builder.email 
+                          })}
+                        >
+                          Ban
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </section>
+        </div>
+      )}
+
+      {/* Generators Tab */}
+      {activeTab === 'generators' && (
+        <div className="admin-generators-tab">
+          <section className="admin-section">
+            <h3>🎮 All Generators ({allGenerators.length})</h3>
+            <p className="section-description">
+              All generators sorted by rating. Inactive generators are shown at the bottom.
+            </p>
+            {allGenerators.length === 0 ? (
+              <p className="no-data">No generators found.</p>
+            ) : (
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Generator Name</th>
+                    <th>Builder Email</th>
+                    <th>Builder Name</th>
+                    <th>Rating</th>
+                    <th>Games</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {allGenerators.map((gen) => (
+                    <tr key={gen.generator_id} className={!gen.is_active ? 'inactive-row' : ''}>
+                      <td>
+                        <Link to={`/generator/${gen.generator_id}`} className="generator-link">
+                          {gen.name}
+                        </Link>
+                      </td>
+                      <td className={!gen.owner_id ? 'dim' : ''}>{gen.owner_email}</td>
+                      <td className={!gen.owner_id ? 'dim' : ''}>{gen.owner_name}</td>
+                      <td className="rating-value">{Math.round(gen.rating)}</td>
+                      <td>{gen.games_played}</td>
+                      <td>
+                        {gen.is_active 
+                          ? <span className="status-active">Active</span>
+                          : <span className="status-inactive">Inactive</span>
+                        }
+                      </td>
+                      <td>
+                        {gen.is_active && (
+                          <button 
+                            className="delete-btn"
+                            onClick={() => setConfirmDelete({ 
+                              type: 'generator', 
+                              id: gen.generator_id, 
+                              name: gen.name 
+                            })}
+                          >
+                            Delete
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </section>
+        </div>
+      )}
     </div>
   );
+
+  async function executeDelete(type: 'builder' | 'generator', id: string) {
+    try {
+      const endpoint = type === 'builder' 
+        ? `${API_BASE_URL}/v1/admin/builders/${id}`
+        : `${API_BASE_URL}/v1/admin/generators/${id}`;
+      
+      const response = await fetch(endpoint, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || 'Delete failed');
+      }
+      
+      // Refresh data
+      if (type === 'builder') {
+        setBuilders(prev => prev.filter(b => b.user_id !== id));
+      } else {
+        setAllGenerators(prev => prev.filter(g => g.generator_id !== id));
+      }
+      
+      setConfirmDelete(null);
+    } catch (err) {
+      console.error('Delete failed:', err);
+      alert(`Failed to delete: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      setConfirmDelete(null);
+    }
+  }
 
   async function downloadExport(type: 'votes' | 'trajectories' | 'level-stats' | 'player-profiles') {
     try {
