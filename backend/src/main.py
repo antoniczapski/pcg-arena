@@ -85,8 +85,8 @@ logger = logging.getLogger(__name__)
 
 # Allowed tags vocabulary (Stage 0)
 ALLOWED_TAGS = {
-    "fun", "boring", "good_flow", "creative", "unfair", "confusing",
-    "too_hard", "too_easy", "not_mario_like"
+    "fun", "boring", "creative", "too_hard", "too_easy", 
+    "impossible", "broken_graphics"
 }
 
 # Create FastAPI app

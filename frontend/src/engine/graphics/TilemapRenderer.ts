@@ -12,10 +12,6 @@ export class TilemapRenderer {
    * Render the level tilemap
    */
   render(ctx: CanvasRenderingContext2D, level: MarioLevel, camera: Camera): void {
-    // Background color
-    ctx.fillStyle = '#5c94fc'; // Mario sky blue
-    ctx.fillRect(0, 0, camera.width, camera.height);
-
     // Calculate visible tile range
     const startTileX = Math.floor(camera.x / 16);
     const endTileX = Math.min(Math.ceil((camera.x + camera.width) / 16), level.tileWidth);

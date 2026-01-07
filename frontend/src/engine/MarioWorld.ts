@@ -486,12 +486,23 @@ export class MarioWorld {
   }
 
   render(ctx: CanvasRenderingContext2D, tilemapRenderer: any, spriteRenderer: any, camera: any): void {
-    // Render tilemap
+    // 1. Draw Sky (Background)
+    ctx.fillStyle = '#5c94fc'; // Mario sky blue
+    ctx.fillRect(0, 0, camera.width, camera.height);
+
+    // 2. Render Flower Enemies (BEHIND pipes)
+    for (const sprite of this.sprites) {
+      if (sprite.alive && sprite.type === SpriteType.ENEMY_FLOWER) {
+        spriteRenderer.renderSprite(ctx, sprite, camera);
+      }
+    }
+
+    // 3. Render tilemap (Pipes are drawn here, covering the bottom of flowers)
     tilemapRenderer.render(ctx, this.level, camera);
 
-    // Render sprites
+    // 4. Render other sprites (In front of tiles)
     for (const sprite of this.sprites) {
-      if (sprite.alive) {
+      if (sprite.alive && sprite.type !== SpriteType.ENEMY_FLOWER) {
         spriteRenderer.renderSprite(ctx, sprite, camera);
       }
     }

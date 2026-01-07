@@ -12,12 +12,10 @@ export const AVAILABLE_TAGS = [
   { id: 'fun', label: '😄 Fun', color: '#22c55e' },
   { id: 'boring', label: '😴 Boring', color: '#6b7280' },
   { id: 'creative', label: '✨ Creative', color: '#a855f7' },
-  { id: 'good_flow', label: '🌊 Good Flow', color: '#3b82f6' },
   { id: 'too_hard', label: '💀 Too Hard', color: '#ef4444' },
   { id: 'too_easy', label: '🍼 Too Easy', color: '#fbbf24' },
-  { id: 'unfair', label: '😤 Unfair', color: '#f97316' },
-  { id: 'confusing', label: '❓ Confusing', color: '#8b5cf6' },
-  { id: 'not_mario_like', label: '🚫 Not Mario-like', color: '#64748b' },
+  { id: 'impossible', label: '🚫 Impossible', color: '#991b1b' },
+  { id: 'broken_graphics', label: '👾 Broken Graphics', color: '#ea580c' },
 ];
 
 const MAX_TAGS = 3;

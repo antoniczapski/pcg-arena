@@ -107,7 +107,7 @@ def _update_single_level_stats(
     for tag in tags:
         column = f"tag_{tag.replace('-', '_')}"
         # Only update if column exists (ignore invalid tags)
-        if tag in ["fun", "boring", "too_hard", "too_easy", "creative", "good_flow", "unfair", "confusing", "not_mario_like"]:
+        if tag in ["fun", "boring", "too_hard", "too_easy", "creative", "impossible", "broken_graphics"]:
             tag_updates.append(f"{column} = {column} + 1")
     
     # Build SQL update (times_play_skipped may not exist in older DBs, handle gracefully)
@@ -448,10 +448,8 @@ def get_level_stats(level_id: str) -> Optional[dict]:
             "too_hard": row["tag_too_hard"],
             "too_easy": row["tag_too_easy"],
             "creative": row["tag_creative"],
-            "good_flow": row["tag_good_flow"],
-            "unfair": row["tag_unfair"],
-            "confusing": row["tag_confusing"],
-            "not_mario_like": row["tag_not_mario_like"]
+            "impossible": row["tag_impossible"],
+            "broken_graphics": row["tag_broken_graphics"]
         },
         "difficulty": {
             "score": row["difficulty_score"],
