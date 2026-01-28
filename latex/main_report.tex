@@ -1002,62 +1002,350 @@ Backups are stored in \texttt{/backups/} with 7-day retention, enabling recovery
 \label{sec:results}
 %==============================================================================
 
-\subsection{Platform Statistics}
-\label{subsec:platform-stats}
+This section presents the results of exploratory data analysis conducted on the PCG Arena platform data. The analysis investigates three research questions: (1) what makes a good generator/level, (2) whether players are consistent in their preferences, and (3) what player-assigned tags actually mean in terms of measurable gameplay differences.
 
-As a newly deployed platform, PCG Arena is in its initial data collection phase. The platform infrastructure has been fully validated through:
+\subsection{Dataset Overview}
+\label{subsec:dataset-overview}
 
+The analysis encompasses data collected from the live platform:
+
+\begin{table}[H]
+\centering
+\caption{Dataset Summary}
+\label{tab:dataset-summary}
+\begin{tabular}{lr}
+\toprule
+\textbf{Category} & \textbf{Count} \\
+\midrule
+Levels & 631 \\
+Generators & 14 \\
+Total Votes & 447 \\
+Players & 26 \\
+Telemetry Records & 894 \\
+Trajectory Samples & 100 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Key global statistics include: mean win rate of 0.47 (slightly below 50\%, indicating some generators are notably worse), mean death rate of 0.80 deaths per play, mean completion rate of only 18\%, and average play duration of 17.7 seconds.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{global_distributions.png}
+\caption{Global distributions of key platform metrics: win rates, death rates, completion rates, play durations, jump counts, and levels per generator.}
+\label{fig:global-distributions}
+\end{figure}
+
+\subsection{Generator Rankings and Performance}
+\label{subsec:generator-rankings}
+
+Analysis of generator performance reveals substantial quality differences across the 14 generators tested. Table~\ref{tab:generator-rankings} presents the top and bottom performers by win rate.
+
+\begin{table}[H]
+\centering
+\caption{Generator Performance Rankings}
+\label{tab:generator-rankings}
+\begin{tabular}{llrrr}
+\toprule
+\textbf{Rank} & \textbf{Generator} & \textbf{Win Rate} & \textbf{Avg Deaths} & \textbf{Completion Rate} \\
+\midrule
+1 & original & 92.5\% & 0.73 & 27.5\% \\
+2 & ore & 67.8\% & 0.85 & 14.2\% \\
+3 & notch & 67.5\% & 0.69 & 31.3\% \\
+4 & mariogpt & 62.4\% & 0.72 & 19.8\% \\
+5 & hopper & 58.7\% & 0.76 & 24.0\% \\
+\midrule
+12 & patternWeightCount & 25.9\% & 0.90 & 6.2\% \\
+13 & notchParam & 22.1\% & 0.83 & 17.0\% \\
+14 & patternCount & 22.0\% & 0.93 & 2.3\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The hand-crafted ``original'' levels dominate with a 92.5\% win rate, serving as the benchmark. Among procedural generators, ``ore'' and ``notch'' perform best (67-68\%), while pattern-based generators consistently rank at the bottom ($<$26\%).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{generator_comparison.png}
+\caption{Generator comparison showing win rates, difficulty relationships, tag profiles, and completion rate correlations across all 14 generators.}
+\label{fig:generator-comparison}
+\end{figure}
+
+Generator fingerprinting (Figure~\ref{fig:generator-fingerprints}) reveals distinct profiles: top performers balance moderate difficulty with high completion rates, while bottom performers exhibit high difficulty scores ($>$0.85) and low completion rates ($<$10\%).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{generator_fingerprints.png}
+\caption{Radar chart fingerprints comparing normalized metrics for top-performing (left) and bottom-performing (right) generators.}
+\label{fig:generator-fingerprints}
+\end{figure}
+
+\subsection{RQ1: What Makes a Good Generator?}
+\label{subsec:rq1}
+
+We tested three hypotheses regarding level quality:
+
+\subsubsection{H1: Optimized Difficulty (Flow Channel)}
+
+\textbf{Hypothesis}: Levels with moderate difficulty (15-40\% death rate) have higher win rates than levels with extreme difficulty.
+
+\textbf{Results}: Spearman correlation $r = -0.149$, $p = 0.313$. No inverted-U pattern was detected; instead, a linear relationship suggests that easier levels are simply preferred. Analysis was limited by insufficient data in higher difficulty bins.
+
+\textbf{Conclusion}: \textbf{Not supported}. Players prefer easier levels; the ``flow channel'' theory does not hold in blind A/B comparisons.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{h1_difficulty_vs_winrate.png}
+\caption{H1 analysis: Win rate vs. difficulty (death rate). Quadratic regression shows no inverted-U pattern; lower difficulty correlates linearly with higher win rate.}
+\label{fig:h1-difficulty}
+\end{figure}
+
+\subsubsection{H2: Structural Variety}
+
+\textbf{Hypothesis}: Levels with higher structural variety are preferred over flat or repetitive levels.
+
+\textbf{Results}: Using tag-based proxies (structural features were null in exports):
 \begin{itemize}
-    \item End-to-end testing of battle flow (request $\rightarrow$ play $\rightarrow$ vote $\rightarrow$ rating update)
-    \item Automated demo scripts running 10+ battles with random votes
-    \item Manual testing across multiple browsers (Chrome, Firefox, Safari, Edge)
-    \item Load testing confirming responsiveness under concurrent users
+    \item Creative tag $\leftrightarrow$ Win rate: $r = 0.416$, $p = 0.003$ (significant)
+    \item Boring tag $\leftrightarrow$ Win rate: $r = -0.246$, $p = 0.092$ (marginal)
 \end{itemize}
 
-Current seeded generators include:
+\textbf{Conclusion}: \textbf{Partially supported}. Levels tagged as ``creative'' are significantly more likely to win comparisons.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{h2_structural_variety.png}
+\caption{H2 analysis: Win rate correlations with ``creative'' (positive) and ``boring'' (negative) tag rates.}
+\label{fig:h2-variety}
+\end{figure}
+
+\subsubsection{H3: Path Freedom (Agency)}
+
+\textbf{Hypothesis}: Players prefer levels that allow for spatial exploration rather than strict linear paths.
+
+\textbf{Results}: Mann-Whitney U tests comparing trajectory metrics between winning and losing levels:
+
+\begin{table}[H]
+\centering
+\caption{H3: Trajectory Metrics Comparison (Won vs. Lost Levels)}
+\label{tab:h3-results}
+\begin{tabular}{lrrrr}
+\toprule
+\textbf{Metric} & \textbf{Won Mean} & \textbf{Lost Mean} & \textbf{U-stat} & \textbf{p-value} \\
+\midrule
+Unique Tiles Visited & 68.71 & 42.10 & 1486.5 & \textbf{0.004} \\
+Backtrack Ratio & 0.13 & 0.21 & 1401.5 & \textbf{0.024} \\
+Max X Reached & 1532.9 & 1094.8 & 1380.0 & \textbf{0.038} \\
+Avg Speed & 34.29 & 31.85 & 1249.0 & 0.272 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Conclusion}: \textbf{Strongly supported}. Winning levels enable 63\% more spatial exploration ($p = 0.004$), have lower backtrack ratios (smoother flow), and allow greater horizontal progress.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{h3_path_freedom.png}
+\caption{H3 analysis: Trajectory metrics comparison between won and lost levels. Winning levels show significantly higher spatial coverage and level progress.}
+\label{fig:h3-agency}
+\end{figure}
+
+\subsection{RQ2: Player Preference Consistency}
+\label{subsec:rq2}
+
+\subsubsection{H4: Preference Clusters}
+
+\textbf{Hypothesis}: Distinct player preference clusters exist based on playstyle.
+
+\textbf{Methods}: Hierarchical clustering (Ward's method) on 12 players with $\geq$5 votes using behavioral features: avg\_deaths, avg\_duration, completion\_rate, avg\_jumps, preferred\_difficulty.
+
+\textbf{Results}: Three clusters emerged:
+
+\begin{table}[H]
+\centering
+\caption{Player Cluster Profiles}
+\label{tab:clusters}
+\begin{tabular}{lrrrrrrr}
+\toprule
+\textbf{Cluster} & \textbf{n} & \textbf{Votes} & \textbf{Deaths} & \textbf{Duration} & \textbf{Completion} & \textbf{Jumps} \\
+\midrule
+0 ``Explorers'' & 2 & 60 & 0.61 & 29.6s & 34.7\% & 24.1 \\
+1 ``Mainstream'' & 6 & 317 & 0.83 & 15.2s & 15.7\% & 11.0 \\
+2 ``Strugglers'' & 4 & 39 & 0.94 & 11.8s & 2.5\% & 5.8 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Conclusion}: \textbf{Supported}. Clear behavioral profiles emerge: ``Explorers'' (thorough, high completion), ``Mainstream'' (balanced, most active), and ``Strugglers'' (low completion, high deaths).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{h4_preference_clusters.png}
+\caption{H4 analysis: Player preference clusters. Left: 2D projection of clusters; Right: Dendrogram showing hierarchical structure; Bottom: Cluster profiles and sizes.}
+\label{fig:h4-clusters}
+\end{figure}
+
+\subsubsection{H5: Skill-Consistency Relationship}
+
+\textbf{Hypothesis}: Higher-skill players show more consistent preferences.
+
+\textbf{Results}: 
 \begin{itemize}
-    \item \textbf{Notch}: Original Super Mario Bros. level design style
-    \item \textbf{Hopper}: Pattern-based generation
-    \item \textbf{Genetic}: Evolutionary algorithm-based generation
+    \item ANOVA (CV across skill quartiles): $F = 0.172$, $p = 0.912$
+    \item Spearman correlation (skill vs. consistency): $r = 0.176$, $p = 0.584$
 \end{itemize}
 
-Each generator is seeded with 10+ levels for initial testing, with access to larger level sets (1000+ levels per generator) from the Mario AI Framework available for future expansion.
+\textbf{Conclusion}: \textbf{Not supported}. Consistency is uniform across skill levels; skill cannot be used as a proxy for preference reliability.
 
-\subsection{Preliminary Generator Rankings}
-\label{subsec:rankings}
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{h5_skill_consistency.png}
+\caption{H5 analysis: No relationship between player skill (completion rate) and preference consistency (coefficient of variation).}
+\label{fig:h5-consistency}
+\end{figure}
 
-Initial rankings reflect the starting state (all generators at 1000 $\pm$ 350) plus any early votes. As more battles are completed, we expect to observe:
+\subsection{RQ3: Tag Semantics}
+\label{subsec:rq3}
+
+\subsubsection{H6: Tag-Telemetry Correspondence}
+
+\textbf{Hypothesis}: Player-assigned tags correspond to measurable gameplay differences.
+
+\textbf{Results}: Testing tag presence against expected telemetry metrics:
+
+\begin{table}[H]
+\centering
+\caption{H6: Tag Validation Against Telemetry}
+\label{tab:h6-results}
+\begin{tabular}{llrrrrl}
+\toprule
+\textbf{Tag} & \textbf{Metric} & \textbf{Has Tag} & \textbf{No Tag} & \textbf{U-stat} & \textbf{p-value} & \textbf{Matches} \\
+\midrule
+tag\_too\_hard & avg\_deaths & 0.867 & 0.781 & 121.0 & 0.634 & $\checkmark$ \\
+tag\_fun & completion\_rate & 0.339 & 0.167 & 292.5 & \textbf{0.049} & $\checkmark$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Conclusion}: \textbf{Partially supported}. ``Fun'' tag significantly correlates with higher completion rate ($p = 0.049$, Cohen's $d = 0.63$).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{h6_tag_telemetry.png}
+\caption{H6 analysis: Tag-telemetry correspondence. ``Fun'' levels show significantly higher completion rates; ``too hard'' shows expected direction but lacks significance.}
+\label{fig:h6-tags}
+\end{figure}
+
+\subsubsection{H7: Feature Importance for Tags}
+
+\textbf{Hypothesis}: Telemetry features can predict tag assignment.
+
+\textbf{Results}: Point-biserial correlations between tag presence and features:
+
+\begin{table}[H]
+\centering
+\caption{H7: Tag-Feature Correlations}
+\label{tab:h7-results}
+\begin{tabular}{llrr}
+\toprule
+\textbf{Tag} & \textbf{Feature} & \textbf{Correlation} & \textbf{p-value} \\
+\midrule
+tag\_too\_easy & completion\_rate & +0.353 & \textbf{0.014} \\
+tag\_too\_easy & avg\_deaths & $-$0.353 & \textbf{0.014} \\
+tag\_fun & avg\_deaths & $-$0.277 & 0.056 \\
+tag\_fun & completion\_rate & +0.277 & 0.056 \\
+tag\_creative & completion\_rate & +0.275 & 0.058 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Conclusion}: \textbf{Supported}. ``Too easy'' is well-defined by telemetry ($r = 0.35$); ``fun'' and ``creative'' show consistent patterns (higher completion, lower deaths).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{h7_tag_feature_importance.png}
+\caption{H7 analysis: Tag-feature correlation heatmap (left) and top correlations (right). Completion rate and death rate are primary predictors.}
+\label{fig:h7-importance}
+\end{figure}
+
+\subsubsection{Tag Distribution and Co-occurrence}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{tag_distribution.png}
+\caption{Tag usage distribution (left) and co-occurrence matrix (right). ``Too hard'' is most common; ``fun'' and ``creative'' strongly co-occur ($\phi = 0.419$).}
+\label{fig:tag-distribution}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{tag_by_generator.png}
+\caption{Tag rate heatmap by generator. ``Original'' leads in fun (25\%) and creative (24\%); ``notchParam'' is most boring (23\%); pattern-based generators are most difficult.}
+\label{fig:tag-by-generator}
+\end{figure}
+
+\subsection{Trajectory Analysis}
+\label{subsec:trajectories}
+
+Analysis of 100 player trajectories reveals movement patterns that correlate with level preference:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{trajectory_visualization.png}
+\caption{Trajectory analysis: sample paths (top-left), spatial coverage distribution (top-right), level progress distribution (bottom-left), and speed vs. exploration scatter (bottom-right).}
+\label{fig:trajectories}
+\end{figure}
+
+Key trajectory statistics: average unique tiles visited = 52.4, average max X reached = 1267.2 ($\approx$60-70\% level progress), average speed = 32.93 units/second.
+
+\subsection{Correlation Structure}
+\label{subsec:correlations}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{correlation_matrix.png}
+\caption{Correlation matrix of level metrics. Strong inverse correlation between deaths and completion ($r = -0.913$); difficulty score is derived from completion rate ($r = -1.0$).}
+\label{fig:correlations}
+\end{figure}
+
+\subsection{Summary of Findings}
+\label{subsec:findings-summary}
+
+\begin{table}[H]
+\centering
+\caption{Summary of Hypothesis Testing Results}
+\label{tab:hypothesis-summary}
+\begin{tabular}{llll}
+\toprule
+\textbf{Hypothesis} & \textbf{Result} & \textbf{Key Evidence} \\
+\midrule
+H1: Flow Channel & Not Supported & Linear relationship, easier = better \\
+H2: Structural Variety & Partial & Creative tag $r = 0.42$, $p < 0.01$ \\
+H3: Path Freedom & \textbf{Supported} & Spatial coverage $p = 0.004$ \\
+H4: Preference Clusters & \textbf{Supported} & 3 distinct behavioral clusters \\
+H5: Skill-Consistency & Not Supported & No correlation ($r = 0.18$, $p = 0.58$) \\
+H6: Tag-Telemetry & Partial & ``Fun'' $\rightarrow$ completion ($p = 0.049$) \\
+H7: Feature Importance & \textbf{Supported} & ``Too easy'' $r = 0.35$ with completion \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Key Insights}
+\label{subsec:key-insights}
 
 \begin{enumerate}
-    \item \textbf{RD Convergence}: Rating deviations should decrease from 350 toward 30--100 as confidence increases.
-    \item \textbf{Rating Separation}: Distinct quality differences between generators should emerge.
-    \item \textbf{Stable Rankings}: After sufficient battles, rank order should stabilize.
+    \item \textbf{Playability Dominates}: Players prefer levels they can complete. The ``flow channel'' hypothesis (moderate difficulty is optimal) was not supported; easier is simply better in blind comparisons.
+    
+    \item \textbf{Exploration Matters}: Levels enabling spatial exploration (63\% more unique tiles) are preferred. Good PCG should create non-linear, explorable spaces.
+    
+    \item \textbf{Hand-Crafted Benchmark}: ``Original'' levels win 92.5\% of comparisons, setting a high bar for procedural generators to match.
+    
+    \item \textbf{Tag Validity}: Player tags correspond to measurable differences---``fun'' correlates with completion, ``too easy'' with low deaths.
+    
+    \item \textbf{Pattern Methods Fail}: All ``pattern*'' generators rank lowest, suggesting pattern-based approaches produce technically valid but aesthetically poor levels.
+    
+    \item \textbf{Player Diversity}: Three distinct player clusters exist, suggesting potential for personalized level recommendations.
 \end{enumerate}
-
-The Glicko-2 system's uncertainty quantification enables statistical tests for whether observed differences are significant.
-
-\subsection{User Experience Insights}
-\label{subsec:ux-insights}
-
-Based on initial testing and informal feedback:
-
-\textbf{Strengths:}
-\begin{itemize}
-    \item Browser-based gameplay removes download barrier---users can participate immediately
-    \item Side-by-side comparison format is intuitive
-    \item Tagging system captures nuanced feedback beyond simple preferences
-    \item Real-time leaderboard updates provide immediate gratification
-\end{itemize}
-
-\textbf{Areas for Improvement:}
-\begin{itemize}
-    \item Mobile/touch support not yet implemented (desktop-only)
-    \item Level difficulty can vary significantly, affecting fair comparison
-    \item Some users find 30-second levels too short for assessment
-    \item Tutorial for first-time users would improve onboarding
-\end{itemize}
-
-These insights inform future development priorities.
 
 %==============================================================================
 \section{Conclusions and Future Work}

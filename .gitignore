@@ -46,3 +46,27 @@ logs/
 .env.local
 /Mario-AI-Framework-PCG/
 
+# LaTeX auxiliary files
+latex/*.aux
+latex/*.bbl
+latex/*.bcf
+latex/*.blg
+latex/*.fdb_latexmk
+latex/*.fls
+latex/*.lof
+latex/*.lot
+latex/*.out
+latex/*.run.xml
+latex/*.synctex.gz
+latex/*.toc
+latex/*.nav
+latex/*.snm
+latex/*.vrb
+latex/*.idx
+latex/*.ilg
+latex/*.ind
+latex/*.bak
+latex/*-blx.bib
+# Keep the PDF for convenience (comment out if you want to ignore it too)
+# latex/*.pdf
+
