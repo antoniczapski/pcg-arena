@@ -1653,6 +1653,185 @@ Exp D: Style Matching & \textbf{Supported} & $D_M$ vs win rate $r = -0.32$, $p =
 \end{enumerate}
 
 %==============================================================================
+\section{Mario-DPO: Toward SOTA Level Generation}
+\label{sec:mario-dpo}
+%==============================================================================
+
+Building on the EDA insights and Judge Function experiments, this section presents \textbf{Mario-DPO}, a proposed framework for training a state-of-the-art procedural level generator using Direct Preference Optimization (DPO)~\cite{rafailov2023dpo}. The goal is to create a generator that achieves statistical parity ($>50\%$ win rate) against human-designed ``Original'' levels in PCG Arena.
+
+\subsection{Framework Architecture}
+\label{subsec:dpo-architecture}
+
+Mario-DPO follows a three-phase training pipeline:
+
+\textbf{Phase 1: Supervised Fine-Tuning (SFT)}
+\begin{itemize}
+    \item Base model: GPT-2 (124M parameters) with character-level tokenization
+    \item Training corpus: 15 Original (Nintendo-style) levels from the seed dataset
+    \item Token vocabulary: 37 unique ASCII tile characters
+    \item Context length: 2048 tokens ($\approx$ 128 columns $\times$ 16 rows)
+\end{itemize}
+
+\textbf{Phase 2: RLAIF Data Expansion}
+
+Using the validated Judge Function $J_{final}$ to expand the preference dataset:
+\begin{equation}
+J_{final} = J_{static} + J_{dynamic}
+\end{equation}
+where:
+\begin{equation}
+J_{static} = w_{style} \cdot \frac{1}{1 + D_M} - w_{gap} \cdot \text{GapPenalty}
+\end{equation}
+\begin{equation}
+J_{dynamic} = w_{vert} \cdot \sigma_y + w_{flow} \cdot (1 - \text{Hesitation})
+\end{equation}
+
+The weights are derived from EDA experiments:
+\begin{itemize}
+    \item $w_{style} = 0.32$ (from Exp D: $r = -0.324$)
+    \item $w_{gap} = 0.50$ (from Exp B: pattern generator failure)
+    \item $w_{vert} = 0.26$ (from Exp A: $r = 0.263$)
+    \item $w_{flow} = 0.10$ (from hesitation correlation)
+\end{itemize}
+
+\textbf{Phase 3: DPO Fine-Tuning}
+
+Apply Direct Preference Optimization using the combined preference dataset:
+\begin{equation}
+\mathcal{L}_{DPO}(\pi_\theta; \pi_{ref}) = -\mathbb{E}_{(x, y_w, y_l) \sim D} \left[ \log \sigma \left( \beta \log \frac{\pi_\theta(y_w|x)}{\pi_{ref}(y_w|x)} - \beta \log \frac{\pi_\theta(y_l|x)}{\pi_{ref}(y_l|x)} \right) \right]
+\end{equation}
+
+\subsection{Preference Dataset Analysis}
+\label{subsec:preference-dataset}
+
+Using fresh data from PCG Arena (January 2026), we constructed a combined preference dataset:
+
+\begin{table}[H]
+\centering
+\caption{DPO Training Dataset Composition}
+\label{tab:dpo-dataset}
+\begin{tabular}{lrrr}
+\toprule
+\textbf{Source} & \textbf{Pairs} & \textbf{Weight} & \textbf{Effective Size} \\
+\midrule
+Human Preferences (votes) & 428 & $10\times$ & 4,280 \\
+Synthetic (Judge Function) & 2,637 & $1\times$ & 2,637 \\
+\midrule
+\textbf{Total} & 3,065 & --- & \textbf{6,917} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Human preference pairs are weighted $10\times$ to prioritize real player feedback while using synthetic pairs for coverage expansion.
+
+\subsection{Judge Function Validation}
+\label{subsec:judge-validation}
+
+The Judge Function correlates strongly with human win rates at the generator level:
+
+\begin{equation}
+\rho(J_{final}, \text{WinRate}) = 0.812, \quad p = 0.0008
+\end{equation}
+
+This high correlation validates the use of $J_{final}$ for RLAIF (Reinforcement Learning from AI Feedback) data expansion. The automated Judge can reliably substitute for human feedback when generating synthetic preference pairs.
+
+\begin{table}[H]
+\centering
+\caption{Generator Rankings: Human Win Rate vs Judge Score}
+\label{tab:generator-rankings}
+\begin{tabular}{lrrr}
+\toprule
+\textbf{Generator} & \textbf{Win Rate} & \textbf{$J_{final}$} & \textbf{Style $D_M$} \\
+\midrule
+original & 0.892 & 0.235 & 6.37 \\
+ore & 0.725 & 0.143 & 8.29 \\
+notch & 0.692 & 0.166 & 8.39 \\
+mariogpt & 0.625 & 0.100 & 9.37 \\
+hopper & 0.598 & 0.133 & 8.85 \\
+genetic & 0.554 & 0.113 & 9.57 \\
+mariogan & 0.500 & 0.155 & 8.06 \\
+patternWeightCount & 0.298 & $-0.417$ & 9.14 \\
+patternOccur & 0.271 & $-0.385$ & 8.24 \\
+patternCount & 0.220 & $-0.460$ & 9.89 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Key observations:
+\begin{itemize}
+    \item \textbf{Original dominance persists}: 89.2\% win rate sets the benchmark
+    \item \textbf{Pattern generators receive negative $J_{final}$}: The gap penalty correctly identifies problematic generators
+    \item \textbf{Neural generators show promise}: MarioGPT (0.625) and MarioGAN (0.500) are prime candidates for DPO improvement
+\end{itemize}
+
+\subsection{Level Corpus Statistics}
+\label{subsec:corpus-stats}
+
+Analysis of the complete level corpus:
+
+\begin{table}[H]
+\centering
+\caption{Level Corpus Summary}
+\label{tab:corpus-summary}
+\begin{tabular}{lr}
+\toprule
+\textbf{Metric} & \textbf{Value} \\
+\midrule
+Total Level Files & 1,215 \\
+Original (Training) Levels & 15 \\
+Tile Vocabulary Size & 37 \\
+Average Level Height & 15.7 tiles \\
+Average Level Width & 193.8 tiles \\
+Levels per Generator & $\sim$100 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The 37-character ASCII tile vocabulary enables efficient character-level tokenization without subword complexity.
+
+\subsection{Proposed Training Configuration}
+\label{subsec:training-config}
+
+Based on the dataset analysis, we propose:
+
+\begin{lstlisting}[language=Python,caption=Mario-DPO Training Configuration]
+# DPO Training Configuration
+model:
+  base: gpt2-small (124M params)
+  tokenizer: character-level (37 tokens)
+  context_length: 2048
+
+data:
+  human_pairs: 428 (x10 weight)
+  synthetic_pairs: 2637
+  effective_size: 6917
+
+dpo:
+  beta: 0.1          # KL penalty
+  learning_rate: 1e-5
+  epochs: 3
+  batch_size: 32
+
+inference:
+  rejection_sampling_n: 10
+  playability_filter: A* check
+  style_conditioning: [STYLE: NINTENDO]
+\end{lstlisting}
+
+\subsection{Expected Outcomes}
+\label{subsec:expected-outcomes}
+
+If successful, Mario-DPO would:
+\begin{enumerate}
+    \item Generate levels achieving $>50\%$ win rate against Original in blind A/B tests
+    \item Produce playable levels (A* verification) without post-hoc filtering
+    \item Match the ``Nintendo style'' measured by low Mahalanobis distance $D_M$
+    \item Enable style-conditioned generation via prompt tokens
+\end{enumerate}
+
+This work would represent a significant advancement in learned PCG, demonstrating that preference alignment can bridge the quality gap between procedural and hand-crafted content.
+
+%==============================================================================
 \section{Conclusions and Future Work}
 \label{sec:conclusions}
 %==============================================================================
@@ -1744,6 +1923,10 @@ A.~Khalifa, M.~C.~Green, D.~Perez-Liebana, and J.~Togelius, ``General Video Game
 \bibitem{summerville2018}
 A.~Summerville, S.~Snodgrass, M.~Guzdial, C.~Holmg{\aa}rd, A.~K.~Hoover, A.~Isaksen, A.~Nealen, and J.~Togelius, ``Procedural Content Generation via Machine Learning (PCGML),''
 \emph{IEEE Transactions on Games}, vol.~10, no.~3, pp.~257--270, 2018.
+
+\bibitem{rafailov2023dpo}
+R.~Rafailov, A.~Sharma, E.~Mitchell, S.~Ermon, C.~D. Manning, and C.~Finn, ``Direct Preference Optimization: Your Language Model is Secretly a Reward Model,''
+\emph{Advances in Neural Information Processing Systems (NeurIPS)}, vol.~36, 2023.
 
 \end{thebibliography}
 
