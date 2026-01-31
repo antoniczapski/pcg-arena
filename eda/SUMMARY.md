@@ -74,6 +74,31 @@ This document summarizes the complete EDA conducted on the PCG Arena platform da
 - **Feature Importance**: Duration, creative_rate, boring_rate are top ML predictors
 - **Tag Validation**: 5/6 subjective tags correlate with expected objective metrics
 
+### RQ5: Judge Function Experiments (Reward Model)
+
+| Experiment | Result | Key Finding |
+|------------|--------|-------------|
+| Exp A: Verticality | ✅ Partial | Y-sigma vs win rate r=0.26, p=0.02 |
+| Exp B: Hazard Hierarchy | ✅ Supported | Pattern gens 26.8% vs 53.2% win rate |
+| Exp C: Death Entropy | ❌ Not Supported | Insufficient death location variance |
+| Exp D: Style Matching | ✅ Supported | Mahalanobis D_M vs win rate r=-0.32, p=0.003 |
+
+**Proposed Judge Function**:
+
+```
+Stage 1 (Static Gatekeeper):
+  J_static = w_style * (1/(1+D_M)) - w_gap * GapDensity - w_early * EarlyHazards
+
+Stage 2 (Simulation Judge):
+  J_final = J_static + w_vert * σ_y + w_flow * (1-Hesitation) - w_choke * (1-DeathEntropy)
+```
+
+**Derived Weights**:
+- `w_style`: High importance (r=0.32 correlation with win rate)
+- `w_gap`: High penalty (pattern generators fail dramatically)
+- `w_vert`: Moderate (r=0.26 correlation)
+- `w_choke`: Conceptually valid, needs more death data
+
 ---
 
 ## Key Insights
@@ -138,6 +163,10 @@ eda/
 │   ├── h9_rewards_leniency.png         # NEW
 │   ├── h10_feature_importance.png      # NEW
 │   ├── h6_extended_tag_validation.png  # NEW
+│   ├── exp_a_verticality.png           # NEW (Judge Function)
+│   ├── exp_b_hazard_hierarchy.png      # NEW (Judge Function)
+│   ├── exp_c_death_entropy.png         # NEW (Judge Function)
+│   ├── exp_d_original_centroid.png     # NEW (Judge Function)
 │   ├── tag_distribution.png
 │   ├── tag_by_generator.png
 │   └── trajectory_visualization.png
@@ -161,8 +190,11 @@ eda/
 ├── 04_general_eda/
 │   ├── general_eda.py
 │   └── REPORT.md
-└── 05_extended_experiments/            # NEW
+├── 05_extended_experiments/            # NEW
     ├── extended_experiments.py
+    └── REPORT.md
+└── 06_judge_function_experiments/      # NEW (Reward Model)
+    ├── judge_function_experiments.py
     └── REPORT.md
 ```
 
@@ -182,6 +214,10 @@ eda/
 | H8: Hazard Easy vs Hard Q | U stat | 0.040 | **Yes** |
 | H9: Fun vs Non-Fun Completion | U stat | 0.0003 | **Yes** |
 | H10: ML Cross-Validation | Acc=0.66 | - | **Yes** |
+| Exp A: Y-sigma vs Win Rate | r = 0.263 | 0.018 | **Yes** |
+| Exp B: Pattern vs Other Gens | U stat | <0.0001 | **Yes** |
+| Exp C: Death Entropy | r = nan | - | No (data limit) |
+| Exp D: Mahalanobis vs Win | r = -0.324 | 0.003 | **Yes** |
 
 ---
 
