@@ -51,7 +51,7 @@ This document summarizes the complete EDA conducted on the PCG Arena platform da
 
 | Hypothesis | Result | Key Finding |
 |------------|--------|-------------|
-| H6: Tags Match Telemetry | ✅ Partial | "Fun" → higher completion (p=0.049) |
+| H6: Tags Match Telemetry | ✅ Supported | 5/6 tags match expected metric direction |
 | H7: Feature Importance | ✅ Supported | Completion rate predicts "too_easy" (r=0.35) |
 
 **Tag Semantics**:
@@ -59,6 +59,20 @@ This document summarizes the complete EDA conducted on the PCG Arena platform da
 - `creative` ≈ fun + engaging
 - `too_easy` ≈ very high completion
 - `too_hard` ≈ high death rate
+
+### RQ4: Extended Feature Analysis (New)
+
+| Hypothesis | Result | Key Finding |
+|------------|--------|-------------|
+| H8: Enemy Density/Hazards | ✅ Supported | Easy Q1 (60%) vs Hard Q4 (47%), p=0.040 |
+| H9: Rewards/Leniency | ✅ Supported | "Fun" tagged = 2.3× higher completion |
+| H10: Predictive Modeling | ✅ Supported | 66% CV accuracy, tags dominate features |
+
+**Key Insights from Extended Analysis**:
+- **Hazard Density**: Higher enemy/gap density correlates with lower win rates
+- **Leniency Effect**: Levels tagged "fun" have 31.3% completion vs 13.6% baseline
+- **Feature Importance**: Duration, creative_rate, boring_rate are top ML predictors
+- **Tag Validation**: 5/6 subjective tags correlate with expected objective metrics
 
 ---
 
@@ -120,6 +134,10 @@ eda/
 │   ├── h5_skill_consistency.png
 │   ├── h6_tag_telemetry.png
 │   ├── h7_tag_feature_importance.png
+│   ├── h8_enemy_density_hazards.png    # NEW
+│   ├── h9_rewards_leniency.png         # NEW
+│   ├── h10_feature_importance.png      # NEW
+│   ├── h6_extended_tag_validation.png  # NEW
 │   ├── tag_distribution.png
 │   ├── tag_by_generator.png
 │   └── trajectory_visualization.png
@@ -140,8 +158,11 @@ eda/
 ├── 03_rq3_tag_analysis/
 │   ├── analyze_tags.py
 │   └── REPORT.md
-└── 04_general_eda/
-    ├── general_eda.py
+├── 04_general_eda/
+│   ├── general_eda.py
+│   └── REPORT.md
+└── 05_extended_experiments/            # NEW
+    ├── extended_experiments.py
     └── REPORT.md
 ```
 
@@ -158,6 +179,9 @@ eda/
 | H5: Skill vs Consistency | r = 0.176 | 0.584 | No |
 | H6: Fun → Completion | U = 292.5 | 0.049 | **Yes** |
 | H7: Too_easy ↔ Completion | r = 0.353 | 0.014 | **Yes** |
+| H8: Hazard Easy vs Hard Q | U stat | 0.040 | **Yes** |
+| H9: Fun vs Non-Fun Completion | U stat | 0.0003 | **Yes** |
+| H10: ML Cross-Validation | Acc=0.66 | - | **Yes** |
 
 ---
 

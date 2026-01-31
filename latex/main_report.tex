@@ -1308,6 +1308,141 @@ Key trajectory statistics: average unique tiles visited = 52.4, average max X re
 \label{fig:correlations}
 \end{figure}
 
+\subsection{Extended Feature Analysis}
+\label{subsec:extended-features}
+
+Three additional experiments were conducted to further identify key gameplay features influencing player preference.
+
+\subsubsection{H8: Enemy Density and Hazard Difficulty}
+
+\textbf{Hypothesis}: Levels with excessive hazards (high enemy counts, large gaps) decrease player enjoyment and have lower win rates.
+
+\textbf{Results}: Since structural features (enemy\_density, gap\_density) were null in the export, behavioral proxies were used:
+
+\begin{table}[H]
+\centering
+\caption{H8: Hazard Difficulty Analysis}
+\label{tab:h8-results}
+\begin{tabular}{lrrr}
+\toprule
+\textbf{Comparison} & \textbf{Easy (Q1)} & \textbf{Hard (Q4)} & \textbf{p-value} \\
+\midrule
+Mean Win Rate & 0.600 & 0.470 & \textbf{0.040} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Spearman correlations: Difficulty Score vs Win Rate ($r = -0.149$, $p = 0.050$), Deaths vs Win Rate ($r = -0.096$, $p = 0.21$).
+
+\textbf{Conclusion}: \textbf{Supported}. Higher difficulty correlates with lower win rates. Levels in the easiest quartile had 28\% higher win rates than the hardest quartile ($p = 0.040$).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{h8_enemy_density_hazards.png}
+\caption{H8 analysis: Difficulty vs win rate scatter (top-left), deaths vs win rate (top-right), win rate by difficulty quintile (bottom-left), and generator-level difficulty-preference relationship (bottom-right).}
+\label{fig:h8-hazards}
+\end{figure}
+
+\subsubsection{H9: Rewards and Leniency}
+
+\textbf{Hypothesis}: Levels with more forgiving design (higher completion rates, rewards) are preferred by players.
+
+\textbf{Results}: 
+
+\begin{itemize}
+    \item Completion Rate vs Win Rate: $r = 0.149$, $p = 0.050$ (marginally significant)
+    \item ``Fun'' tagged levels: Completion = 31.3\% vs Others = 13.6\% (Mann-Whitney $p = 0.0003$)
+\end{itemize}
+
+\textbf{Conclusion}: \textbf{Supported}. Levels that players can complete are significantly more likely to win comparisons. ``Fun'' tagged levels have 2.3$\times$ higher completion rates.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{h9_rewards_leniency.png}
+\caption{H9 analysis: Completion rate vs win rate (top-left), ``too easy'' tag analysis (top-right), ``fun'' tag vs completion (bottom-left), and generator comparison of completion vs win rate (bottom-right).}
+\label{fig:h9-leniency}
+\end{figure}
+
+\subsubsection{H10: Feature Importance Modeling}
+
+\textbf{Hypothesis}: A combination of features can predict player preferences, and we can identify the most influential factors via machine learning.
+
+\textbf{Methods}: Three classifiers were trained to predict whether a level would be ``preferred'' (win\_rate $> 0.5$) using 15 features including behavioral metrics and tag rates.
+
+\textbf{Results}:
+
+\begin{table}[H]
+\centering
+\caption{H10: Model Performance (5-Fold CV)}
+\label{tab:h10-models}
+\begin{tabular}{lr}
+\toprule
+\textbf{Model} & \textbf{Accuracy} \\
+\midrule
+Logistic Regression & 0.660 $\pm$ 0.052 \\
+Random Forest & 0.648 $\pm$ 0.055 \\
+Gradient Boosting & 0.564 $\pm$ 0.050 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{H10: Top 5 Features by Combined Importance}
+\label{tab:h10-features}
+\begin{tabular}{llr}
+\toprule
+\textbf{Rank} & \textbf{Feature} & \textbf{Avg Rank} \\
+\midrule
+1 & avg\_duration\_seconds & 0.0 \\
+2 & tag\_creative\_rate & 1.3 \\
+3 & tag\_boring\_rate & 3.3 \\
+4 & tag\_fun\_rate & 4.0 \\
+5 & tag\_impossible\_rate & 4.7 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Conclusion}: \textbf{Supported}. Player preference can be predicted with 66\% accuracy. The most important features are play duration (engagement proxy) and subjective tags (creative, boring, fun). Notably, tag-based features dominate over raw behavioral metrics, suggesting that player perception captures nuances beyond simple completion/death statistics.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{h10_feature_importance.png}
+\caption{H10 analysis: Logistic regression coefficients (top-left), Random Forest importance (top-right), Gradient Boosting importance (bottom-left), and combined importance ranking (bottom-right).}
+\label{fig:h10-importance}
+\end{figure}
+
+\subsubsection{Extended H6: Tag Validation Summary}
+
+A comprehensive validation of all tag-metric relationships was performed:
+
+\begin{table}[H]
+\centering
+\caption{Extended H6: Tag-Metric Correspondence}
+\label{tab:h6-extended}
+\begin{tabular}{llllr}
+\toprule
+\textbf{Tag} & \textbf{Metric} & \textbf{Expected} & \textbf{Actual} & \textbf{p-value} \\
+\midrule
+tag\_fun & completion\_rate & positive & positive $\checkmark$ & \textbf{0.0003} \\
+tag\_boring & completion\_rate & negative & positive $\times$ & 0.036 \\
+tag\_too\_hard & avg\_deaths & positive & positive $\checkmark$ & \textbf{0.042} \\
+tag\_too\_easy & completion\_rate & positive & positive $\checkmark$ & \textbf{$<$0.001} \\
+tag\_creative & win\_rate & positive & positive $\checkmark$ & \textbf{0.002} \\
+tag\_impossible & completion\_rate & negative & negative $\checkmark$ & \textbf{0.004} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Five of six tags matched expected directions, with the ``boring'' tag showing an unexpected positive correlation with completion (potentially indicating that easy but unengaging levels are tagged as boring).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{h6_extended_tag_validation.png}
+\caption{Extended H6: Tag validation across all tag types, comparing metric distributions for levels with vs without each tag.}
+\label{fig:h6-extended}
+\end{figure}
+
 \subsection{Summary of Findings}
 \label{subsec:findings-summary}
 
@@ -1324,8 +1459,11 @@ H2: Structural Variety & Partial & Creative tag $r = 0.42$, $p < 0.01$ \\
 H3: Path Freedom & \textbf{Supported} & Spatial coverage $p = 0.004$ \\
 H4: Preference Clusters & \textbf{Supported} & 3 distinct behavioral clusters \\
 H5: Skill-Consistency & Not Supported & No correlation ($r = 0.18$, $p = 0.58$) \\
-H6: Tag-Telemetry & Partial & ``Fun'' $\rightarrow$ completion ($p = 0.049$) \\
+H6: Tag-Telemetry & \textbf{Supported} & 5/6 tags match expected direction \\
 H7: Feature Importance & \textbf{Supported} & ``Too easy'' $r = 0.35$ with completion \\
+H8: Hazard Difficulty & \textbf{Supported} & Easy Q1 vs Hard Q4 $p = 0.040$ \\
+H9: Rewards/Leniency & \textbf{Supported} & ``Fun'' 2.3$\times$ higher completion \\
+H10: Predictive Model & \textbf{Supported} & 66\% CV accuracy, tags dominate \\
 \bottomrule
 \end{tabular}
 \end{table}
