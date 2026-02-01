@@ -1,0 +1,6 @@
+\beamer@sectionintoc {1}{Motivation \& Problem}{3}{0}{1}
+\beamer@sectionintoc {2}{Platform Overview}{6}{0}{2}
+\beamer@sectionintoc {3}{Generators Under Test}{10}{0}{3}
+\beamer@sectionintoc {4}{Experiments \& Results}{12}{0}{4}
+\beamer@sectionintoc {5}{Judge Function \& MarioDPO}{18}{0}{5}
+\beamer@sectionintoc {6}{Conclusions}{24}{0}{6}
