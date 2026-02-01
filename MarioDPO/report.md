@@ -4,12 +4,12 @@
 
 ## Executive Summary
 
-This report presents the experimental validation of the Mario-DPO framework for aligning procedural level generators with human preferences. Using fresh data from PCG Arena (692 levels, 428 human votes), we demonstrate that:
+This report presents the experimental validation of the Mario-DPO framework for aligning procedural level generators with human preferences. Using fresh data from PCG Arena (748 levels, 473 human votes), we demonstrate that:
 
-1. **The Judge Function correlates with human preference** (Spearman r=0.812, p=0.0008)
-2. **Original levels maintain dominance** with 89.2% win rate
-3. **Pattern-based generators underperform** at 26.3% average win rate
-4. **Sufficient data exists** for DPO training (3065 pairs, 6917 effective)
+1. **The Judge Function correlates with human preference** (Spearman r=0.736, p=0.0027)
+2. **Original levels maintain dominance** with 89.6% win rate
+3. **Pattern-based generators underperform** at 25.5% average win rate
+4. **Sufficient data exists** for DPO training (3079 pairs, 7336 effective)
 
 ---
 
@@ -78,8 +78,8 @@ $$J_{final} = J_{static} + w_{vert} \cdot \sigma_y + w_{flow} \cdot (1 - \text{H
 ### Validation: Judge vs Human Correlation
 
 The Judge Function score correlates significantly with human win rate:
-- **Spearman r = 0.812**
-- **p-value = 0.0008**
+- **Spearman r = 0.736**
+- **p-value = 0.0027**
 
 This validates that the automated Judge can substitute for human feedback in RLAIF.
 
@@ -91,25 +91,25 @@ This validates that the automated Judge can substitute for human feedback in RLA
 
 | Metric | Value |
 |--------|-------|
-| Total Human Votes | 428 |
+| Total Human Votes | 473 |
 | Weight Multiplier | 10× |
-| Effective Contribution | 4280 |
+| Effective Contribution | 4730 |
 
 ### Synthetic Pairs (RLAIF)
 
 | Metric | Value |
 |--------|-------|
-| Synthetic Pairs Created | 2637 |
-| Mean Score Difference | 0.443 |
+| Synthetic Pairs Created | 2606 |
+| Mean Score Difference | 0.441 |
 | Weight Multiplier | 1× |
 
 ### Combined DPO Dataset
 
 | Component | Count | Weight | Effective |
 |-----------|-------|--------|-----------|
-| Human Pairs | 428 | 10× | 4280 |
-| Synthetic Pairs | 2637 | 1× | 2637 |
-| **Total** | 3065 | - | **6917** |
+| Human Pairs | 473 | 10× | 4730 |
+| Synthetic Pairs | 2606 | 1× | 2606 |
+| **Total** | 3079 | - | **7336** |
 
 ---
 
@@ -120,23 +120,24 @@ This validates that the automated Judge can substitute for human feedback in RLA
 | Rank | Generator | Win Rate | J_final | Style Distance |
 |------|-----------|----------|---------|----------------|
 | 1 | test-gen | 1.000 | 0.029 | 10.00 |
-| 2 | original | 0.892 | 0.235 | 6.37 |
-| 3 | ore | 0.725 | 0.143 | 8.29 |
-| 4 | notch | 0.692 | 0.166 | 8.39 |
-| 5 | mariogpt | 0.625 | 0.100 | 9.37 |
-| 6 | hopper | 0.598 | 0.133 | 8.85 |
-| 7 | genetic | 0.554 | 0.113 | 9.57 |
-| 8 | mariogan | 0.500 | 0.155 | 8.06 |
-| 9 | notchParamRand | 0.410 | 0.155 | 9.05 |
-| 10 | marioDiffusion | 0.363 | 0.099 | 8.91 |
-| 11 | patternWeightCount | 0.298 | -0.417 | 9.14 |
-| 12 | patternOccur | 0.271 | -0.385 | 8.24 |
-| 13 | notchParam | 0.238 | 0.092 | 9.16 |
-| 14 | patternCount | 0.220 | -0.460 | 9.89 |
+| 2 | original | 0.896 | 0.282 | 5.75 |
+| 3 | mariodpo | 0.833 | 0.339 | 4.09 |
+| 4 | ore | 0.693 | 0.102 | 9.14 |
+| 5 | notch | 0.674 | 0.132 | 9.09 |
+| 6 | mariogpt | 0.638 | 0.096 | 9.56 |
+| 7 | hopper | 0.591 | 0.112 | 9.06 |
+| 8 | genetic | 0.542 | 0.127 | 9.02 |
+| 9 | mariogan | 0.484 | 0.127 | 8.82 |
+| 10 | notchParamRand | 0.396 | 0.161 | 8.92 |
+| 11 | marioDiffusion | 0.378 | 0.080 | 9.22 |
+| 12 | patternWeightCount | 0.299 | -0.443 | 9.68 |
+| 13 | patternOccur | 0.261 | -0.439 | 9.44 |
+| 14 | notchParam | 0.239 | 0.096 | 9.01 |
+| 15 | patternCount | 0.204 | -0.426 | 9.28 |
 
 ### Key Findings
 
-1. **Original Dominance Persists:** Original levels achieve 89.2% win rate, confirming the "Nintendo Factor" from EDA.
+1. **Original Dominance Persists:** Original levels achieve 89.6% win rate, confirming the "Nintendo Factor" from EDA.
 
 2. **Pattern Generators Fail:** All pattern-based generators (patternCount, patternOccur, patternWeightCount) rank in the bottom tier, validating the gap penalty in J_final.
 
@@ -152,9 +153,9 @@ This validates that the automated Judge can substitute for human feedback in RLA
 
 | Requirement | Status | Evidence |
 |-------------|--------|----------|
-| Human Preference Data | ✅ Sufficient | 428 pairs × 10 weight = 4280 effective |
-| Judge Function Validity | ✅ Validated | r=0.812, p=0.0008 |
-| Synthetic Data Generation | ✅ Operational | 2637 pairs created |
+| Human Preference Data | ✅ Sufficient | 473 pairs × 10 weight = 4730 effective |
+| Judge Function Validity | ✅ Validated | r=0.736, p=0.0027 |
+| Synthetic Data Generation | ✅ Operational | 2606 pairs created |
 | Style Target (Original Centroid) | ✅ Computed | From trajectory analysis |
 
 ### Recommended Training Configuration
@@ -167,8 +168,8 @@ model:
   context_length: 2048  # ~128 columns × 16 rows
 
 data:
-  human_pairs: 428
-  synthetic_pairs: 2637
+  human_pairs: 473
+  synthetic_pairs: 2606
   human_weight: 10.0
   batch_size: 32
 
@@ -202,11 +203,11 @@ inference:
 
 1. **The Mario-DPO framework is ready for implementation.** All prerequisite experiments validate the approach.
 
-2. **The Judge Function successfully predicts human preference** (r=0.812), enabling RLAIF data expansion.
+2. **The Judge Function successfully predicts human preference** (r=0.736), enabling RLAIF data expansion.
 
-3. **Sufficient training data exists** (6917 effective pairs) for DPO fine-tuning.
+3. **Sufficient training data exists** (7336 effective pairs) for DPO fine-tuning.
 
-4. **Original levels define the quality target** with 89.2% win rate—this is the benchmark to beat.
+4. **Original levels define the quality target** with 89.6% win rate—this is the benchmark to beat.
 
 5. **Pattern-based generators confirm the gap penalty** is critical in J_final.
 

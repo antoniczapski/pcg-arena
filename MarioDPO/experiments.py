@@ -43,17 +43,25 @@ def load_statistics():
     print("LOADING FRESH STATISTICS")
     print("="*60)
     
-    with open(STATS_DIR / 'pcg-arena-level-stats-2026-01-31.json', 'r', encoding='utf-8') as f:
-        level_stats = json.load(f)
-    
-    with open(STATS_DIR / 'pcg-arena-votes-2026-01-31.json', 'r', encoding='utf-8') as f:
-        votes = json.load(f)
-    
-    with open(STATS_DIR / 'pcg-arena-trajectories-2026-01-31.json', 'r', encoding='utf-8') as f:
-        trajectories = json.load(f)
-    
-    with open(STATS_DIR / 'pcg-arena-player-profiles-2026-01-31.json', 'r', encoding='utf-8') as f:
-        profiles = json.load(f)
+    # Try new data first, fallback to old
+    for date in ['2026-02-01', '2026-01-31']:
+        try:
+            with open(STATS_DIR / f'pcg-arena-level-stats-{date}.json', 'r', encoding='utf-8') as f:
+                level_stats = json.load(f)
+            
+            with open(STATS_DIR / f'pcg-arena-votes-{date}.json', 'r', encoding='utf-8') as f:
+                votes = json.load(f)
+            
+            with open(STATS_DIR / f'pcg-arena-trajectories-{date}.json', 'r', encoding='utf-8') as f:
+                trajectories = json.load(f)
+            
+            with open(STATS_DIR / f'pcg-arena-player-profiles-{date}.json', 'r', encoding='utf-8') as f:
+                profiles = json.load(f)
+            
+            print(f"  Using data from {date}")
+            break
+        except FileNotFoundError:
+            continue
     
     print(f"  Levels: {level_stats['total']}")
     print(f"  Votes: {votes['total']}")

@@ -60,7 +60,7 @@
 % --- Document metadata ---
 \title{PCG Arena: A Web Platform for Blind A/B Testing of Procedural Content Generators}
 \author{Antoni Czapski}
-\date{January 2026}
+\date{February 2026}
 
 \begin{document}
 \maketitle
@@ -1049,20 +1049,20 @@ Analysis of generator performance reveals substantial quality differences across
 \toprule
 \textbf{Rank} & \textbf{Generator} & \textbf{Win Rate} & \textbf{Avg Deaths} & \textbf{Completion Rate} \\
 \midrule
-1 & original & 92.5\% & 0.73 & 27.5\% \\
-2 & ore & 67.8\% & 0.85 & 14.2\% \\
-3 & notch & 67.5\% & 0.69 & 31.3\% \\
-4 & mariogpt & 62.4\% & 0.72 & 19.8\% \\
-5 & hopper & 58.7\% & 0.76 & 24.0\% \\
+1 & original & 89.6\% & 0.75 & 24.7\% \\
+2 & \textbf{mariodpo} & \textbf{83.3\%} & \textbf{0.55} & \textbf{40.0\%} \\
+3 & ore & 69.3\% & 0.83 & 16.2\% \\
+4 & notch & 67.4\% & 0.66 & 34.0\% \\
+5 & mariogpt & 63.8\% & 0.69 & 23.2\% \\
 \midrule
-12 & patternWeightCount & 25.9\% & 0.90 & 6.2\% \\
-13 & notchParam & 22.1\% & 0.83 & 17.0\% \\
-14 & patternCount & 22.0\% & 0.93 & 2.3\% \\
+12 & patternOccur & 26.1\% & 0.87 & 2.5\% \\
+13 & notchParam & 23.9\% & 0.87 & 12.8\% \\
+14 & patternCount & 20.4\% & 0.92 & 3.9\% \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The hand-crafted ``original'' levels dominate with a 92.5\% win rate, serving as the benchmark. Among procedural generators, ``ore'' and ``notch'' perform best (67-68\%), while pattern-based generators consistently rank at the bottom ($<$26\%).
+The hand-crafted ``original'' levels dominate with a 89.6\% win rate, serving as the benchmark. Remarkably, \textbf{MarioDPO achieves 83.3\% win rate}, ranking second overall and first among PCG generators---surpassing all other neural/ML methods. Among other procedural generators, ``ore'' and ``notch'' perform best (67-69\%), while pattern-based generators consistently rank at the bottom ($<$27\%).
 
 \begin{figure}[H]
 \centering
@@ -1089,7 +1089,7 @@ We tested three hypotheses regarding level quality:
 
 \textbf{Hypothesis}: Levels with moderate difficulty (15-40\% death rate) have higher win rates than levels with extreme difficulty.
 
-\textbf{Results}: Spearman correlation $r = -0.149$, $p = 0.313$. No inverted-U pattern was detected; instead, a linear relationship suggests that easier levels are simply preferred. Analysis was limited by insufficient data in higher difficulty bins.
+\textbf{Results}: Spearman correlation $r = -0.227$, $p = 0.046$. No inverted-U pattern was detected; instead, a significant linear relationship confirms that easier levels are simply preferred.
 
 \textbf{Conclusion}: \textbf{Not supported}. Players prefer easier levels; the ``flow channel'' theory does not hold in blind A/B comparisons.
 
@@ -1170,7 +1170,7 @@ Avg Speed & 34.29 & 31.85 & 1249.0 & 0.272 \\
 \textbf{Cluster} & \textbf{n} & \textbf{Votes} & \textbf{Deaths} & \textbf{Duration} & \textbf{Completion} & \textbf{Jumps} \\
 \midrule
 0 ``Explorers'' & 2 & 60 & 0.61 & 29.6s & 34.7\% & 24.1 \\
-1 ``Mainstream'' & 6 & 317 & 0.83 & 15.2s & 15.7\% & 11.0 \\
+1 ``Mainstream'' & 7 & 441 & 0.82 & 14.7s & 16.4\% & 10.8 \\
 2 ``Strugglers'' & 4 & 39 & 0.94 & 11.8s & 2.5\% & 5.8 \\
 \bottomrule
 \end{tabular}
@@ -1561,16 +1561,16 @@ p-value & 0.330 \\
 \toprule
 \textbf{Metric} & \textbf{Value} \\
 \midrule
-Mahalanobis Distance vs Win Rate ($r$) & -0.324 \\
-p-value & \textbf{0.003} \\
-Style Reward $\frac{1}{1+D_M}$ vs Win Rate ($r$) & +0.324 \\
-Original mean $D_M$ & 1.77 \\
-Pattern generators mean $D_M$ & $\approx$14.5 \\
+Mahalanobis Distance vs Win Rate ($r$) & -0.279 \\
+p-value & \textbf{0.011} \\
+Style Reward $\frac{1}{1+D_M}$ vs Win Rate ($r$) & +0.279 \\
+Original mean $D_M$ & 1.80 \\
+Pattern generators mean $D_M$ & $\approx$15.3 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\textbf{Conclusion}: \textbf{Strongly Supported}. Proximity to the Original centroid significantly correlates with higher win rates (r = -0.32, p = 0.003). Pattern generators are furthest from the Original style ($D_M \approx 14.5$), explaining their poor performance. The Judge should include a \textbf{style reward} proportional to $\frac{1}{1+D_M}$.
+\textbf{Conclusion}: \textbf{Strongly Supported}. Proximity to the Original centroid significantly correlates with higher win rates (r = -0.28, p = 0.011). Pattern generators are furthest from the Original style ($D_M \approx 14.5$), explaining their poor performance. The Judge should include a \textbf{style reward} proportional to $\frac{1}{1+D_M}$.
 
 \begin{figure}[H]
 \centering
@@ -1639,15 +1639,17 @@ Exp D: Style Matching & \textbf{Supported} & $D_M$ vs win rate $r = -0.32$, $p =
 \label{subsec:key-insights}
 
 \begin{enumerate}
+    \item \textbf{MarioDPO Achieves SOTA}: Our DPO-aligned generator achieves 83.3\% win rate, ranking second only to hand-crafted Original levels and surpassing all other neural/ML methods.
+    
     \item \textbf{Playability Dominates}: Players prefer levels they can complete. The ``flow channel'' hypothesis (moderate difficulty is optimal) was not supported; easier is simply better in blind comparisons.
     
-    \item \textbf{Exploration Matters}: Levels enabling spatial exploration (63\% more unique tiles) are preferred. Good PCG should create non-linear, explorable spaces.
+    \item \textbf{Exploration Matters}: Levels enabling spatial exploration are preferred. Good PCG should create non-linear, explorable spaces.
     
-    \item \textbf{Hand-Crafted Benchmark}: ``Original'' levels win 92.5\% of comparisons, setting a high bar for procedural generators to match.
+    \item \textbf{Hand-Crafted Benchmark}: ``Original'' levels win 89.6\% of comparisons, setting a high bar for procedural generators to match.
     
-    \item \textbf{Tag Validity}: Player tags correspond to measurable differences---``fun'' correlates with completion, ``too easy'' with low deaths.
+    \item \textbf{Tag Validity}: Player tags correspond to measurable differences---``fun'' correlates with completion, ``creative'' with higher win rates.
     
-    \item \textbf{Pattern Methods Fail}: All ``pattern*'' generators rank lowest, suggesting pattern-based approaches produce technically valid but aesthetically poor levels.
+    \item \textbf{Pattern Methods Fail}: All ``pattern*'' generators rank lowest (20-26\%), suggesting pattern-based approaches produce technically valid but aesthetically poor levels.
     
     \item \textbf{Player Diversity}: Three distinct player clusters exist, suggesting potential for personalized level recommendations.
 \end{enumerate}

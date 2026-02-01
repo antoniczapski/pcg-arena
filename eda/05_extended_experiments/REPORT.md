@@ -14,11 +14,11 @@ player enjoyment and have lower win rates.
 
 ### Results
 
-- **Difficulty Score vs Win Rate**: r = -0.149, p = 0.0501
-- **Deaths vs Win Rate**: r = -0.096, p = 0.2086
+- **Difficulty Score vs Win Rate**: r = -0.112, p = 0.0786
+- **Deaths vs Win Rate**: r = -0.067, p = 0.2983
 
-- **Easy (Q1) vs Hard (Q4)**: Easy mean = 0.600, Hard mean = 0.470
-  - Mann-Whitney U = 3343.0, p = 0.0398
+- **Easy (Q1) vs Hard (Q4)**: Easy mean = 0.538, Hard mean = 0.441
+  - Mann-Whitney U = 6553.5, p = 0.0459
 
 **Conclusion**: Higher difficulty (more deaths, lower completion) correlates with lower 
 win rates, confirming that excessive hazards reduce player preference.
@@ -32,9 +32,9 @@ are preferred by players.
 
 ### Results
 
-- **Completion Rate vs Win Rate**: r = 0.149, p = 0.0501
-- **"Fun" Tagged Levels**: Completion = 0.313 vs Others = 0.136
-  - Mann-Whitney p = 0.0003
+- **Completion Rate vs Win Rate**: r = 0.112, p = 0.0786
+- **"Fun" Tagged Levels**: Completion = 0.292 vs Others = 0.137
+  - Mann-Whitney p = 0.0004
 
 **Conclusion**: Completion rate is strongly predictive of preference. Levels that players
 can complete are more likely to win comparisons, supporting the leniency hypothesis.
@@ -49,16 +49,16 @@ most influential factors.
 ### Results
 
 **Model Performance (5-fold CV):**
-- Logistic Regression: 0.660
-- Random Forest: 0.648
-- Gradient Boosting: 0.564
+- Logistic Regression: 0.689
+- Random Forest: 0.693
+- Gradient Boosting: 0.622
 
 **Top 5 Most Important Features:**
   1. avg_duration_seconds (avg_rank = 0.0)
   2. tag_creative_rate (avg_rank = 1.3)
   3. tag_boring_rate (avg_rank = 3.3)
-  4. tag_fun_rate (avg_rank = 4.0)
-  5. tag_impossible_rate (avg_rank = 4.7)
+  4. tag_impossible_rate (avg_rank = 4.0)
+  5. tag_fun_rate (avg_rank = 4.7)
 
 **Conclusion**: Playability metrics (completion_rate, difficulty_score) are the dominant
 predictors of preference, confirming that players prefer levels they can complete.
@@ -75,7 +75,7 @@ predictors of preference, confirming that players prefer levels they can complet
 |-----|--------|----------|--------|-------------|
 | tag_fun | completion_rate | positive | positive ✓ | ✓ |
 | tag_boring | completion_rate | negative | positive ✗ | ✓ |
-| tag_too_hard | avg_deaths | positive | positive ✓ | ✓ |
+| tag_too_hard | avg_deaths | positive | positive ✓ |  |
 | tag_too_easy | completion_rate | positive | positive ✓ | ✓ |
 | tag_creative | win_rate | positive | positive ✓ | ✓ |
 | tag_impossible | completion_rate | negative | negative ✓ | ✓ |

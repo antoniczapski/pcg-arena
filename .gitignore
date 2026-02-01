@@ -70,3 +70,34 @@ latex/*-blx.bib
 # Keep the PDF for convenience (comment out if you want to ignore it too)
 # latex/*.pdf
 
+# Presentation LaTeX auxiliary files
+presentation/*.aux
+presentation/*.bbl
+presentation/*.bcf
+presentation/*.blg
+presentation/*.fdb_latexmk
+presentation/*.fls
+presentation/*.lof
+presentation/*.lot
+presentation/*.out
+presentation/*.run.xml
+presentation/*.synctex.gz
+presentation/*.toc
+presentation/*.nav
+presentation/*.snm
+presentation/*.vrb
+presentation/*.idx
+presentation/*.ilg
+presentation/*.ind
+presentation/*.bak
+presentation/*-blx.bib
+
+# EDA JSON data files (large gameplay data exports)
+eda/*.json
+eda/new_data/*.json
+
+# MarioDPO statistics JSON files
+MarioDPO/statistics/*.json
+
+# Generated levels (can be regenerated)
+MarioDPO/generated_levels*/

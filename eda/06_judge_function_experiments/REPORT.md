@@ -1,28 +1,28 @@
 # Judge Function Experiments - Summary Report
-Generated: 2026-01-31 09:22:03.922101
+Generated: 2026-02-01 18:52:04.155581
 
 ## Experiment Results Summary
 
 ### Experiment A: Verticality Validation
-- Y-Sigma vs Win Rate: r = 0.263, p = 0.0177
-- Path Entropy vs Win Rate: r = 0.331
-- Hesitation vs Win Rate: r = -0.091
-- Partial Correlation (controlling completion): r = 0.2761217961207105
+- Y-Sigma vs Win Rate: r = 0.257, p = 0.0190
+- Path Entropy vs Win Rate: r = 0.275
+- Hesitation vs Win Rate: r = -0.045
+- Partial Correlation (controlling completion): r = 0.2770347486504337
 
 ### Experiment B: Hazard Hierarchy
 - Data limitation: gap_density/enemy_density NULL in database
-- Pattern generator win rate: 0.268
-- Other generator win rate: 0.532
+- Pattern generator win rate: 0.257
+- Other generator win rate: 0.542
 
 ### Experiment C: Death Entropy
 - Death Entropy vs Win Rate: r = nan, p = nan
-- Early Death Rate vs Win Rate: r = -0.128
+- Early Death Rate vs Win Rate: r = -0.134
 - Low entropy win rate: nan
-- High entropy win rate: 0.452
+- High entropy win rate: 0.460
 
 ### Experiment D: Original Centroid
-- Mahalanobis Distance vs Win Rate: r = -0.324, p = 0.0032
-- Style Reward vs Win Rate: r = 0.324
+- Mahalanobis Distance vs Win Rate: r = -0.279, p = 0.0105
+- Style Reward vs Win Rate: r = 0.279
 
 ## Proposed Judge Function
 

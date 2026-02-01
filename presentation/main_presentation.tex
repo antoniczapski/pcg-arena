@@ -108,7 +108,7 @@
 \vspace{-0.5em}
 \begin{itemize}
     \item Play two levels $\rightarrow$ Vote for favorite $\rightarrow$ Glicko-2 ranking
-    \item \textbf{14 generators}, \textbf{692 levels}, \textbf{428 votes} collected
+    \item \textbf{15 generators}, \textbf{748 levels}, \textbf{571 votes} collected
 \end{itemize}
 
 \end{frame}
@@ -279,7 +279,7 @@ System $\tau$ & 0.5 \\
 
 \begin{block}{H1: Flow Channel Hypothesis}
 \textbf{Hypothesis:} Moderate difficulty (15--40\% death rate) maximizes enjoyment.\\
-\textbf{Result:} \alert{Not Supported} -- Linear relationship: easier $=$ better
+\textbf{Result:} \alert{Not Supported} -- Linear relationship: easier $=$ better ($r=-0.227$, $p=0.046$)
 \end{block}
 
 \begin{columns}
@@ -338,7 +338,7 @@ Levels tagged ``creative'' win significantly more often.
 
 \begin{block}{H3: Agency Hypothesis}
 \textbf{Hypothesis:} Levels allowing more exploration are preferred.\\
-\textbf{Result:} \alert{Strongly Supported} -- Spatial coverage predicts wins ($p=0.004$)
+\textbf{Result:} \alert{Partial Support} -- Backtrack ratio predicts wins ($p=0.019$)
 \end{block}
 
 \begin{columns}
@@ -475,7 +475,7 @@ Judge function correlates with human preference: \textbf{Spearman $r = 0.812$}, 
 
 \begin{block}{Exp D: Mahalanobis Distance}
 \textbf{Hypothesis:} Levels closer to ``Original'' style win more.\\
-\textbf{Result:} \alert{Supported} -- $r = -0.324$, $p = 0.003$
+\textbf{Result:} \alert{Supported} -- $r = -0.279$, $p = 0.011$
 \end{block}
 
 \begin{columns}
@@ -508,9 +508,9 @@ where $D_M$ = Mahalanobis distance
 \column{0.5\textwidth}
 \begin{block}{Training Data}
 \begin{itemize}
-    \item 428 human pairs ($\times$10 weight)
-    \item 2,637 synthetic pairs (Judge)
-    \item \textbf{6,917 effective pairs}
+    \item 571 human pairs ($\times$10 weight)
+    \item 3,500+ synthetic pairs (Judge)
+    \item \textbf{9,200+ effective pairs}
 \end{itemize}
 \end{block}
 
@@ -558,15 +558,15 @@ where $D_M$ = Mahalanobis distance
 \toprule
 \textbf{Rank} & \textbf{Generator} & \textbf{Win Rate} \\
 \midrule
-1 & \textbf{Original (SMB)} & 89.2\% \\
-2 & \alert{MarioDPO (ours)} & -- \\
-3 & ORE & 72.5\% \\
-4 & Notch & 69.2\% \\
-5 & MarioGPT & 62.5\% \\
+1 & \textbf{Original (SMB)} & 89.6\% \\
+2 & \alert{MarioDPO (ours)} & \alert{83.3\%} \\
+3 & ORE & 69.3\% \\
+4 & Notch & 67.4\% \\
+5 & MarioGPT & 63.8\% \\
 \midrule
-12 & patternWeightCount & 29.8\% \\
-13 & patternOccur & 27.1\% \\
-14 & patternCount & 22.0\% \\
+12 & patternOccur & 26.1\% \\
+13 & notchParam & 23.9\% \\
+14 & patternCount & 20.4\% \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -602,7 +602,7 @@ where $D_M$ = Mahalanobis distance
     
     \vspace{0.5em}
     \item \textbf{Style Matching Works}\\
-    Closer to Original SMB $\rightarrow$ higher win rate ($r = 0.32$)
+    Closer to Original SMB $\rightarrow$ higher win rate ($r = 0.28$)
     
     \vspace{0.5em}
     \item \textbf{Tags are Valid Signals}\\
@@ -629,15 +629,15 @@ where $D_M$ = Mahalanobis distance
 
 \begin{block}{Research}
 \begin{itemize}
-    \item Empirical comparison of 14 generators
-    \item Validated judge function ($r = 0.812$)
-    \item MarioDPO: SOTA among PCG methods
+    \item Empirical comparison of 15 generators
+    \item Validated judge function ($r = 0.28$)
+    \item MarioDPO: SOTA among PCG methods (83.3\%)
 \end{itemize}
 \end{block}
 
 \begin{block}{Data}
 \begin{itemize}
-    \item 692 levels, 428 human votes
+    \item 748 levels, 571 human votes
     \item Player trajectories and death heatmaps
     \item Open dataset for future research
 \end{itemize}

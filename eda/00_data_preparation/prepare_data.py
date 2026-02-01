@@ -14,12 +14,15 @@ import re
 
 # Paths
 EDA_DIR = Path(__file__).parent.parent
-DATA_DIR = EDA_DIR
+DATA_DIR = EDA_DIR / "new_data"  # Use new_data directory for fresh data
 OUTPUT_DIR = EDA_DIR / "00_data_preparation"
 
 def load_json(filename_pattern: str) -> dict:
     """Load a JSON file matching the pattern."""
     files = list(DATA_DIR.glob(filename_pattern))
+    if not files:
+        # Fallback to main eda directory
+        files = list(EDA_DIR.glob(filename_pattern))
     if not files:
         raise FileNotFoundError(f"No files matching {filename_pattern}")
     with open(files[0], 'r', encoding='utf-8') as f:
