@@ -1,22 +1,193 @@
-# PCG Arena - Pairwise Rating Platform for Mario PCG Generators
+# PCG Arena
 
-## What this repository is
+**A Web Platform for Blind A/B Testing of Procedural Content Generators**
 
-**PCG Arena** is a **fully operational web platform** for evaluating Mario level generators through human preference data. Players play two levels side-by-side in their browser, vote for their favorite, and the platform maintains a **Glicko-2 leaderboard** of generators based on pairwise comparisons.
+🎮 **Live at:** [https://pcg-arena.com](https://pcg-arena.com)
 
-**Live at:** [https://pcg-arena.com](https://pcg-arena.com)
+---
+
+## What is PCG Arena?
+
+PCG Arena is a research platform for evaluating **Mario level generators** through human preference data. Players play two procedurally generated levels side-by-side in their browser, vote for their favorite, and the platform maintains a **Glicko-2 leaderboard** ranking generators based on pairwise comparisons.
+
+### The Problem We Solve
+
+How do we know if a PCG algorithm produces "good" levels?
+
+- ❌ Automated metrics miss **player experience**
+- ❌ Lab studies have **limited participants**  
+- ❌ Generator reputation creates **evaluation bias**
+
+**Our Solution:** Web-based **blind A/B testing** at scale — players never know which generator made each level.
+
+---
+
+## Research Overview
+
+### Dataset Statistics
+
+| Metric | Value |
+|--------|-------|
+| **Generators** | 15 |
+| **Levels** | 748 |
+| **Human Votes** | 571 |
+| **Player Trajectories** | 1,142 |
+| **Unique Players** | 27 |
+
+### Research Questions
+
+1. **RQ1:** What structural and gameplay features make levels "good"?
+2. **RQ2:** Are player preferences consistent across individuals?
+3. **RQ3:** Can we build an automated reward model (judge function) for RLHF/DPO training?
+
+---
+
+## Generators Under Test
+
+We compare **15 PCG algorithms** representing different generation paradigms:
+
+| Category | Generators |
+|----------|------------|
+| **Neural/ML-Based** | MarioGPT (GPT-2), MarioGAN (DCGAN), MarioDiffusion, **MarioDPO (ours)** |
+| **Search-Based** | Genetic Algorithm, Hopper (agent simulation) |
+| **Grammar/Pattern** | Notch (3 variants), Pattern-based (3 variants), ORE (occupancy) |
+| **Baseline** | Original Super Mario Bros. (15 hand-crafted levels) |
+
+Each generator contributes **100 levels** (except Original: 15 levels).
+
+---
+
+## Key Findings
+
+### H1: Flow Channel Hypothesis — ❌ Not Supported
+
+**Hypothesis:** Moderate difficulty (15–40% death rate) maximizes enjoyment.
+
+**Result:** Linear relationship — easier = better (r = -0.227, p = 0.046). Players prefer levels they can **complete**. No inverted-U "flow channel" pattern found.
+
+### H2: Creativity Hypothesis — ✅ Partially Supported
+
+**Hypothesis:** Higher terrain variety and enemy diversity preferred.
+
+**Result:** Levels tagged "creative" win significantly more (r = 0.42, p < 0.01).
+
+### H3: Agency Hypothesis — ✅ Partial Support
+
+**Hypothesis:** Levels allowing more exploration are preferred.
+
+**Result:** Winning levels have **63% more tiles explored** and lower backtrack ratios (p = 0.019).
+
+### H4: Player Clusters — ✅ Supported
+
+**Result:** K-means clustering identifies **3 distinct player types**:
+- **Explorers** (n=2): Long sessions, high completion rates
+- **Mainstream** (n=6): Most votes, balanced playstyle  
+- **Strugglers** (n=4): Low completion, high death rates
+
+### H6: Tag Validation — ✅ Supported
+
+**Result:** Subjective player tags correlate with objective telemetry metrics (5/6 tags validated):
+- `fun` ≈ playable + beatable
+- `creative` ≈ engaging design
+- `too_hard` ≈ high death rate
+- `too_easy` ≈ high completion rate
+
+**Conclusion:** Tags can be **trusted as quality signals** for machine learning.
+
+---
+
+## Judge Function & MarioDPO
+
+### Automated Judge Function
+
+We developed a reward model that predicts human preferences from level features:
+
+**Stage 1 — Static Features:**
+
+$$J_{static} = \frac{w_{style}}{1+D_M} - w_{gap} \cdot \text{Gap}$$
+
+**Stage 2 — Dynamic Features:**
+
+$$J_{final} = J_{static} + w_{vert} \cdot \sigma_y$$
+
+| Weight | Value | Source |
+|--------|-------|--------|
+| w_style | 0.32 | Style matching (Exp D) |
+| w_vert | 0.26 | Vertical movement (Exp A) |
+| w_gap | 0.50 | Gap penalty (Exp B) |
+
+**Key Result:** Judge function correlates with human preference: **Spearman r = 0.812**, p < 0.001
+
+### The "Nintendo Factor"
+
+Levels closer to **Original SMB style** win more often:
+- Mahalanobis distance to Original centroid: r = -0.279, p = 0.011
+- Style reward: r_style = 1 / (1 + D_M)
+
+### MarioDPO: RLHF-Aligned Level Generation
+
+We trained a generator using **Direct Preference Optimization (DPO)**:
+
+| Component | Details |
+|-----------|---------|
+| **Base Model** | GPT-2 small, character-level tokenization |
+| **Training Data** | 571 human pairs (×10 weight) + 3,500 synthetic pairs |
+| **Effective Dataset** | 9,200+ preference pairs |
+| **DPO β** | 0.1 |
+
+---
+
+## Generator Rankings
+
+| Rank | Generator | Win Rate | Notes |
+|------|-----------|----------|-------|
+| 1 | **Original (SMB)** | 89.6% | Hand-crafted baseline |
+| 2 | **MarioDPO (ours)** | **83.3%** | 🏆 Best among PCG methods |
+| 3 | ORE | 69.3% | Occupancy-based |
+| 4 | Notch | 67.4% | Grammar-based |
+| 5 | MarioGPT | 63.8% | GPT-2 based |
+| ... | ... | ... | |
+| 12 | patternOccur | 26.1% | Pattern matching |
+| 13 | notchParam | 23.9% | Parameterized grammar |
+| 14 | patternCount | 20.4% | Pattern counting |
+
+**Key Achievement:** MarioDPO achieves the **highest win rate among all PCG generators**, second only to hand-crafted Original SMB levels!
+
+---
+
+## Conclusions
+
+1. **Playability > Challenge** — Players prefer levels they can complete
+2. **Exploration Matters** — Non-linear, explorable levels win more
+3. **Style Matching Works** — Closer to Original SMB → higher win rate
+4. **Tags are Valid** — Subjective tags correlate with objective metrics
+5. **DPO Alignment Succeeds** — MarioDPO achieves SOTA among PCG methods
+
+---
+
+## Platform Architecture
+
+PCG Arena is a full-stack web application:
+
+| Layer | Technology |
+|-------|------------|
+| **Frontend** | React + TypeScript, Mario engine ported from Java |
+| **Backend** | FastAPI (Python), Glicko-2 rating, AGIS matchmaking |
+| **Database** | SQLite (17 tables) |
+| **Infrastructure** | Docker, Google Cloud Platform |
+| **Auth** | Google OAuth, email/password with SendGrid |
 
 ### Key Features
 
-- Browser-playable Mario - No download required, runs in any modern browser
-- Glicko-2 Rating System - Uncertainty-aware ratings with deviation tracking
-- AGIS Matchmaking - Adaptive algorithm for efficient rating convergence  
-- Builder Profile - Researchers can submit their own generators
-- Research Analytics - Telemetry, trajectories, heatmaps, and data export
-- Authentication - Google OAuth and email/password login
-- Admin Dashboard - Comprehensive management tools
+**For Players:**
+- Browser-based gameplay (no download)
+- Blind A/B comparisons
+- Tag gameplay characteristics
 
-This platform is directly inspired by the **Mario AI Championship "Level Generation Track"**, where humans play content generated by different generators and choose what they prefer.
+**For Researchers:**
+- Submit custom generators (ZIP upload)
+- Live leaderboard with uncertainty intervals
+- Export votes, trajectories, heatmaps
 
 ---
 
@@ -27,185 +198,62 @@ This platform is directly inspired by the **Mario AI Championship "Level Generat
 | [Live Platform](https://pcg-arena.com) | Play battles and vote |
 | [Leaderboard](https://pcg-arena.com/leaderboard) | Current generator rankings |
 | [Builder Profile](https://pcg-arena.com/builder) | Submit your generator |
-| [Admin Dashboard](https://pcg-arena.com/admin) | Admin-only analytics |
 
 ---
 
-## Implementation Status - All Stages Complete
+## Repository Structure
 
-| Stage | Name | Status | Description |
-|-------|------|--------|-------------|
-| **0** | Concept Validation | Complete | Local prototype with Java client |
-| **1** | Cloud Deployment | Complete | GCP deployment with Docker |
-| **2** | Browser Frontend | Complete | React/TypeScript Mario engine |
-| **3** | Builder Profile | Complete | Auth + generator submission |
-| **4** | Platform Refinement | Complete | Glicko-2, AGIS, admin dashboard |
-| **5** | Research Analytics | Complete | Telemetry, trajectories, export |
-
----
-
-## API Endpoints Summary
-
-### Core Gameplay
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | /health | Health check with metrics |
-| GET | /v1/leaderboard | Generator rankings (Glicko-2) |
-| POST | /v1/battles:next | Get next battle |
-| POST | /v1/votes | Submit vote with telemetry |
-| POST | /v1/battles:practice | Practice a specific level |
-
-### Authentication (Stage 3)
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | /v1/auth/google | Google OAuth login |
-| POST | /v1/auth/register | Email/password registration |
-| POST | /v1/auth/login | Email/password login |
-| POST | /v1/auth/logout | End session |
-| POST | /v1/auth/verify-email | Verify email token |
-| POST | /v1/auth/forgot-password | Request password reset |
-| POST | /v1/auth/reset-password | Reset with token |
-
-### Builder Profile (Stage 3)
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | /v1/builders/generators | List user's generators |
-| POST | /v1/builders/generators/upload | Upload new generator (ZIP) |
-| PUT | /v1/builders/generators/{id}/upload | Update generator |
-| DELETE | /v1/builders/generators/{id} | Delete generator |
-
-### Statistics (Stage 5)
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | /v1/stats/platform | Platform-wide metrics |
-| GET | /v1/stats/generators/{id} | Generator statistics |
-| GET | /v1/stats/levels/{id} | Level statistics |
-| GET | /v1/stats/levels/{id}/heatmap | Death heatmap data |
-| GET | /v1/stats/levels/{id}/trajectories | Player paths |
-| GET | /v1/stats/confusion-matrix | Pairwise win rates |
-
-### Admin (Stage 4/5)
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | /v1/admin/stats | Matchmaking statistics |
-| GET | /v1/admin/builders | List all builders |
-| DELETE | /v1/admin/builders/{id} | Ban builder |
-| GET | /v1/admin/generators | List all generators |
-| DELETE | /v1/admin/generators/{id} | Delete generator |
-| GET | /v1/admin/export/votes | Export vote data |
-| GET | /v1/admin/export/trajectories | Export trajectories |
-| GET | /v1/admin/export/level-stats | Export level stats |
-| GET | /v1/admin/export/player-profiles | Export player profiles |
-| POST | /v1/admin/extract-features | Extract level features |
+```
+pcg-arena/
+├── backend/          # FastAPI server, Glicko-2, matchmaking
+├── frontend/         # React/TypeScript Mario engine
+├── db/               # SQLite schema, migrations, seed data
+├── eda/              # Exploratory data analysis notebooks
+├── MarioDPO/         # DPO training pipeline
+├── generators/       # MarioGPT, MarioGAN, MarioDiffusion
+├── latex/            # Full research report
+└── presentation/     # Beamer slides
+```
 
 ---
 
-## Database Schema
+## Adding Your Generator
 
-17 tables across 17 migrations:
-
-| Table | Purpose |
-|-------|---------|
-| generators | PCG algorithm identities with owner |
-| levels | ASCII tilemap levels |
-| battles | Comparison instances |
-| votes | User outcomes with telemetry |
-| ratings | Glicko-2 ratings per generator |
-| rating_events | Rating change audit log |
-| generator_pair_stats | Pairwise battle counts |
-| users | Authenticated users |
-| user_sessions | Active sessions |
-| email_verifications | Email verification tokens |
-| password_resets | Password reset tokens |
-| level_stats | Per-level performance metrics |
-| level_features | Structural analysis data |
-| player_profiles | Anonymous player tracking |
-| player_sessions | Session activity |
-| play_trajectories | Position and death data |
-| schema_migrations | Migration tracking |
-
----
-
-## Configuration
-
-Key environment variables (see backend/spec.md for complete list):
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| ARENA_DB_PATH | /data/arena.sqlite | Database path |
-| ARENA_MATCHMAKING_POLICY | agis_v1 | Matchmaking algorithm |
-| ARENA_INITIAL_RATING | 1000.0 | Starting Glicko-2 rating |
-| ARENA_INITIAL_RD | 350.0 | Initial rating deviation |
-| ARENA_AGIS_MIN_GAMES | 30 | Games for convergence |
-| ARENA_AGIS_TARGET_BATTLES_PER_PAIR | 10 | Target per pair |
-| ARENA_ADMIN_EMAILS | (configured) | Admin email list |
-| ARENA_GOOGLE_CLIENT_ID | (required) | Google OAuth client |
-| SENDGRID_API_KEY | (required) | Email service |
-
----
-
-## Quickstart (Local Development)
-
-### Prerequisites
-- Docker + Docker Compose
-- Node.js 18+ (for frontend development)
-
-### Run Backend
-`ash
-docker compose up --build
-# Backend at http://localhost:8080
-`
-
-### Run Frontend (Development)
-`ash
-cd frontend
-npm install
-npm run dev
-# Frontend at http://localhost:3000
-`
-
-### Run Tests
-`ash
-cd backend
-pytest
-`
-
----
-
-## Adding a New Generator
-
-### As a Builder (Web UI)
+### Via Web UI (Recommended)
 1. Go to [pcg-arena.com/builder](https://pcg-arena.com/builder)
-2. Sign in with Google or email
-3. Click "Add Generator"
-4. Upload ZIP with 50-200 level files (ASCII tilemap format)
-5. Generator appears on leaderboard immediately
+2. Sign in with Google
+3. Upload ZIP with 50–200 level files (ASCII tilemap format)
+4. Your generator appears on the leaderboard immediately
 
-### As a Developer (Seed Data)
-1. Add entry to db/seed/generators.json
-2. Create db/seed/levels/{generator_id}/ directory
-3. Add level files (.txt, ASCII tilemap, 10-20 lines up to 250 chars)
-4. Restart backend: docker compose up --build
-
----
-
-## Research Data Export
-
-Admin users can export research data via /admin:
-
-- **Votes Export** - All votes with full telemetry
-- **Trajectories Export** - Player movement paths
-- **Level Stats Export** - Per-level performance metrics
-- **Player Profiles Export** - Anonymous preference patterns
+### Via Seed Data (Developers)
+1. Add entry to `db/seed/generators.json`
+2. Create `db/seed/levels/{generator_id}/` directory
+3. Add `.txt` level files (ASCII tilemap, 16 rows)
+4. Restart: `docker compose up --build`
 
 ---
 
-## Contributing
+## Local Development
 
-See individual spec files for detailed documentation:
-- backend/spec.md - Backend API and implementation
-- frontend/spec.md - Frontend architecture and components
-- db/spec.md - Database schema and migrations
+```bash
+# Backend
+docker compose up --build
+# → http://localhost:8080
+
+# Frontend (dev mode)
+cd frontend && npm install && npm run dev
+# → http://localhost:3000
+
+# Tests
+cd backend && pytest
+```
+
+---
+
+## Future Work
+
+- **Short-term:** More votes, more generators, improved matchmaking
+- **Long-term:** Transfer to other games, online DPO training, multi-objective PCG
 
 ---
 
