@@ -228,7 +228,7 @@ System $\tau$ & 0.5 \\
 
 %------------------------------------------------------------
 \begin{frame}
-\frametitle{14 PCG Algorithms Compared}
+\frametitle{15 PCG Algorithms Compared}
 
 \begin{columns}
 \column{0.5\textwidth}
@@ -302,7 +302,7 @@ Players prefer levels they can \alert{complete}. No inverted-U pattern found.
 
 \begin{block}{H2: Creativity Hypothesis}
 \textbf{Hypothesis:} Higher terrain variety and enemy diversity preferred.\\
-\textbf{Result:} \alert{Partially Supported} -- ``Creative'' tag $\leftrightarrow$ wins ($r=0.42$, $p<0.01$)
+\textbf{Result:} \alert{Partially Supported} -- ``Creative'' tag $\leftrightarrow$ wins ($r=0.42$, $p=0.0001$)
 \end{block}
 
 \begin{columns}
@@ -388,7 +388,7 @@ Winners explore \alert{63\% more tiles}. Non-linear paths preferred.
 \textbf{Player Types:}
 \begin{enumerate}
     \item \textbf{Explorers} (n=2)\\Long sessions, high completion
-    \item \textbf{Mainstream} (n=6)\\Most votes, balanced play
+    \item \textbf{Mainstream} (n=7)\\Most votes, balanced play
     \item \textbf{Strugglers} (n=4)\\Low completion, high deaths
 \end{enumerate}
 \end{columns}
@@ -421,6 +421,35 @@ Winners explore \alert{63\% more tiles}. Non-linear paths preferred.
 
 \begin{block}{Conclusion}
 Tags can be \alert{trusted} as quality signals for ML.
+\end{block}
+\end{columns}
+
+\end{frame}
+
+%------------------------------------------------------------
+\begin{frame}
+\frametitle{RQ1: Style Matching}
+
+\begin{block}{Exp D: Mahalanobis Distance}
+\textbf{Hypothesis:} Levels closer to ``Original'' style win more.\\
+\textbf{Result:} \alert{Supported} -- $r = -0.279$, $p = 0.011$
+\end{block}
+
+\begin{columns}
+\column{0.5\textwidth}
+\begin{center}
+\includegraphics[width=\textwidth]{exp_d_original_centroid.png}
+\end{center}
+
+\column{0.5\textwidth}
+\begin{block}{Conclusion}
+The ``Nintendo Factor'': original SMB levels define the \alert{quality target}.
+
+\vspace{0.3em}
+Style reward:
+$$r_{style} = \frac{1}{1 + D_M}$$
+
+where $D_M$ = Mahalanobis distance
 \end{block}
 \end{columns}
 
@@ -464,37 +493,8 @@ $w_{gap}$ & 0.50 & Exp B \\
 
 \vspace{0.5em}
 \begin{alertblock}{Key Result}
-Judge function correlates with human preference: \textbf{Spearman $r = 0.812$}, $p < 0.001$
+Judge function correlates with human preference: \textbf{Spearman $r = 0.736$}, $p = 0.003$
 \end{alertblock}
-
-\end{frame}
-
-%------------------------------------------------------------
-\begin{frame}
-\frametitle{Style Matching: Original Centroid}
-
-\begin{block}{Exp D: Mahalanobis Distance}
-\textbf{Hypothesis:} Levels closer to ``Original'' style win more.\\
-\textbf{Result:} \alert{Supported} -- $r = -0.279$, $p = 0.011$
-\end{block}
-
-\begin{columns}
-\column{0.5\textwidth}
-\begin{center}
-\includegraphics[width=\textwidth]{exp_d_original_centroid.png}
-\end{center}
-
-\column{0.5\textwidth}
-\begin{block}{Conclusion}
-The ``Nintendo Factor'': original SMB levels define the \alert{quality target}.
-
-\vspace{0.3em}
-Style reward:
-$$r_{style} = \frac{1}{1 + D_M}$$
-
-where $D_M$ = Mahalanobis distance
-\end{block}
-\end{columns}
 
 \end{frame}
 
@@ -508,9 +508,9 @@ where $D_M$ = Mahalanobis distance
 \column{0.5\textwidth}
 \begin{block}{Training Data}
 \begin{itemize}
-    \item 571 human pairs ($\times$10 weight)
-    \item 3,500+ synthetic pairs (Judge)
-    \item \textbf{9,200+ effective pairs}
+    \item 473 human pairs ($\times$10 weight)
+    \item 2,606 synthetic pairs (Judge)
+    \item \textbf{7,336 effective pairs}
 \end{itemize}
 \end{block}
 
@@ -630,7 +630,7 @@ where $D_M$ = Mahalanobis distance
 \begin{block}{Research}
 \begin{itemize}
     \item Empirical comparison of 15 generators
-    \item Validated judge function ($r = 0.28$)
+    \item Validated judge function ($r = 0.74$)
     \item MarioDPO: SOTA among PCG methods (83.3\%)
 \end{itemize}
 \end{block}
@@ -716,7 +716,7 @@ Try it yourself!
 \begin{frame}
 \frametitle{Backup: Correlation Matrix}
 \begin{center}
-\includegraphics[width=0.85\textwidth]{correlation_matrix.png}
+\includegraphics[width=0.70\textwidth,height=0.80\textheight,keepaspectratio]{correlation_matrix.png}
 \end{center}
 \end{frame}
 
