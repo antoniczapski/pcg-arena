@@ -500,25 +500,117 @@ Judge function correlates with human preference: \textbf{Spearman $r = 0.736$}, 
 
 %------------------------------------------------------------
 \begin{frame}
-\frametitle{MarioDPO: Aligning Generators with Human Preferences}
-
-\textbf{Approach:} Direct Preference Optimization (DPO) fine-tuning
+\frametitle{MarioDPO: Level Representation}
 
 \begin{columns}
-\column{0.5\textwidth}
-\begin{block}{Training Data}
+\column{0.6\textwidth}
+\textbf{Tokenization Strategy}
 \begin{itemize}
-    \item 473 human pairs ($\times$10 weight)
-    \item 2,606 synthetic pairs (Judge)
-    \item \textbf{7,336 effective pairs}
+    \item \textbf{Vocabulary:} 37 ASCII characters
+    \item \textbf{Direction:} \alert{Column-by-Column} (Top-to-Bottom, Left-to-Right)
+\end{itemize}
+
+\vspace{1em}
+\textbf{Why Column-Major?}
+\begin{itemize}
+    \item Mario levels have strong \textbf{vertical dependencies} (gravity, pillars, pipes).
+    \item Row-major separates vertical neighbors by the full level width ($W$).
+    \item Column-major keeps vertical neighbors adjacent in the sequence.
+\end{itemize}
+
+\column{0.4\textwidth}
+\begin{center}
+\fcolorbox{black}{white}{
+\begin{minipage}{0.8\textwidth}
+\ttfamily\small
+\centering
+\textbf{Input Matrix}\\[0.3em]
+-- -\\
+-- -\\
+-- -\\
+X- >\\
+XX ]\\
+XX ]\\[0.5em]
+$\downarrow$\\[0.5em]
+\textbf{Sequence}\\
+\alert{X X -- -- ...} (Col 1)\\
+\alert{] ] > - - ...} (Col 2)
+\end{minipage}
+}
+\end{center}
+\end{columns}
+
+\vspace{1em}
+\begin{center}
+Context Window: \textbf{2048 tokens} ($\approx$ 128 game columns)
+\end{center}
+
+\end{frame}
+
+%------------------------------------------------------------
+\begin{frame}
+\frametitle{Synthetic Data Generation (RLAIF)}
+
+\textbf{Problem:} 571 human votes are insufficient for training a Transformer.
+
+\vspace{0.5em}
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{Solution: Hybrid Dataset}
+\begin{enumerate}
+    \item \textbf{Human Data} ($10\times$ Weight)
+    \begin{itemize}
+        \item 473 high-confidence pairs
+        \item ``Gold standard'' ground truth
+    \end{itemize}
+    
+    \vspace{0.5em}
+    \item \textbf{Synthetic Data} ($1\times$ Weight)
+    \begin{itemize}
+        \item Generated using the \textbf{Judge Function}
+        \item 2,606 pairs generated
+        \item Effectively scales training data
+    \end{itemize}
+\end{enumerate}
+
+\column{0.5\textwidth}
+\begin{block}{Generation Process}
+\begin{enumerate}
+    \item Generate 2 candidate segments ($L_A, L_B$)
+    \item Evaluate with Judge:
+    $$S_A = J_{final}(L_A), \quad S_B = J_{final}(L_B)$$
+    \item If $|S_A - S_B| > \delta$:
+    \begin{itemize}
+        \item Create labeled pair $(L_{winner}, L_{loser})$
+    \end{itemize}
+\end{enumerate}
+\end{block}
+\end{columns}
+
+\end{frame}
+
+%------------------------------------------------------------
+\begin{frame}
+\frametitle{DPO Training: Stage 1 -- Supervised Fine-Tuning}
+
+\textbf{Goal:} Teach the model basic level structure before preference alignment.
+
+\vspace{1em}
+\begin{columns}
+\column{0.5\textwidth}
+\begin{block}{Base Model}
+\begin{itemize}
+    \item \textbf{Architecture:} GPT-2 Small (124M params)
+    \item \textbf{Vocabulary:} 37 ASCII tile characters
+    \item \textbf{Context:} 2048 tokens
 \end{itemize}
 \end{block}
 
-\begin{block}{Architecture}
+\begin{block}{SFT Training Data}
 \begin{itemize}
-    \item Base: GPT-2 small
-    \item Tokenization: Character-level
-    \item DPO $\beta = 0.1$
+    \item 15 Original Nintendo SMB levels
+    \item Column-by-column tokenization
+    \item Model learns: ground continuity, pipe structure, platform placement
 \end{itemize}
 \end{block}
 
@@ -526,6 +618,48 @@ Judge function correlates with human preference: \textbf{Spearman $r = 0.736$}, 
 \begin{center}
 \includegraphics[width=\textwidth]{dpo_training_data.png}
 \end{center}
+
+\vspace{0.5em}
+\begin{alertblock}{Output}
+$\pi_{ref}$ = Reference policy (SFT model)
+\end{alertblock}
+\end{columns}
+
+\end{frame}
+
+%------------------------------------------------------------
+\begin{frame}
+\frametitle{DPO Training: Stage 2 -- Preference Alignment}
+
+\textbf{Direct Preference Optimization (DPO)} aligns the model with human preferences without training a separate reward network.
+
+\vspace{0.5em}
+\begin{columns}
+\column{0.55\textwidth}
+\begin{block}{DPO Loss Function}
+$$L_{DPO} = -\mathbb{E} \left[ \log \sigma \left( \beta \log \frac{\pi_\theta(y_w)}{\pi_{ref}(y_w)} - \beta \log \frac{\pi_\theta(y_l)}{\pi_{ref}(y_l)} \right) \right]$$
+\end{block}
+
+\vspace{0.3em}
+\textbf{Intuition:}
+\begin{itemize}
+    \item $\uparrow$ probability of \textbf{winning} levels ($y_w$)
+    \item $\downarrow$ probability of \textbf{losing} levels ($y_l$)
+    \item $\beta = 0.1$ controls divergence from $\pi_{ref}$
+\end{itemize}
+
+\column{0.45\textwidth}
+\begin{block}{Training Config}
+\begin{tabular}{ll}
+Human pairs & 473 ($\times 10$) \\
+Synthetic pairs & 2,606 ($\times 1$) \\
+\textbf{Effective total} & \textbf{7,336} \\
+\midrule
+Learning rate & $1 \times 10^{-5}$ \\
+Batch size & 32 \\
+Epochs & 3 \\
+\end{tabular}
+\end{block}
 \end{columns}
 
 \end{frame}
