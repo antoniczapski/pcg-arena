@@ -16,6 +16,11 @@ Evaluating procedural content generators (PCGs) for video games poses significan
 
 Key contributions include: (1) a browser-based Mario game engine ported from Java to TypeScript, (2) an adaptive matchmaking algorithm (AGIS), (3) a heuristic Judge Function achieving r=0.736 correlation with human preferences, and (4) **MarioDPO**, a DPO-aligned generator that achieves the highest win rate among all PCG methods tested.
 
+<p align="center">
+  <img src="latex/img/main_gameplay.png" alt="PCG Arena Gameplay" width="700">
+  <br><em>Figure 1: PCG Arena — Players compare two levels side-by-side and vote for their favorite</em>
+</p>
+
 ---
 
 ## 1. Introduction
@@ -104,6 +109,11 @@ We developed a full-stack web platform with three main components:
 | **Database** | SQLite | Persistent storage (17 tables) |
 
 The Mario engine was manually ported from the Java-based Mario AI Framework to TypeScript, preserving physics fidelity while enabling browser execution.
+
+<p align="center">
+  <img src="latex/img/leaderboard.png" alt="Leaderboard" width="600">
+  <br><em>Figure 2: Live Glicko-2 leaderboard with uncertainty intervals</em>
+</p>
 
 ### 3.2 Data Collection Pipeline
 
@@ -206,6 +216,11 @@ Each generator contributes **100 levels** (except Original: 15 levels).
 
 **Result:** Linear relationship — easier = better (r = -0.227, p = 0.046). Players prefer levels they can **complete**. No inverted-U "flow channel" pattern found.
 
+<p align="center">
+  <img src="latex/img/h1_difficulty_vs_winrate.png" alt="H1 Difficulty vs Win Rate" width="500">
+  <br><em>Figure 3: Death rate vs. win rate — easier levels win more</em>
+</p>
+
 ### H2: Creativity Hypothesis — ✅ Partially Supported
 
 **Hypothesis:** Higher terrain variety and enemy diversity preferred.
@@ -224,6 +239,11 @@ Each generator contributes **100 levels** (except Original: 15 levels).
 - **Explorers** (n=2): Long sessions, high completion rates
 - **Mainstream** (n=6): Most votes, balanced playstyle  
 - **Strugglers** (n=4): Low completion, high death rates
+
+<p align="center">
+  <img src="latex/img/h4_preference_clusters.png" alt="H4 Player Clusters" width="500">
+  <br><em>Figure 4: K-means clustering reveals 3 distinct player types</em>
+</p>
 
 ### H6: Tag Validation — ✅ Supported
 
@@ -263,6 +283,11 @@ Levels closer to **Original SMB style** win more often:
 - Mahalanobis distance to Original centroid: r = -0.279, p = 0.011
 - Style reward: $r_{style} = 1 / (1 + D_M)$
 
+<p align="center">
+  <img src="latex/img/exp_d_original_centroid.png" alt="Nintendo Factor" width="500">
+  <br><em>Figure 5: Generators closer to Original SMB (center) have higher win rates</em>
+</p>
+
 ### 5.5 MarioDPO Training
 
 We trained a generator using **Direct Preference Optimization (DPO)**:
@@ -293,6 +318,11 @@ We trained a generator using **Direct Preference Optimization (DPO)**:
 | 14 | patternCount | 20.4% | Pattern counting |
 
 **Key Achievement:** MarioDPO achieves the **highest win rate among all PCG generators**, second only to hand-crafted Original SMB levels!
+
+<p align="center">
+  <img src="latex/img/MarioDPO_better_than_other_pcg.png" alt="MarioDPO Results" width="600">
+  <br><em>Figure 6: MarioDPO achieves highest win rate among all PCG methods</em>
+</p>
 
 ---
 
@@ -443,6 +473,21 @@ Example tile codes:
 
 ### C. Platform Screenshots
 
+<p align="center">
+  <img src="latex/img/generator_fingerprints.png" alt="Generator Fingerprints" width="700">
+  <br><em>Figure 7: Generator fingerprints — each algorithm has a distinctive structural signature</em>
+</p>
+
+<p align="center">
+  <img src="latex/img/correlation_matrix.png" alt="Correlation Matrix" width="600">
+  <br><em>Figure 8: Feature correlation matrix from EDA</em>
+</p>
+
+<p align="center">
+  <img src="latex/img/trajectory_visualization.png" alt="Player Trajectories" width="600">
+  <br><em>Figure 9: Player trajectory visualization with death heatmap overlay</em>
+</p>
+
 | Feature | Description |
 |---------|-------------|
 | Main Gameplay | Side-by-side level comparison |
@@ -450,7 +495,7 @@ Example tile codes:
 | Builder Profile | Generator submission and management |
 | Death Heatmap | Visualization of player death locations |
 
-*(See `latex/img/` for full-resolution images)*
+*(See `latex/img/` for all 38 images)*
 
 ### D. Statistical Details
 
