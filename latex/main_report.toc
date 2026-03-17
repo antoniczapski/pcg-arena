@@ -1,0 +1,88 @@
+\contentsline {section}{\numberline {1}Introduction}{4}{section.1}%
+\contentsline {section}{\numberline {2}Background and Related Work}{4}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Procedural Content Generation}{4}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Mario AI Framework}{5}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}Human Evaluation in PCG}{5}{subsection.2.3}%
+\contentsline {subsection}{\numberline {2.4}Rating Systems for Pairwise Comparisons}{5}{subsection.2.4}%
+\contentsline {section}{\numberline {3}System Architecture}{6}{section.3}%
+\contentsline {subsection}{\numberline {3.1}High-Level Overview}{6}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Backend Architecture}{6}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}Frontend Architecture}{7}{subsection.3.3}%
+\contentsline {subsection}{\numberline {3.4}Database Design}{7}{subsection.3.4}%
+\contentsline {section}{\numberline {4}Game Engine Implementation}{8}{section.4}%
+\contentsline {subsection}{\numberline {4.1}TypeScript Port from Java}{8}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Physics and Gameplay}{8}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Level Format and Parsing}{8}{subsection.4.3}%
+\contentsline {section}{\numberline {5}Battle and Voting System}{9}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Battle Flow}{9}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}Voting Interface}{10}{subsection.5.2}%
+\contentsline {subsection}{\numberline {5.3}Tagging System}{10}{subsection.5.3}%
+\contentsline {section}{\numberline {6}Matchmaking Algorithm}{10}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Problem Definition}{11}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}AGIS: Adaptive Glicko-Informed Selection}{11}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}Generator Selection Weights}{11}{subsection.6.3}%
+\contentsline {section}{\numberline {7}Rating System}{12}{section.7}%
+\contentsline {subsection}{\numberline {7.1}Glicko-2 Algorithm}{12}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}Rating Updates}{12}{subsection.7.2}%
+\contentsline {subsection}{\numberline {7.3}Confidence Intervals}{13}{subsection.7.3}%
+\contentsline {section}{\numberline {8}Leaderboard and Analytics}{13}{section.8}%
+\contentsline {subsection}{\numberline {8.1}Leaderboard Display}{13}{subsection.8.1}%
+\contentsline {subsection}{\numberline {8.2}Generator Statistics}{14}{subsection.8.2}%
+\contentsline {subsection}{\numberline {8.3}Confusion Matrix}{14}{subsection.8.3}%
+\contentsline {section}{\numberline {9}Authentication and User Management}{16}{section.9}%
+\contentsline {subsection}{\numberline {9.1}Google OAuth Integration}{16}{subsection.9.1}%
+\contentsline {subsection}{\numberline {9.2}Email/Password Authentication}{17}{subsection.9.2}%
+\contentsline {subsection}{\numberline {9.3}Email Verification with Twilio SendGrid}{17}{subsection.9.3}%
+\contentsline {section}{\numberline {10}Builder Profile}{18}{section.10}%
+\contentsline {subsection}{\numberline {10.1}Generator Submission}{18}{subsection.10.1}%
+\contentsline {subsection}{\numberline {10.2}Level Validation}{18}{subsection.10.2}%
+\contentsline {subsection}{\numberline {10.3}Generator Management}{19}{subsection.10.3}%
+\contentsline {section}{\numberline {11}Admin Dashboard}{19}{section.11}%
+\contentsline {subsection}{\numberline {11.1}Platform Overview}{19}{subsection.11.1}%
+\contentsline {subsection}{\numberline {11.2}Data Export}{20}{subsection.11.2}%
+\contentsline {subsection}{\numberline {11.3}Research Analytics}{21}{subsection.11.3}%
+\contentsline {section}{\numberline {12}Deployment and Infrastructure}{23}{section.12}%
+\contentsline {subsection}{\numberline {12.1}Google Cloud Platform Setup}{23}{subsection.12.1}%
+\contentsline {subsection}{\numberline {12.2}Docker Containerization}{23}{subsection.12.2}%
+\contentsline {subsection}{\numberline {12.3}Domain and HTTPS Configuration}{24}{subsection.12.3}%
+\contentsline {subsection}{\numberline {12.4}Monitoring and Alerts}{24}{subsection.12.4}%
+\contentsline {section}{\numberline {13}Results and Discussion}{24}{section.13}%
+\contentsline {subsection}{\numberline {13.1}Dataset Overview}{25}{subsection.13.1}%
+\contentsline {subsection}{\numberline {13.2}Generator Rankings and Performance}{25}{subsection.13.2}%
+\contentsline {subsection}{\numberline {13.3}RQ1: What Makes a Good Generator?}{27}{subsection.13.3}%
+\contentsline {subsubsection}{\numberline {13.3.1}H1: Optimized Difficulty (Flow Channel)}{27}{subsubsection.13.3.1}%
+\contentsline {subsubsection}{\numberline {13.3.2}H2: Structural Variety}{27}{subsubsection.13.3.2}%
+\contentsline {subsubsection}{\numberline {13.3.3}H3: Path Freedom (Agency)}{28}{subsubsection.13.3.3}%
+\contentsline {subsection}{\numberline {13.4}RQ2: Player Preference Consistency}{29}{subsection.13.4}%
+\contentsline {subsubsection}{\numberline {13.4.1}H4: Preference Clusters}{29}{subsubsection.13.4.1}%
+\contentsline {subsubsection}{\numberline {13.4.2}H5: Skill-Consistency Relationship}{30}{subsubsection.13.4.2}%
+\contentsline {subsection}{\numberline {13.5}RQ3: Tag Semantics}{31}{subsection.13.5}%
+\contentsline {subsubsection}{\numberline {13.5.1}H6: Tag-Telemetry Correspondence}{31}{subsubsection.13.5.1}%
+\contentsline {subsubsection}{\numberline {13.5.2}H7: Feature Importance for Tags}{32}{subsubsection.13.5.2}%
+\contentsline {subsubsection}{\numberline {13.5.3}Tag Distribution and Co-occurrence}{33}{subsubsection.13.5.3}%
+\contentsline {subsection}{\numberline {13.6}Trajectory Analysis}{34}{subsection.13.6}%
+\contentsline {subsection}{\numberline {13.7}Correlation Structure}{36}{subsection.13.7}%
+\contentsline {subsection}{\numberline {13.8}Extended Feature Analysis}{36}{subsection.13.8}%
+\contentsline {subsubsection}{\numberline {13.8.1}H8: Enemy Density and Hazard Difficulty}{36}{subsubsection.13.8.1}%
+\contentsline {subsubsection}{\numberline {13.8.2}H9: Rewards and Leniency}{37}{subsubsection.13.8.2}%
+\contentsline {subsubsection}{\numberline {13.8.3}H10: Feature Importance Modeling}{38}{subsubsection.13.8.3}%
+\contentsline {subsubsection}{\numberline {13.8.4}Extended H6: Tag Validation Summary}{39}{subsubsection.13.8.4}%
+\contentsline {subsection}{\numberline {13.9}Judge Function Experiments}{40}{subsection.13.9}%
+\contentsline {subsubsection}{\numberline {13.9.1}Experiment A: Verticality Validation}{40}{subsubsection.13.9.1}%
+\contentsline {subsubsection}{\numberline {13.9.2}Experiment B: Hazard Hierarchy}{42}{subsubsection.13.9.2}%
+\contentsline {subsubsection}{\numberline {13.9.3}Experiment C: Death Entropy Test}{42}{subsubsection.13.9.3}%
+\contentsline {subsubsection}{\numberline {13.9.4}Experiment D: Original Centroid (Style Matching)}{43}{subsubsection.13.9.4}%
+\contentsline {subsubsection}{\numberline {13.9.5}Proposed Judge Function}{44}{subsubsection.13.9.5}%
+\contentsline {subsection}{\numberline {13.10}Summary of Findings}{45}{subsection.13.10}%
+\contentsline {subsection}{\numberline {13.11}Key Insights}{45}{subsection.13.11}%
+\contentsline {section}{\numberline {14}Mario-DPO: Toward SOTA Level Generation}{46}{section.14}%
+\contentsline {subsection}{\numberline {14.1}Framework Architecture}{46}{subsection.14.1}%
+\contentsline {subsection}{\numberline {14.2}Preference Dataset Analysis}{47}{subsection.14.2}%
+\contentsline {subsection}{\numberline {14.3}Judge Function Validation}{47}{subsection.14.3}%
+\contentsline {subsection}{\numberline {14.4}Level Corpus Statistics}{47}{subsection.14.4}%
+\contentsline {subsection}{\numberline {14.5}Proposed Training Configuration}{48}{subsection.14.5}%
+\contentsline {subsection}{\numberline {14.6}Expected Outcomes}{48}{subsection.14.6}%
+\contentsline {section}{\numberline {15}Conclusions and Future Work}{49}{section.15}%
+\contentsline {subsection}{\numberline {15.1}Summary of Contributions}{49}{subsection.15.1}%
+\contentsline {subsection}{\numberline {15.2}Limitations}{49}{subsection.15.2}%
+\contentsline {subsection}{\numberline {15.3}Future Directions}{49}{subsection.15.3}%

@@ -46,10 +46,6 @@ logs/
 .env.local
 /Mario-AI-Framework-PCG/
 
-# LaTeX - keep only img/ folder (referenced in README), ignore everything else
-latex/*
-!latex/img/
-
 # Presentation LaTeX auxiliary files
 presentation/*.aux
 presentation/*.bbl
