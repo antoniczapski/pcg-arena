@@ -1,0 +1,968 @@
+% !TEX program = pdflatex
+% !TEX encoding = UTF-8 Unicode
+
+\RequirePackage{colortbl}
+\documentclass[shortabstract, mgr, english]{iithesis}
+
+% --- Packages ---
+\usepackage{xcolor}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{listings}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{amsmath,amssymb}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{array}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage[numbers]{natbib}
+\usepackage[T1]{fontenc}
+
+% --- Colors ---
+\definecolor{codebg}{RGB}{248,248,248}
+\definecolor{codeframe}{RGB}{220,220,220}
+\definecolor{keyword}{RGB}{0,92,197}
+\definecolor{comment}{RGB}{0,128,0}
+\definecolor{string}{RGB}{163,21,21}
+
+% --- Code listings style ---
+\lstset{
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{codebg},
+  frame=single,
+  rulecolor=\color{codeframe},
+  breaklines=true,
+  columns=fullflexible,
+  keywordstyle=\color{keyword}\bfseries,
+  commentstyle=\color{comment}\itshape,
+  stringstyle=\color{string},
+  showstringspaces=false,
+  captionpos=b,
+}
+
+% --- Graphics path ---
+\graphicspath{{../img/}}
+
+% --- Column types ---
+\newcolumntype{C}[1]{>{\centering\arraybackslash}m{#1}}
+
+% ============================================================================
+% THESIS METADATA
+% ============================================================================
+\polishtitle    {PCG Arena: Platforma do \'Slepego Testowania A/B\fmlinebreak Generator\'ow Tre\'sci Proceduralnych\fmlinebreak z Optymalizacj\k{a} Preferencji}
+\englishtitle   {PCG Arena: A Platform for Blind A/B Testing\fmlinebreak of Procedural Content Generators\fmlinebreak with Direct Preference Optimization}
+
+\polishabstract {
+Ewaluacja generator\'ow tre\'sci proceduralnych (PCG) dla gier wideo stanowi istotne wyzwanie metodologiczne, poniewa\.z przyjemno\'s\'c gracza jest z natury subiektywna i~trudna do zmierzenia za pomoc\k{a} automatycznych metryk. Niniejsza praca przedstawia PCG~Arena --- platformę internetow\k{a} do \'slepego testowania A/B generator\'ow poziom\'ow do gry Super Mario Bros poprzez dane o~preferencjach graczy. Platforma umo\.zliwia graczom rozgrywanie dw\'och proceduralnie generowanych poziom\'ow obok siebie w~przegl\k{a}darce, g{\l}osowanie na preferowany poziom oraz opcjonalne tagowanie cech rozgrywki. G{\l}osy s\k{a} agregowane za pomoc\k{a} systemu ratingowego Glicko-2, kt\'ory zapewnia rankingi z~przedzia{\l}ami ufno\'sci.
+
+Na podstawie zebranych danych przeprowadzono rozleg{\l}\k{a} analiz\k{e} eksploracyjn\k{a} badaj\k{a}c\k{a}, co czyni poziomy dobrymi, czy preferencje graczy s\k{a} sp\'ojne oraz czy subiektywne tagi odpowiadaj\k{a} mierzalnym r\'o\.znicom w~rozgrywce. Wyniki te pos{\l}u\.zy{\l}y do opracowania funkcji oceny (Judge Function), kt\'ora koreluje z~preferencjami ludzi na poziomie $r = 0.736$. Wreszcie, praca przedstawia MarioDPO --- generator poziom\'ow wytrenowany metod\k{a} Direct Preference Optimization, kt\'ory osi\k{a}ga najwy\.zszy wska\'znik wygranych (83.3\%) spo\'sr\'od wszystkich metod PCG, ust\k{e}puj\k{a}c jedynie oryginalnym poziomom Nintendo.
+}
+
+\englishabstract {
+Evaluating procedural content generators (PCGs) for video games poses significant methodological challenges, as player enjoyment is inherently subjective and difficult to quantify through automated metrics alone. This thesis presents PCG~Arena, a~web-based platform designed for blind A/B testing of Super Mario Bros level generators through human preference data. The platform enables players to play two procedurally generated levels side-by-side in their browser, vote for their preferred level, and optionally tag gameplay characteristics. Votes are aggregated using the Glicko-2 rating system, providing uncertainty-aware rankings with confidence intervals.
+
+Building on the collected data, we conduct an extensive exploratory data analysis investigating what makes levels good, whether player preferences are consistent, and whether subjective tags correspond to measurable gameplay differences. These findings inform the development of a~heuristic Judge Function achieving $r = 0.736$ correlation with human preferences. Finally, we present MarioDPO, a~level generator fine-tuned with Direct Preference Optimization that achieves the highest win rate (83.3\%) among all PCG methods tested, second only to hand-crafted original Nintendo levels.
+}
+
+\author         {Antoni Czapski}
+\advisor        {dr ??? ???}
+\date          {March 2026}
+\transcriptnum {??????}
+\advisorgen    {dr. ??? ???}
+
+% ============================================================================
+\begin{document}
+% ============================================================================
+
+% ============================================================================
+\chapter{Introduction}
+\label{ch:introduction}
+% ============================================================================
+
+\section{Procedural Content Generation in Video Games}
+\label{sec:intro-pcg}
+
+tbd
+
+\section{The Evaluation Problem}
+\label{sec:intro-evaluation-problem}
+
+tbd
+
+\section{Research Questions and Contributions}
+\label{sec:intro-rq}
+
+tbd
+
+\section{Thesis Structure}
+\label{sec:intro-structure}
+
+tbd
+
+
+% ============================================================================
+\chapter{Background and Related Work}
+\label{ch:background}
+% ============================================================================
+
+\section{Procedural Content Generation}
+\label{sec:bg-pcg}
+
+tbd
+
+\subsection{Search-Based Approaches}
+\label{subsec:bg-search}
+
+tbd
+
+\subsection{Grammar-Based and Rule-Based Approaches}
+\label{subsec:bg-grammar}
+
+tbd
+
+\subsection{Machine Learning-Based Generation (PCGML)}
+\label{subsec:bg-pcgml}
+
+tbd
+
+
+\section{Super Mario Bros as a PCG Benchmark}
+\label{sec:bg-mario}
+
+\subsection{The Mario AI Framework}
+\label{subsec:bg-mario-framework}
+
+tbd
+
+\subsection{Mario Level Generators in the Literature}
+\label{subsec:bg-mario-generators}
+
+tbd
+
+
+\section{Evaluation Methods for Procedural Content}
+\label{sec:bg-evaluation}
+
+tbd
+
+\subsection{Automated Metrics}
+\label{subsec:bg-eval-automated}
+
+tbd
+
+\subsection{Agent-Based Testing}
+\label{subsec:bg-eval-agents}
+
+tbd
+
+\subsection{Human Evaluation Studies}
+\label{subsec:bg-eval-human}
+
+tbd
+
+\subsection{Comparison of Approaches and Their Limitations}
+\label{subsec:bg-eval-comparison}
+
+tbd
+
+
+\section{Rating Systems for Pairwise Comparisons}
+\label{sec:bg-rating}
+
+\subsection{The Elo Rating System}
+\label{subsec:bg-elo}
+
+tbd
+
+\subsection{The Glicko-2 Rating System}
+\label{subsec:bg-glicko2}
+
+tbd
+
+\subsection{Arena-Style Evaluation Platforms}
+\label{subsec:bg-arenas}
+
+tbd
+
+
+\section{Preference Learning and Alignment}
+\label{sec:bg-alignment}
+
+\subsection{Reinforcement Learning from Human Feedback}
+\label{subsec:bg-rlhf}
+
+tbd
+
+\subsection{Direct Preference Optimization}
+\label{subsec:bg-dpo}
+
+tbd
+
+
+% ============================================================================
+\chapter{PCG Arena --- System Design}
+\label{ch:system-design}
+% ============================================================================
+
+This chapter presents the design and implementation of PCG Arena, a web-based platform for
+blind A/B testing of procedural content generators for Super Mario Bros. We describe the
+system architecture, game engine, battle and voting mechanics, the novel AGIS matchmaking
+algorithm, the Glicko-2 rating integration, the builder submission workflow, and the
+deployment infrastructure.
+
+% ----------------------------------------------------------------------------
+\section{Requirements and Design Goals}
+\label{sec:sd-requirements}
+% ----------------------------------------------------------------------------
+
+The primary goal of PCG Arena is to enable rigorous, human-centered evaluation of PCG
+algorithms through pairwise comparisons. Translating this goal into a concrete system
+imposes several requirements:
+
+\begin{enumerate}
+    \item \textbf{Blind comparison.} Players must not know which generator produced which
+          level, eliminating brand-loyalty bias and ensuring votes reflect genuine quality
+          perception.
+    \item \textbf{Browser-based gameplay.} No installation should be required; the full
+          Super Mario Bros experience must run in the browser with faithful physics.
+    \item \textbf{Uncertainty-aware ranking.} The rating system must quantify confidence
+          in each generator's ranking, not merely produce a point estimate.
+    \item \textbf{Efficient matchmaking.} With a limited player population, every battle
+          should maximise information gain toward stable rankings.
+    \item \textbf{Open submission.} Any researcher should be able to submit their own
+          generator and receive a rating, with minimal friction.
+    \item \textbf{Rich telemetry.} Beyond the binary vote, the platform should capture
+          gameplay trajectories, qualitative tags, and timing data for downstream analysis.
+\end{enumerate}
+
+% ----------------------------------------------------------------------------
+\section{System Architecture}
+\label{sec:sd-architecture}
+% ----------------------------------------------------------------------------
+
+PCG Arena follows a three-tier web architecture with clear separation of concerns:
+a~\emph{presentation layer} (browser-based frontend), an \emph{application layer}
+(RESTful backend), and a~\emph{data layer} (relational database). Table~\ref{tab:tech-stack}
+summarises the technology choices for each layer.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lll}
+\toprule
+\textbf{Layer} & \textbf{Technology} & \textbf{Rationale} \\
+\midrule
+Frontend  & React 18 + TypeScript 5.6 (Vite) & Canvas rendering; type safety \\
+Backend   & Python 3.12, FastAPI              & Auto OpenAPI docs; Pydantic validation \\
+Database  & SQLite                            & Single-file; ACID; zero-config \\
+Proxy     & Caddy                             & Automatic TLS via Let's Encrypt \\
+Container & Docker + docker-compose           & Reproducible deployment \\
+\bottomrule
+\end{tabular}
+\caption{PCG Arena technology stack.}
+\label{tab:tech-stack}
+\end{table}
+
+\subsection{Frontend}
+\label{subsec:sd-frontend}
+
+The frontend is a single-page application built with React~18 and TypeScript~5.6, bundled
+by Vite. Its source tree is organised into five top-level directories:
+
+\begin{lstlisting}
+frontend/src/
+  api/           # Backend communication (fetch wrappers)
+  engine/        # Mario game engine (ported from Java)
+  components/    # Reusable React UI components
+  pages/         # Full-page route components
+  contexts/      # React context providers (auth, theme)
+\end{lstlisting}
+
+Game rendering uses the HTML5 Canvas API for direct pixel manipulation, while the rest of
+the UI is standard React. Vite provides sub-second hot-module replacement during development
+and produces an optimised static bundle for production.
+
+\subsection{Backend}
+\label{subsec:sd-backend}
+
+The backend is implemented in Python using FastAPI, chosen for its automatic OpenAPI
+documentation generation, native \texttt{async/await} support, and built-in request
+validation through Pydantic models. Key modules include:
+
+\begin{itemize}[nosep]
+    \item \texttt{main.py} --- route definitions and middleware (CORS, rate limiting)
+    \item \texttt{auth.py} --- Google OAuth 2.0 and email/password authentication
+    \item \texttt{glicko2.py} --- Glicko-2 rating algorithm
+    \item \texttt{matchmaking.py} --- AGIS matchmaking algorithm
+    \item \texttt{builders.py} --- generator submission and management
+    \item \texttt{stats.py} --- analytics and data export endpoints
+\end{itemize}
+
+The API is versioned under the \texttt{/v1/} prefix and exposes endpoints for battles,
+votes, statistics, authentication, builder operations, and admin management. Administrative
+endpoints additionally require either session-based admin access or an API key.
+
+\subsection{Database}
+\label{subsec:sd-database}
+
+SQLite was selected as the database engine due to its single-file storage (simplifying
+backups and deployment), ACID transaction guarantees, and zero-configuration operation.
+The schema is managed through 17~sequential SQL migrations and comprises the following
+tables:
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{ll}
+\toprule
+\textbf{Table} & \textbf{Purpose} \\
+\midrule
+\texttt{generators}          & PCG algorithm metadata and ownership \\
+\texttt{levels}              & ASCII tilemap content with dimensions and content hash \\
+\texttt{battles}             & Pairwise comparison instances (left/right level pairing) \\
+\texttt{votes}               & User preference outcomes with telemetry and tags \\
+\texttt{ratings}             & Current Glicko-2 state ($\mu$, RD, $\sigma$) per generator \\
+\texttt{rating\_events}      & Audit log of all rating changes \\
+\texttt{generator\_pair\_stats} & Confusion matrix data (pairwise win/loss counts) \\
+\texttt{users}               & Authenticated user accounts \\
+\texttt{user\_sessions}      & Active login sessions \\
+\texttt{email\_verifications}& Email verification tokens \\
+\texttt{password\_resets}    & Password reset tokens \\
+\texttt{player\_profiles}    & Anonymous player identities \\
+\texttt{player\_sessions}    & Player session tracking \\
+\texttt{level\_stats}        & Aggregate per-level gameplay statistics \\
+\texttt{play\_trajectories}  & Detailed player position data for heatmaps \\
+\texttt{level\_features}     & Structural feature extraction (tiles, enemies, gaps) \\
+\texttt{schema\_migrations}  & Migration bookkeeping \\
+\bottomrule
+\end{tabular}
+\caption{Database schema: all 17~tables.}
+\label{tab:db-tables}
+\end{table}
+
+% ----------------------------------------------------------------------------
+\section{Game Engine}
+\label{sec:sd-engine}
+% ----------------------------------------------------------------------------
+
+A critical component of PCG Arena is the browser-based Super Mario Bros engine, which was
+ported from the Java-based Mario AI Framework~\cite{karakovskiy2012marioai} to TypeScript.
+The port required faithful preservation of gameplay physics while adapting rendering and
+input handling to browser constraints.
+
+\subsection{TypeScript Port}
+\label{subsec:sd-ts-port}
+
+The porting process involved four main translation steps:
+
+\begin{enumerate}
+    \item \textbf{Class structure.} Java classes were converted to TypeScript classes,
+          preserving inheritance hierarchies (e.g.\ \texttt{MarioSprite} $\to$
+          \texttt{Mario}, \texttt{Enemy}).
+    \item \textbf{Physics constants.} All numerical constants were kept identical to the
+          Java originals (Table~\ref{tab:physics}).
+    \item \textbf{Rendering.} Java Swing/AWT rendering was replaced with the HTML5
+          Canvas API (\texttt{CanvasRenderingContext2D}).
+    \item \textbf{Input.} Keyboard event handling was reimplemented using browser
+          \texttt{KeyboardEvent} listeners.
+\end{enumerate}
+
+The key engine modules are:
+
+\begin{lstlisting}
+engine/
+  MarioGame.ts     # Game loop (requestAnimationFrame)
+  MarioWorld.ts    # World state, collision, game logic
+  MarioLevel.ts    # ASCII tilemap parser
+  MarioSprite.ts   # Base sprite class (physics, rendering)
+  sprites/         # Mario, enemies, items, projectiles
+  graphics/        # Camera, sprite sheets
+  effects/         # Particle effects
+\end{lstlisting}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lr}
+\toprule
+\textbf{Parameter} & \textbf{Value} \\
+\midrule
+Ground inertia & 0.89 \\
+Air inertia    & 0.89 \\
+Gravity        & 3.0 \\
+Jump velocity  & $-1.9$ \\
+Walk speed     & 0.6 \\
+Run speed      & 1.2 \\
+\bottomrule
+\end{tabular}
+\caption{Core physics constants preserved from the Java Mario AI Framework.}
+\label{tab:physics}
+\end{table}
+
+The game loop runs at 30~ticks per second (matching the original framework), with
+rendering at 60~FPS via \texttt{requestAnimationFrame}. Physics updates are fully
+deterministic, ensuring consistent gameplay across sessions.
+
+\subsection{Level Format}
+\label{subsec:sd-level-format}
+
+Levels are stored as plain-text ASCII tilemaps, where each character encodes a tile type
+or entity spawn point. The format supports 37~distinct tile characters, summarised in
+Table~\ref{tab:tile-legend}.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{cl|cl}
+\toprule
+\textbf{Char} & \textbf{Meaning} & \textbf{Char} & \textbf{Meaning} \\
+\midrule
+\texttt{-} & Air (empty)           & \texttt{Q} & Question block (coin) \\
+\texttt{X} & Solid floor           & \texttt{!} & Question block (coin, alt) \\
+\texttt{S} & Brick block           & \texttt{C} & Coin block \\
+\texttt{\#} & Pyramid block        & \texttt{U} & Mushroom block \\
+\texttt{D} & Used block            & \texttt{L} & 1-Up block \\
+\texttt{\%} & Jump-through platform & \texttt{1} & Invisible 1-Up block \\
+\texttt{|}  & Platform background   & \texttt{2} & Invisible coin block \\
+\texttt{?} & Question block (mushroom) & \texttt{o} & Free-standing coin \\
+\texttt{@} & Question block (mushroom, alt) & \texttt{M} & Mario spawn \\
+\texttt{E} & Goomba               & \texttt{F} & Flag (level exit) \\
+\texttt{g} & Goomba (alt)          & \texttt{t} & Pipe (empty) \\
+\texttt{G} & Winged Goomba         & \texttt{T} & Pipe (flower) \\
+\texttt{k} & Green Koopa           & \texttt{<} & Pipe top left \\
+\texttt{K} & Winged Green Koopa    & \texttt{>} & Pipe top right \\
+\texttt{r} & Red Koopa             & \texttt{[} & Pipe body left \\
+\texttt{R} & Winged Red Koopa      & \texttt{]} & Pipe body right \\
+\texttt{y} & Spiky                 & \texttt{*} & Bullet Bill body \\
+\texttt{Y} & Winged Spiky          & \texttt{B} & Bullet Bill head \\
+                &                  & \texttt{b} & Bullet Bill neck \\
+\bottomrule
+\end{tabular}
+\caption{Complete ASCII tile legend (37~characters).}
+\label{tab:tile-legend}
+\end{table}
+
+A typical level file consists of 16~rows (the default height) and up to several hundred
+columns, stored with newline-separated rows. For example, the original Super Mario Bros
+World~1-1 is encoded as a $202 \times 16$ character grid.
+
+\subsection{Level Validation}
+\label{subsec:sd-level-validation}
+
+Every submitted level undergoes format validation before insertion into the database. The
+validation procedure, implemented in the backend's \texttt{seed.py} module, checks:
+
+\begin{enumerate}
+    \item \textbf{Height bounds:} the number of rows must satisfy
+          $10 \leq h \leq 20$.
+    \item \textbf{Width bounds:} the number of columns must satisfy
+          $1 \leq w \leq 250$.
+    \item \textbf{Rectangular shape:} all rows must have identical length.
+    \item \textbf{Character whitelist:} every character must belong to the set of
+          37~allowed tiles (Table~\ref{tab:tile-legend}).
+\end{enumerate}
+
+Levels that fail any check are rejected with a descriptive error message. Note that the
+platform performs \emph{format-level} validation only; there is no automated playability
+or reachability analysis (e.g.\ checking that the exit is reachable from the spawn).
+Content hashes are computed for deduplication.
+
+% ----------------------------------------------------------------------------
+\section{Battle and Voting System}
+\label{sec:sd-battle}
+% ----------------------------------------------------------------------------
+
+The core user experience is the \emph{battle}: a blind A/B test in which the player
+compares two levels produced by different generators, not knowing which generator
+produced which level.
+
+\subsection{Battle Flow}
+\label{subsec:sd-battle-flow}
+
+A battle proceeds through five stages:
+
+\begin{enumerate}
+    \item \textbf{Battle request.} The frontend calls \texttt{POST /v1/battles:next}.
+    \item \textbf{Matchmaking.} The AGIS algorithm (Section~\ref{sec:sd-matchmaking})
+          selects two generators; one random level is drawn from each.
+    \item \textbf{Gameplay.} The player plays both levels sequentially (labelled ``Left''
+          and ``Right''). During play, the engine records a trajectory of Mario's position
+          and death events.
+    \item \textbf{Voting.} After completing both levels, the player chooses one of four
+          options: \emph{Left is Better}, \emph{Right is Better}, \emph{Tie}, or
+          \emph{Skip}. The ``Skip'' option, used when the player feels unable to judge or
+          encounters a technical issue, does not affect ratings.
+    \item \textbf{Rating update.} The backend updates Glicko-2 ratings for both generators
+          atomically within a database transaction (Section~\ref{sec:sd-rating}).
+\end{enumerate}
+
+\subsection{Tagging System}
+\label{subsec:sd-tagging}
+
+In addition to the preference vote, players may optionally tag each level in the battle
+with up to three descriptive labels drawn from a fixed vocabulary of seven tags:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{ll}
+\toprule
+\textbf{Tag} & \textbf{Description} \\
+\midrule
+\texttt{fun}              & The level was enjoyable to play \\
+\texttt{boring}           & The level lacked engagement \\
+\texttt{creative}         & The level showed novel or interesting design \\
+\texttt{too\_hard}        & The level was excessively difficult \\
+\texttt{too\_easy}        & The level was trivially easy \\
+\texttt{impossible}       & The level appeared to be uncompletable \\
+\texttt{broken\_graphics} & The level had visual or rendering issues \\
+\bottomrule
+\end{tabular}
+\caption{The seven available tags for level characterisation.}
+\label{tab:tags}
+\end{table}
+
+Tags are stored as boolean columns in the \texttt{votes} table and aggregated in
+\texttt{level\_stats}, enabling analyses such as correlating perceived difficulty with
+win rates or identifying generators whose levels are consistently tagged as
+\texttt{impossible}.
+
+% ----------------------------------------------------------------------------
+\section{Matchmaking: AGIS Algorithm}
+\label{sec:sd-matchmaking}
+% ----------------------------------------------------------------------------
+
+\subsection{Problem Definition}
+\label{subsec:sd-matchmaking-problem}
+
+Given $n$~generators with current Glicko-2 ratings and uncertainties, the matchmaking
+problem is to select a pair for the next battle that maximises information gain toward
+accurate final rankings. Na\"ive strategies are suboptimal:
+
+\begin{itemize}
+    \item \textbf{Uniform random} wastes battles on already-converged pairs.
+    \item \textbf{Most-uncertain-first} neglects head-to-head comparisons between
+          similarly rated generators.
+    \item \textbf{Round-robin} ignores rating information and pairs dissimilar generators.
+\end{itemize}
+
+To address these shortcomings, we developed \textbf{AGIS (Adaptive Glicko-Informed
+Selection)}, a two-stage matchmaking algorithm that incorporates rating uncertainty,
+skill similarity, and pairwise coverage into generator selection.
+
+\subsection{Stage~1: First Generator Selection}
+\label{subsec:sd-agis-stage1}
+
+Each generator~$i$ receives a selection weight~$w_i$ composing an uncertainty term and
+a games-played term:
+
+\begin{equation}
+\label{eq:agis-w1}
+w_i = \bigl(1 + \widetilde{\text{RD}}_i\bigr)^2 \;\cdot\; \text{boost}(\text{games}_i)
+\end{equation}
+
+where $\widetilde{\text{RD}}_i = (\text{RD}_i - \text{RD}_{\min}) / (\text{RD}_{\max} -
+\text{RD}_{\min})$ is the normalised rating deviation. The boost function provides a~$4\times$
+weight multiplier for generators with zero games, linearly decaying to~$1\times$ at
+\texttt{MIN\_GAMES} (default:~30). After convergence, a mild quality bias is applied:
+
+\begin{equation}
+\text{boost}_{\text{converged}} = 0.8 + q_{\text{bias}} \cdot
+\min\!\Bigl(1,\;\max\!\bigl(0,\;\tfrac{\mu_i - 600}{800}\bigr)\Bigr)
+\end{equation}
+
+where $q_{\text{bias}} = 0.2$ is the configurable quality bias strength. The first
+generator is then sampled from the resulting categorical distribution.
+
+\subsection{Stage~2: Second Generator Selection}
+\label{subsec:sd-agis-stage2}
+
+Given the first generator~$g_1$, the second is selected using a composite pair weight:
+
+\begin{equation}
+\label{eq:agis-w2}
+w_{1,j} = \alpha \cdot S(g_1, g_j) \;+\; \beta \cdot U(g_j) \;+\;
+           \gamma \cdot I(g_1, g_j) \;+\; \text{cov}(g_1, g_j)
+\end{equation}
+
+The four components are:
+
+\begin{itemize}
+    \item \textbf{Rating similarity} $S(g_1, g_j) = \exp\!\bigl(-\Delta\mu^2 / 2\sigma_s^2\bigr)$,
+          a Gaussian kernel with $\sigma_s = 150$ penalising large rating gaps.
+    \item \textbf{Uncertainty} $U(g_j) = 1 + \widetilde{\text{RD}}_j$, favouring
+          uncertain generators (range~$[1, 2]$).
+    \item \textbf{Information gain} $I(g_1, g_j)$, incorporating the joint RD
+          and a match-quality estimate.
+    \item \textbf{Coverage bonus} $\text{cov}(g_1, g_j)$: for pairs with fewer than
+          \texttt{TARGET\_BATTLES\_PER\_PAIR} (default:~10) battles, an exponential
+          bonus $2 \cdot e^{-c/3}$ is applied, where $c$~is the current battle count;
+          otherwise a residual $0.1$ is used.
+\end{itemize}
+
+\subsection{Parameters}
+\label{subsec:sd-agis-params}
+
+Table~\ref{tab:agis-params} lists the configurable AGIS parameters and their defaults,
+which are set via environment variables.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{llr}
+\toprule
+\textbf{Parameter} & \textbf{Description} & \textbf{Default} \\
+\midrule
+$\alpha$ & Rating similarity weight & 0.5 \\
+$\beta$  & Uncertainty weight       & 0.3 \\
+$\gamma$ & Information gain weight  & 0.2 \\
+\texttt{MIN\_GAMES}            & Games before ``converged''  & 30 \\
+\texttt{TARGET\_BATTLES\_PER\_PAIR} & Min.\ battles per pair & 10 \\
+\texttt{RATING\_SIGMA}        & Similarity kernel $\sigma_s$ & 150.0 \\
+\texttt{QUALITY\_BIAS}        & Quality bias strength $q_{\text{bias}}$ & 0.2 \\
+\bottomrule
+\end{tabular}
+\caption{AGIS algorithm parameters and default values.}
+\label{tab:agis-params}
+\end{table}
+
+% ----------------------------------------------------------------------------
+\section{Glicko-2 Rating System}
+\label{sec:sd-rating}
+% ----------------------------------------------------------------------------
+
+PCG Arena uses the Glicko-2 rating system~\cite{glickman2012glicko2} to maintain
+uncertainty-aware rankings. Each generator carries three parameters:
+
+\begin{itemize}
+    \item \textbf{Rating ($\mu$):} the skill estimate, displayed on a scale centred at~1000.
+    \item \textbf{Rating Deviation (RD, $\phi$):} the uncertainty in the rating. High RD
+          indicates an unreliable estimate; low RD indicates a well-established rating.
+    \item \textbf{Volatility ($\sigma$):} the expected fluctuation in performance over time.
+\end{itemize}
+
+\subsection{Expected Score}
+\label{subsec:sd-glicko-expected}
+
+The expected score when generator~$A$ faces generator~$B$ is:
+
+\begin{equation}
+\label{eq:glicko-expected}
+E(\mu_A, \mu_B, \phi_B) = \frac{1}{1 + \exp\!\bigl(-g(\phi_B)(\mu_A - \mu_B)\bigr)}
+\end{equation}
+
+where $g(\phi) = 1 / \sqrt{1 + 3\phi^2/\pi^2}$ attenuates the prediction when the
+opponent's rating is uncertain.
+
+\subsection{Rating Update Procedure}
+\label{subsec:sd-glicko-update}
+
+After each battle, the winning generator receives a score of~1, the loser~0, and ties
+yield~0.5 for both. The update proceeds as follows:
+
+\begin{enumerate}
+    \item Convert ratings to the internal Glicko-2 scale (centred at~0, divided by
+          $\lambda = 173.7178$).
+    \item Compute the variance~$v$ from the opponent's RD.
+    \item Compute $\Delta = v \cdot g(\phi_B)(s - E)$, where $s$ is the actual score.
+    \item Update volatility~$\sigma'$ via the iterative Illinois algorithm
+          (system constant $\tau = 0.5$).
+    \item Update RD: $\phi' = 1/\sqrt{1/\phi^{*2} + 1/v}$, where
+          $\phi^* = \sqrt{\phi^2 + \sigma'^2}$.
+    \item Update rating: $\mu' = \mu + \phi'^2 \cdot g(\phi_B)(s - E)$.
+    \item Convert back to the display scale and clamp to $[100, 3000]$.
+\end{enumerate}
+
+All rating updates are performed atomically within a single database transaction, with
+an audit record written to the \texttt{rating\_events} table.
+
+\subsection{Configuration}
+\label{subsec:sd-glicko-config}
+
+Table~\ref{tab:glicko-params} lists the Glicko-2 constants used by PCG Arena.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lr}
+\toprule
+\textbf{Parameter} & \textbf{Value} \\
+\midrule
+Initial rating ($\mu_0$)       & 1000 \\
+Initial RD ($\phi_0$)          & 350 \\
+Initial volatility ($\sigma_0$) & 0.06 \\
+System constant ($\tau$)       & 0.5 \\
+Scale factor ($\lambda$)       & 173.7178 \\
+Minimum RD                     & 30 \\
+Maximum RD                     & 350 \\
+Minimum rating                 & 100 \\
+Maximum rating                 & 3000 \\
+\bottomrule
+\end{tabular}
+\caption{Glicko-2 configuration parameters.}
+\label{tab:glicko-params}
+\end{table}
+
+The RD of each generator provides a natural 95\% confidence interval for its true rating:
+$\text{CI}_{95\%} = [\mu - 1.96\,\text{RD},\;\mu + 1.96\,\text{RD}]$.
+However, the public leaderboard displays only the point-estimate rating; confidence
+intervals are not shown on the platform's frontend.
+
+% ----------------------------------------------------------------------------
+\section{Builder Profile and Generator Submission}
+\label{sec:sd-builder}
+% ----------------------------------------------------------------------------
+
+Authenticated users may submit their own generators through the Builder Profile page.
+The submission workflow is:
+
+\begin{enumerate}
+    \item The user provides generator metadata: name, version, description, and a URL to
+          the generator's source repository.
+    \item The user uploads a ZIP archive containing level files in the ASCII tilemap format.
+    \item The backend validates every level (Section~\ref{subsec:sd-level-validation}).
+          Levels that fail validation are rejected with detailed error messages.
+    \item Valid levels and the generator record are inserted into the database.
+    \item An initial Glicko-2 rating of $1000 \pm 350$ is assigned.
+    \item The generator appears on the leaderboard immediately and enters the matchmaking
+          pool.
+\end{enumerate}
+
+Each user may own at most three generators. Generators that have participated in battles
+are soft-deleted (marked inactive and excluded from matchmaking) to preserve historical
+data integrity; generators without any battles can be hard-deleted.
+
+% ----------------------------------------------------------------------------
+\section{Authentication}
+\label{sec:sd-auth}
+% ----------------------------------------------------------------------------
+
+PCG Arena supports two authentication methods:
+
+\begin{itemize}
+    \item \textbf{Google OAuth~2.0.} The frontend opens a Google sign-in popup; the
+          returned ID token (JWT) is sent to \texttt{POST /v1/auth/google}, where the
+          backend verifies it against Google's servers. Google users are automatically
+          marked as email-verified.
+    \item \textbf{Email and password.} Users register with an email, password, and display
+          name. Passwords are hashed with bcrypt (work factor~12). A~verification email
+          is sent via Twilio SendGrid containing a unique token (64~hex characters,
+          24-hour expiry).
+\end{itemize}
+
+Upon successful authentication, the backend issues a session cookie
+(\texttt{arena\_session}) containing a 256-bit cryptographically random token. Sessions
+expire after seven days. HTTP-only cookies prevent client-side script access.
+
+Administrative access is granted to users whose email addresses appear in the
+\texttt{ARENA\_ADMIN\_EMAILS} configuration list.
+
+% ----------------------------------------------------------------------------
+\section{Deployment and Infrastructure}
+\label{sec:sd-deployment}
+% ----------------------------------------------------------------------------
+
+PCG Arena is deployed on Google Cloud Platform using a single Compute Engine instance
+(\texttt{e2-micro}, Ubuntu~22.04~LTS). The backend runs inside a Docker container
+orchestrated by \texttt{docker-compose}, with the SQLite database file bind-mounted
+from the host for persistence across container rebuilds.
+
+Caddy serves as the reverse proxy, handling:
+
+\begin{itemize}[nosep]
+    \item Automatic TLS certificate provisioning and renewal (Let's Encrypt).
+    \item HTTP-to-HTTPS redirection.
+    \item Reverse proxying API requests to \texttt{localhost:8080}.
+    \item Static file serving for the frontend production build.
+\end{itemize}
+
+The platform is accessible at \texttt{https://pcg-arena.com}. The backend binds to
+\texttt{127.0.0.1:8080} and is not exposed to the public internet directly; all external
+traffic passes through Caddy. Firewall rules allow only ports~80 and~443. Database backups
+are performed via a scheduled script that copies the SQLite file to a timestamped archive.
+
+
+% ============================================================================
+\chapter{User Study and Exploratory Data Analysis}
+\label{ch:eda}
+% ============================================================================
+
+\section{Study Design and Data Collection}
+\label{sec:eda-study-design}
+
+tbd
+
+\section{Dataset Overview}
+\label{sec:eda-dataset}
+
+tbd
+
+\section{Generator Rankings and Performance}
+\label{sec:eda-rankings}
+
+tbd
+
+\section{RQ1: What Makes a Good Level?}
+\label{sec:eda-rq1}
+
+\subsection{Difficulty and the Flow Channel Hypothesis}
+\label{subsec:eda-h1}
+
+tbd
+
+\subsection{Structural Variety and Creativity}
+\label{subsec:eda-h2}
+
+tbd
+
+\subsection{Path Freedom and Player Agency}
+\label{subsec:eda-h3}
+
+tbd
+
+\subsection{Hazard Difficulty and Leniency}
+\label{subsec:eda-h8h9}
+
+tbd
+
+\section{RQ2: Player Preference Consistency}
+\label{sec:eda-rq2}
+
+\subsection{Preference Clusters}
+\label{subsec:eda-h4}
+
+tbd
+
+\subsection{Skill--Consistency Relationship}
+\label{subsec:eda-h5}
+
+tbd
+
+\section{RQ3: Tag Semantics and Validation}
+\label{sec:eda-rq3}
+
+\subsection{Tag--Telemetry Correspondence}
+\label{subsec:eda-h6}
+
+tbd
+
+\subsection{Feature Importance for Tags}
+\label{subsec:eda-h7}
+
+tbd
+
+\subsection{Predictive Modelling of Preferences}
+\label{subsec:eda-h10}
+
+tbd
+
+\section{Trajectory Analysis}
+\label{sec:eda-trajectories}
+
+tbd
+
+\section{Summary of Findings}
+\label{sec:eda-summary}
+
+tbd
+
+
+% ============================================================================
+\chapter{MarioDPO --- Preference-Aligned Level Generation}
+\label{ch:mariodpo}
+% ============================================================================
+
+\section{Motivation and Approach}
+\label{sec:dpo-motivation}
+
+tbd
+
+\section{Judge Function Development}
+\label{sec:dpo-judge}
+
+tbd
+
+\subsection{Verticality Reward (Experiment A)}
+\label{subsec:dpo-judge-vert}
+
+tbd
+
+\subsection{Hazard Hierarchy (Experiment B)}
+\label{subsec:dpo-judge-hazard}
+
+tbd
+
+\subsection{Style Matching (Experiment D)}
+\label{subsec:dpo-judge-style}
+
+tbd
+
+\subsection{Final Judge Function}
+\label{subsec:dpo-judge-final}
+
+tbd
+
+\section{Training Pipeline}
+\label{sec:dpo-training}
+
+\subsection{Supervised Fine-Tuning (SFT)}
+\label{subsec:dpo-sft}
+
+tbd
+
+\subsection{Preference Dataset Construction}
+\label{subsec:dpo-dataset}
+
+tbd
+
+\subsection{DPO Training}
+\label{subsec:dpo-training-details}
+
+tbd
+
+\section{Column-Major Tokenisation}
+\label{sec:dpo-tokenisation}
+
+tbd
+
+\section{Results}
+\label{sec:dpo-results}
+
+tbd
+
+\section{Analysis and Discussion}
+\label{sec:dpo-discussion}
+
+tbd
+
+
+% ============================================================================
+\chapter{Conclusions and Future Work}
+\label{ch:conclusions}
+% ============================================================================
+
+\section{Summary of Contributions}
+\label{sec:conc-contributions}
+
+tbd
+
+\section{Limitations}
+\label{sec:conc-limitations}
+
+tbd
+
+\section{Future Directions}
+\label{sec:conc-future}
+
+tbd
+
+
+% ============================================================================
+% BIBLIOGRAPHY
+% ============================================================================
+\bibliographystyle{plainnat}
+\bibliography{bibliography}
+
+\end{document}

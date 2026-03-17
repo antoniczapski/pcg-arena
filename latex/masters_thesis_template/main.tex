@@ -1,0 +1,1000 @@
+% Opcje klasy 'iithesis' opisane sa w komentarzach w pliku klasy. Za ich pomoca
+% ustawia sie przede wszystkim jezyk oraz rodzaj (lic/inz/mgr) pracy.
+
+\RequirePackage{colortbl}
+\documentclass[shortabstract, mgr, english]{iithesis}
+
+\usepackage{xcolor}
+\usepackage[utf8]{inputenc}
+\usepackage{comment}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{listings}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{amsmath}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{array}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{tabularx}
+\lstloadlanguages{csh}
+
+\captionsetup[lstlisting]{labelfont=bf, textfont=it}
+\definecolor{red}{rgb}{0.6,0,0} 
+\definecolor{blue}{rgb}{0,0,0.6}
+\definecolor{green}{rgb}{0,0.8,0}
+\definecolor{cyan}{rgb}{0.0,0.6,0.6}
+\definecolor{cloudwhite}{rgb}{0.9412, 0.9608, 0.8471}
+\usepackage{xparse}
+
+\NewDocumentCommand{\codeword}{v}{%
+\texttt{\textcolor{blue}{#1}}%
+}
+\definecolor{orange}{rgb}{1.0, 0.5, 0.0}
+
+
+% Personal handles.
+% \newcommand{\DEBUG}[1]{}     % Hide all.
+% \newcommand{\DEBUG}[1]{{#1}} % Display all.
+\usepackage[T1]{fontenc}% Polskie literki
+% \newcommand{\TODO}[1]{\DEBUG{\tt{\textcolor{red}{TODO}(}{#1}{)}}}
+% \newcommand{\KOT}[1]{\DEBUG{\tt{\textcolor{orange}{KOT}(}{#1}{)}}}
+% \newcommand{\MW}[1]{\DEBUG{\tt{\textcolor{blue}{MW}(}{#1}{)}}}
+
+
+\newcommand{\LineComment}[1]{\enskip\(\triangleright\) #1}
+\newcommand{\AbsoluteComment}[1]{\Statex \hspace*{-\algorithmicindent}\(\triangleright\) #1}
+
+
+\definecolor{codebg}{RGB}{248,248,248}
+\definecolor{codeframe}{RGB}{220,220,220}
+\definecolor{keyword}{RGB}{0,92,197}
+\definecolor{comment}{RGB}{0,128,0}
+\definecolor{string}{RGB}{163,21,21}
+\definecolor{number}{RGB}{128,128,128}
+
+\lstdefinestyle{cppstyle}{
+    language=C++,
+    backgroundcolor=\color{codebg},
+    frame=single,
+    rulecolor=\color{codeframe},
+    frameround=tttt,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{keyword}\bfseries,
+    commentstyle=\color{comment}\itshape,
+    stringstyle=\color{string},
+    numberstyle=\tiny\color{number},
+    numbers=left,
+    numbersep=8pt,
+    stepnumber=1,
+    tabsize=4,
+    showstringspaces=false,
+    breaklines=true,
+    breakatwhitespace=true,
+    captionpos=b,
+    keepspaces=true,
+    columns=fullflexible,
+    upquote=true,
+    morekeywords={constexpr,nullptr,noexcept,override,final}
+}
+
+\lstset{style=cppstyle}
+
+
+%%%%% DANE DO STRONY TYTUŁOWEJ
+% Niezaleznie od jezyka pracy wybranego w opcjach klasy, tytul i streszczenie
+% pracy nalezy podac zarowno w jezyku polskim, jak i angielskim.
+% Pamietaj o madrym (zgodnym z logicznym rozbiorem zdania oraz estetyka) recznym
+% zlamaniu wierszy w temacie pracy, zwlaszcza tego w jezyku pracy. Uzyj do tego
+% polecenia \fmlinebreak.
+\polishtitle    {Analiza Algorytmu Beam Search w Kontekście Wieloakcyjnych Gier z Przeciwnikiem}
+\englishtitle   {Analysis of Beam Search Algorithm in Context of Multi-action Adversarial Games}
+
+\englishabstract{
+The goal of this project was to analyze multi-layer Beam Search variation as a search algorithm for adversarial multi-action games. Such games present highly complex search spaces and pose significant challenges for classical search algorithms due to large branching factors.
+
+As part of the work, several enhancements to the classical Beam Search algorithm were investigated. A key contribution is the introduction of output layer extension for Local Beams. Moreover, multiple approaches to opponent prediction were studied. In particular, a generalized approach for constructing opponent profiles using multiple local beams was introduced. 
+
+The project was implemented in C++, providing speed and efficiency. Project configuration was adapted to allow integration with parameter optimization frameworks. The created solutions were tested in a publicly available arena and were proven to be competitively viable by reaching top spots.
+
+
+}
+\polishabstract {
+Celem tego projektu była analiza wielowarstwowej wariacji algorytmu Beam Search jako algorytmu przeszukiwania dla gier wieloakcyjnych z przeciwnikiem. Tego typu gry charakteryzują się niezwykle złożonymi przestrzeniami przeszukiwania i stanowią istotne wyzwanie dla klasycznych algorytmów przeszukiwania ze względu na duże współczynniki rozgałęzienia.
+
+W ramach pracy zbadano kilka usprawnień klasycznego algorytmu Beam Search. Kluczowym wkładem jest wprowadzenie warstwy wyjściowej dla lokalnych wiązek. Ponadto przeanalizowano wiele podejść do predykcji przeciwnika. W szczególności zaproponowano uogólnione podejście do konstruowania profili przeciwnika z wykorzystaniem wielu lokalnych wiązek.
+
+Projekt został zaimplementowany w języku C++, co zapewniło dużą szybkość działania i wysoką efektywność. Konfiguracja została dostosowana w celu umożliwienia integracji z frameworkami do optymalizacji parametrów. Opracowane rozwiązania zostały przetestowane na publicznie dostępnej arenie i wykazały konkurencyjność, osiągając czołowe pozycje.
+}
+% w pracach wielu autorow nazwiska mozna oddzielic poleceniem \and
+\author         {Marcin Wróbel}
+% w przypadku kilku promotorow, lub koniecznosci podania ich afiliacji, linie
+% w ponizszym poleceniu mozna zlamac poleceniem \fmlinebreak
+\advisor        {dr Jakub Kowalski}
+\date          {17.02.2026r.}                     % Data zlozenia pracy
+% Dane do oswiadczenia o autorskim wykonaniu
+\transcriptnum {323830}                     % Numer indeksu
+\advisorgen    {dr. Jakuba Kowalskiego} % Nazwisko promotora w dopelniaczu
+%%%%%
+\newcommand{\CS}{C\nolinebreak\hspace{-.05em}\raisebox{.6ex}{\tiny\bf \#}}
+
+%%%%% WLASNE DODATKOWE PAKIETY
+%
+\usepackage{array}
+\usepackage{multirow}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}m{#1}}
+\usepackage[numbers]{natbib}
+%\usepackage{graphicx,listings,amsmath,amssymb,amsthm,amsfonts,tikz}
+%
+%%%%% WŁASNE DEFINICJE I POLECENIA
+%
+%\theoremstyle{definition} \newtheorem{definition}{Definition}[chapter]
+%\theoremstyle{remark} \newtheorem{remark}[definition]{Observation}
+%\theoremstyle{plain} \newtheorem{theorem}[definition]{Theorem}
+%\theoremstyle{plain} \newtheorem{lemma}[definition]{Lemma}
+%\renewcommand \qedsymbol {\ensuremath{\square}}
+% ...
+%%%%%
+\begin{document}
+
+%%%%% POCZĄTEK ZASADNICZEGO TEKSTU PRACY
+
+\chapter{Introduction}
+Search algorithms play a crucial role in the development of artificial intelligence agents for games.
+Games provide well-defined environments with clear rules, including win conditions and available actions, making them an ideal testbed for studying and benchmarking algorithmic improvements \cite{Campbell2002Deep,silver2017mastering}.
+
+While this research focuses on Beam Search usage in game playing, Beam Search is a fundamental heuristic search strategy used extensively in the broader field of artificial intelligence. It works as an improvement to Breadth-First Search by allowing the search of huge search spaces and achieving better results than Greedy Search. Beam Search has found its use cases in aiding Neural Networks in processing languages. It is a standard component in machine translation systems~\cite{sutskever2014sequence}, allowing translation from one language to another. It is also especially useful in speech recognition, where it matches sequences of phonemes into words and sentences. In these domains, Beam Search balances the need to consider multiple candidate sequences with time constraints, especially common in real-time inference.
+
+Beyond language-related applications, Beam Search also has another usage. It is highly effective in game AI. In this context, the algorithm is used to navigate the game tree. This thesis explores some improvements to the classical Beam Search algorithm designed specifically to improve its performance in adversarial, multi-action games with simultaneous moves.
+
+A key improvement of this project is the introduction of an output layer to local beams. The output layer is an extension designed to reach deeper search layers by narrowing local beam width without significant impact on the quality of beam nodes. Local beams have been previously explored and shown to yield great results, e.g. for a Bomberman variant~\cite{kowalczyk2022developing}. In addition, this thesis presents a new approach for constructing two opponent profiles by leveraging multiple local beams. This approach is generalized and does not require domain-specific knowledge to implement. All algorithmic improvements are incrementally described in Chapter \ref{chapter:BeamSearch}. Chapter \ref{chapter:OpponentPrediction} extends Beam Search further by introducing opponent prediction.
+
+
+The effectiveness of the proposed variants was evaluated through experimental analysis. Implementations were tested not only locally against each other but also in a publicly available arena. Chapter \ref{chapter:AIProgrammingCompetitions} introduces the domain of bot contests and competitive game AI, and  contains rules and descriptions of games included in our experiments. Experiments and their results are described in Chapter ~\ref{chapter:Experiments}. All game-playing bots with Beam Search and its improvements were implemented in C++ to maintain efficiency, modularity, and reproducibility. An overview of the source code can be found in Appendix~\ref{chapter:Implementation} and the instructions detailing the compilation process are described in Appendix~\ref{chapter:Compilation}.
+
+\chapter{AI Programming Competitions}
+\label{chapter:AIProgrammingCompetitions}
+
+\section{Bot Programming Contests}
+Unlike standard competitive programming, where a participant submits a solution to pass static test cases, bot programming contests require developers to design an agent, usually called a bot, that plays a game autonomously. This bot must navigate the game environment, ranging from complex simulations to board game adaptations, while competing against other participants's code in a turn-based manner. Almost always the time limit for each turn is very small, in the range of 50-100 ms, requiring careful time management and optimization of the source code.
+
+Submissions are often ranked using a rating system like Elo or TrueSkill~\cite{herbrich2006trueskill}, where a bot's standing is determined by its performance against a diverse pool of opponents. Some platforms split participants in a multi-tier league system, which allows users to fight against opponents with similar skill levels. The league system creates the opportunity for participants to climb up the game arena, providing some sense of achievement.
+
+One of the most appealing features of these platforms is the persistence of the rivalization after the formal competition ends. The game is not removed but kept in a publicly available arena. New participants can join at any time, increasing player count. Additionally, users who had already submitted their code can improve (or worsen) their solutions as many times as they wish. After the contest ends, players can share their approaches so that other users can learn some new strategies,  ideas and try to implement them themselves.
+
+The persistent nature of the competition transforms it from a simple rivalization into a research environment where the global community can collectively push the boundaries of game AI. The visualization of programs competing provides visual feedback, bridging the gap between theory and practice. Mentioned features make the game AI platforms an excellent place for students to strengthen their skills. These platforms create environments and tools that provide opportunities for teachers to use them in an educational setting~\cite{yilmaz2021students,paiva2020game}.
+
+Currently, the biggest game AI platform is CodinGame\footnote{https://www.codingame.com/}. CodinGame supports 27 programming languages, has all the previously mentioned advantages, and during a year, usually organizes two big Challenges, each of them bringing thousands of participants. Two of these games are described in Section~\ref{sec:Cellularena} and Section~\ref{sec:SoakOverflow} and provide a test base for this thesis. 
+
+There are several other platforms that organize AI programming competitions, each of them providing a unique experience. Battlecode\footnote{https://battlecode.org/} is an annual competition developed and maintained by students at the Massachusetts Institute of Technology. The game features two teams of virtual robots managing resources and competing against each other. While the competition is open to the public, it maintains a strong academic focus, offering cash prizes specifically to student teams from around the world. Terminal\footnote{https://terminal.c1games.com/} regularly hosts interesting tower defense-style game tournaments; however, the platform is constrained by its limited language support (Python, Java, and Rust) and a relatively limited number of matches to determine rankings. Screeps\footnote{https://screeps.com/} is an MMO sandbox strategy game primarily built for JavaScript. The support for \mbox{WebAssembly} provides the opportunity for more advanced users to write in other popular programming languages like C\#, Kotlin, Go, C/C++ or Rust with native performance. Players create software managing the colony in real-time. The game takes place in a single persistent world, allowing players to join at any time, competing against countless opponents.
+
+\section{Cellularena}
+\label{sec:Cellularena}
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.9\textwidth]{images/Cellularena.png}
+  \caption{Cellularena}
+  \label{fig:CellularenaViewer}
+\end{figure}
+
+\emph{Cellularena} is a game created by CodinGame that was the subject of Winter Challenge 2024, which lasted 18 days. During the Challenge, 3900 participants submitted their solutions. As of January 2026, there are more than 4250 bots competing in this game arena \footnote{https://www.codingame.com/multiplayer/bot-programming/winter-challenge-2024/leaderboard}.
+
+The game is played by two players who control multicellular organisms. The goal of the game is to have more cells in all organisms by the end of turn 100. The game ends earlier if one of the players has a smaller number of cells than the opponent and is unable to grow anymore. Draws are resolved by favoring the player with more resources. During each turn, a player can perform up to one action for every controlled organism. The time limit for all but the first turn is 50 ms, requiring participants to invent creative solutions for such a small time constraint.
+
+Each organism is made from organs occupying exactly one tile of space in the grid. Each tile can be occupied by a wall, one resource, one organ, or be empty. Each organism has its root. An organism grows by creating a new organ attached to one of its existing organs. Only the root is not attached to anything. This means that organisms grow on a grid in a tree-like structure rooted at their root. If an organ is destroyed by the opponent, other organs that were attached to it lose their connection and are also destroyed. This means that destroying one organ may trigger a cascade and remove many organs. In particular, destroying the root destroys the whole organism. 
+
+There are 5 types of organs: \texttt{basic}, \texttt{harvester}, \texttt{tentacle}, \texttt{sporer} and the previously mentioned \texttt{root}. Creating each of them costs resources called \texttt{proteins}. There are four types of proteins: \texttt{A}, \texttt{B}, \texttt{C}, and \texttt{D}. The basic organ is just a building block without any special features. Harvester is a directional organ. If the harvester points towards a resource tile, it gives the player one unit of the protein type associated with that tile each turn. A player can gain only one protein unit from one resource tile each turn, i.e., building additional harvesters pointed to the same tile provides no benefits. Furthermore, growing any organ on a resource destroys it and gives the player 3 units of that resource. The ability to harvest and destroy resources requires players to consider various strategies by balancing immediate rewards and future profits. Tentacles are also directional and destroy any opponent cell in a neighboring tile that they attack. It also prevents the opponent from building anything in the attacked tile. The sporer is the last directional organ. It allows the organism to create new roots by launching them anywhere in its line of sight. Creating a root is the most expensive action. Exact costs of each organ are presented in Table~\ref{tab:CellularenaCosts}.
+\begin{table}[H]
+\centering
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Organ} & \textbf{Protein A} & \textbf{Protein B} & \textbf{Protein C} & \textbf{Protein A}  \\
+\midrule
+Basic     & 1 & 0 & 0 & 0\\
+Harvester & 0 & 0 & 1 & 1\\
+Tentacle  & 0 & 1 & 1 & 0\\
+Sporer    & 0 & 1 & 0 & 1\\
+Root      & 1 & 1 & 1 & 1\\
+\bottomrule
+\end{tabular}
+\caption{Cellularena - organ costs}
+\label{tab:CellularenaCosts}
+\end{table}
+
+Players control multiple organisms, and the number of controlled organisms can change every turn. Organisms are created by shooting roots from the sporers and destroyed by tentacles attacking roots.
+It means that during a search, two different states at the same depth usually have a different number of organisms. The effect becomes more prevalent as the search depth increases.
+
+Moreover, the number of sporers and the number of roots each of them can create are unlimited. The only limits are the map size and turns needed to gather enough resources. Assuming that the player collected enough resources, the player can place 13 variants of an organ in each empty tile neighboring his organisms. This number includes one basic organ and 4 orientations of each of 3 directional organs. The above estimate omits potential roots shot from the sporers and direction of parents. Each organism has multiple tiles it can grow its new organs on. In some games, organisms can choose from hundreds of actions during one turn. It can be safely estimated that in the middle of the game, one player can control 7 organisms, each of them with at least 2 neighboring empty tiles to grow. This gives at least $13^7=62,748,517$ combinations of actions. What's more, usually the number of neighboring empty tiles is much larger. Even if we discard some actions as obviously suboptimal, the branching factor can be estimated in millions of action sets.
+
+Moves are simultaneous, which creates a need for conflict resolution between the actions of two players. For example, if there are multiple actions that place an organ in the same tile, that tile becomes a wall. Even though players are forbidden to grow organs on a tile attacked by a tentacle, if, during one turn, an organ is placed on a tile that the opponent just started attacking, the action is valid, and the attacked organ is destroyed at the end of the turn.
+
+In summary, Cellularena has certain characteristics that make it perfect for our Beam Search variants. Firstly, moves are simultaneous. Minimax and MCTS have reduced potential in this situation. To mitigate concurrent moves, the search tree would have to implement a pessimistic strategy - when the opponent makes a move after us and knows our actions, or an optimistic strategy - when we make a move after the opponent, knowing his actions. There exists another approach that involves creating an MCTS tree for each entity (organisms in this case). In this game, creating separate trees for each entity becomes problematic because entities appear and disappear every turn and are not consistent across neighboring game states during search.
+
+Furthermore, traditional approaches that are often successful in games with a high branching factor are ineffective here because they only reach shallow depths. Cellularena is characterized by delayed and distant rewards, where the impact of a single move may not be realized for many turns. For instance, an organism may need to expand across multiple tiles specifically to reach a protein source. This necessitates long-term planning and deeper look-ahead capabilities to capture the strategic value of growth, a requirement that aligns well with the pruning and depth-reaching capabilities of Beam Search.
+
+\section{Soak Overflow}
+\label{sec:SoakOverflow}
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.9\textwidth]{images/SoakOverflow.png}
+  \caption{Soak Overflow}
+  \label{fig:SoakOverflowViewer}
+\end{figure}
+
+\emph{Soak Overflow} is a game created by CodinGame for Summer Challenge 2025, which lasted 2 weeks. During the competition, 3827 participants submitted their solutions. As of January 2026, the game has bots from more than 4100 users competing in the arena \footnote{https://www.codingame.com/multiplayer/bot-programming/soak-overflow/leaderboard}.
+
+
+In the game, players control a team of agents. The goal of the game is to gain more control points than your opponent. The game ends when one player has at least 600 control points more than the opponent or all opponent agents are eliminated. If none of the above conditions are met at the end of turn 100, the player with the most number of control points wins. The time limit for the first turn is 1000 ms and 50 ms for each subsequent round, which makes it impossible to search the game deeply and thoroughly.
+
+The map is a rectangle that contains randomly generated high and low walls. At the beginning of a match, each team has a size between 3 and 5 agents (inclusive). Agent statistics (described in Table~\ref{table:soakoverflow_agents}) are the same in every game. \texttt{Gunner}, \texttt{Sniper}, and \texttt{Bomber} are always present. \texttt{Assault} appears when team size is greater than 3, and \texttt{Berserker} appears when team size is equal to 5. Each agent has his wetness value. When the wetness value reaches 100 or more, the agent is eliminated.
+
+During each turn, agents do two things: movement and combat. During the movement phase, agents can move orthogonally by one tile or stay still. After movement, agents can perform a single combat action that is one of three things: shooting a water gun, throwing a water bomb, and hunkering down. Theoretically, agents do not have to perform any combat action, but there is no downside to hunkering down when an agent does not shoot or throw.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Agent type} & \textbf{Power} & \textbf{Cooldown} & \textbf{Range} & \textbf{Bombs} \\
+\midrule
+1. Gunner    & 16 & 1 & 4 & 1\\
+2. Sniper    & 24 & 5 & 6 & 0\\
+3. Bomber    & 8  & 2 & 2 & 3\\
+4. Assault   & 16 & 2 & 4 & 2\\
+5. Berserker & 32 & 5 & 2 & 1\\
+\bottomrule
+\end{tabular}
+\caption{Soak Overflow - Agents statistics}
+\label{table:soakoverflow_agents}
+\end{table}
+
+Getting shot with a water gun increases wetness by the power value of the shooter. If the target is outside the shooter's range, damage is reduced by half. If the target is further than twice the shooter's range, the water gun does not fire. Moreover, if the target is hunkering down at the time of the attack, damage is reduced by $25\%$. If the target is behind a wall, damage is reduced. High walls provide $75\%$ reduction, and low walls provide $50\%$ reduction. Reductions from hunkering down and walls are added together and applied after the range reduction. After shooting, there is a cooldown. During this time the agent is reloading and is unable to use the water gun. Agents can throw water bombs, which are a limited resource that does not renew itself. Water bombs can only be thrown to a tile that is no further than 4 tiles away from the agent (in Manhattan distance). They increase the wetness of all agents by 30 units in a $3 \times 3$ area around the impact point, regardless of whether they are hunkering down or not.
+
+Soak Overflow offers many similarities to Cellularena. Moves are simultaneous, and there are multiple entities, namely agents. During the turn, the player makes multiple actions with his agents. Additionally, cooldowns and a limited number of water bombs provide an opportunity to make high-quality moves that involve deliberately skipping with some agents. These are the features that allow Beam Search to achieve great results in Soak Overflow.
+
+
+\chapter{Beam Search}
+\label{chapter:BeamSearch}
+Beam Search is a heuristic search algorithm that allows exploration of vast and complex search spaces efficiently by limiting breadth-first expansion with a width constraint. Unlike exhaustive Breadth-First Search, which expands all nodes at a given depth, Beam Search keeps only the $k_d$ most promising nodes at each depth $d$, where $k_d$ represents beam width. By imposing this constraint, the algorithm reduces memory usage and computational cost, enabling deeper exploration than would otherwise be possible. This width reduction comes at the cost of completeness. Since good states may be discarded early, an optimal solution may not be found. As a result, Beam Search is most effective when good but not optimal results are acceptable.
+
+The main component of Beam Search is the heuristic function that estimates the value of a given state. This function guides the selection process at each depth by deciding which states advance to the next layer. A well-designed heuristic increases the likelihood that high-quality states are preserved. Therefore, heuristic function design is very important, and if it is poorly designed, Beam Search may perform substantially worse.
+
+\section{Definitions}
+To avoid ambiguity, this section defines some of the Beam Search-related terminology used in this thesis.
+\begin{itemize}[itemsep=1\itemsep,parsep=1\parsep,partopsep=1\partopsep,topsep=1\topsep]
+    \item \textbf{State} or \textbf{Game State} represents the configuration of a problem at a particular point in the search. It includes, among other things, the position of entities, score, the amount of each resource, and turn number.
+    \item \textbf{Action} is a decision made by a player that can be applied to a state, creating a new state.
+    \item \textbf{Action Set} or \textbf{Move} is a set of actions made by one player during one turn. 
+    \item \textbf{Node} wraps a State, it contains information about state evaluation.
+    \item \textbf{Layer} or \textbf{Beam Layer} is a collection of nodes at a particular depth in a beam.
+\end{itemize}
+\section{Single Beam Search}
+The simplest version of Beam Search uses a single beam. Nodes in each beam layer are expanded and propagated to the next layer. At the beginning, the beam consists of a single layer containing only the initial state in one node. The beam has a fixed width \emph{G}, which limits the maximum number of nodes that can be kept in each layer. In each step $d$, the algorithm expands the beam by considering every node it contains in the last layer. For each state in the nodes, all possible actions are generated. The action sets are then created from the actions. Then, every possible action set is applied, producing $G_{d+1}$ successor states. After evaluating each of them using a heuristic function, nodes of the next beam layer are created. If $G_{d+1} > G$, we keep only the best $G$ children using previously calculated evaluations. Without action pruning, taking even a single step may be impossible when time is limited. Pseudocode implementing Single Beam Search can be found in Algorithm~\ref{alg:SingleBeamSearch}.
+
+\begin{algorithm}
+\caption{Single Beam Search}
+\label{alg:SingleBeamSearch}
+\begin{algorithmic}[1]
+\Procedure{GlobalBS}{$initial\_state, G, D$}
+    \State $beam_0 \gets \{(initial\_state, 0)\}$ \Comment{Initialize first beam layer with starting node and evaluation equal to arbitrary number}
+
+    \For{$d = 0$ \textbf{to} $D-1$}
+        \If{$beam_d$ is empty \textbf{or} $exceeded\ time\ budget$}
+            \State \textbf{return} best state found in $beam_{d-1}$
+        \EndIf
+        \State $beam_{d+1} \gets \emptyset$ \Comment{Initialize next layer}
+        \For{\textbf{each} $(state, eval_{state})$ \textbf{in} $beam_d$}
+            \State $E \gets$ identify entities in $state$
+            \For{\textbf{each} $e \in E$}
+                \State $A_e \gets$ generate actions for $e$
+            \EndFor
+            \State $\mathcal{S} \gets$ generate action sets
+            \For{\textbf{each} $action\_set$ \textbf{in} $\mathcal{S}$}
+                \State $child \gets$ $state$
+                \For{\textbf{each} a \textbf{in} $action_{set}$}
+                    \State $child \gets$ apply $a$ to $child$
+                \EndFor                
+                \State $eval_{child} \gets$ evaluate $child$ using heuristics
+                \State add node $(child, eval_{child})$ to $beam_{d+1}$
+            \EndFor
+        \EndFor
+        \State \Call{sort}{$beam_{d+1}, DESC$} \Comment{Sort descending by evaluation, higher value means better evaluation}
+        \If{$|beam_{d+1}| > G$}
+            \State $beam_{d+1} \gets$ keep only the best $G$ nodes from $beam_{d+1}$
+        \EndIf
+    \EndFor
+    \State \textbf{return} best state found in $beam_D$
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+\section{Beam Search Structure}
+The performance of Beam Search is also dictated by underlying data structures used to maintain beam layers and transitions between them. Firstly, Beam Search does not need to store all the layers it created. It is necessary to keep only the last layer and the layer it is expanding to. Nevertheless, it is crucial to remember what the first move was that led to the current state. That move can contain multiple actions. Move data can be stored in the game state itself. C++ implementation provided in this thesis uses another approach. States are stored in the \texttt{StateTree} structure. An overview of \texttt{StateTree} implementation is inside Listing~\ref{lst:StateTree}. All states have a path leading to them containing a single action in every edge leading to the root. This structure cleans all unreachable states and stores only paths leading to nodes that were not removed during the search.
+
+\subsection{Transitions between layers}
+
+The Beam Search creates some nodes by copying game state from the previous layer and applying actions to it. There is no room for improvement there, so the following consideration omits the cost of copying, destroying, and changing game states. Created beam nodes contain evaluations and pointers to game states. 
+
+In the following analysis, there are $G$ states at the $d$-th layer because the number of nodes was limited to beam width $G$, and during expansion to the next layer $G_{d+1}$ nodes will be created. There are several approaches resulting in time complexities summarized in \ref{tab:BeamSearchComplexity}:
+\begin{itemize}
+    \item \textbf{Sorting:} This approach involves adding and storing all $G_{d+1}$ nodes in an array. Then the array is sorted and only $G$ states advance. The time complexity of this method is $O(G_{d+1}\log G_{d+1})$. Space complexity of this method is $O(G_{d+1})$, which is the number of created nodes.
+    \item \textbf{Best-n:} It can be observed that Beam Search does not need to know the order of removed nodes. The importance of the order of nodes advancing to the next layer is explained in Subsection~\ref{subsec:SortingBeamNodes}. With this knowledge, a selection algorithm can be used.
+    The best $G$ nodes can be selected in undefined order in linear time $O(G_{d+1})$ using a selection algorithm like median of medians. However, in practice, quickselect or introselect can be used. The space complexity is again $O(G_{d+1})$.
+    \item \textbf{Sorting Best-n:} The previous approach can be modified to have nodes sorted. Sorting nodes that advanced to the next layer takes $O(G\log G)$ time, giving an overall time complexity of~${O(G\log G+G_{d+1})}$. Space complexity remains unchanged and is equal to $O(G_{d+1})$.
+    \item \textbf{Heap:} Previous approaches used arrays to sort nodes at the end. Instead, the heap can be used to keep only the best $G$ nodes. The heap keeps the worst node at the top. When a new node is created, it is compared to the heap's top node. If the new node is better, the node at the top of the heap is popped, and the new node is added. If the heap has fewer than $G$ nodes, the new node is always added, and the heap is not popped. At the end, all the best $G$ nodes are popped from the heap, giving nodes of the next layer in the reverse order. The next layer can be reversed back in linear time $O(G)$. There are $G_{d+1}$ insertions and the same amount of delete-min operations, each of them being done on the heap of size no greater than $G$. Time complexity of all heap operations is $O(G_{d+1}\log G)$. The time complexity of the whole heap approach is $O(G_{d+1}\log G)$. Space complexity is limited by the largest possible heap size and the number of nodes advancing to the next layer and is equal to $O(G_{d+1})$.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{llll}
+\toprule
+\textbf{Method} & \textbf{Time Complexity} & \textbf{Space Complexity} & \textbf{Order} \\
+\midrule
+Sorting            & $O(G_{d+1} \log G_{d+1})$ & $O(G_{d+1})$ & Sorted     \\
+Best-n (Selection) & $O(G_{d+1})$              & $O(G_{d+1})$ & Unordered  \\
+Sorting Best-n     & $O(G_{d+1} + G \log G)$   & $O(G_{d+1})$ & Sorted     \\
+Heap               & $O(G_{d+1} \log G)$       & $O(G)$       & Sorted     \\
+\bottomrule
+\end{tabular}
+\caption{Beam Search transitions - Time Complexity}
+\label{tab:BeamSearchComplexity}
+\end{table}
+
+\end{itemize}
+When the order of the nodes in a layer is not important, then the \textbf{Best-n} method offers the best time complexity. Otherwise, the time complexity of the \textbf{Sorting Best-n} method is the best, followed by the \textbf{Heap} method. However, \textbf{Heap} method has the best space complexity regardless of whether the sorted nodes are needed. Moreover, it is able to reject many nodes instantly after creation. This happens when the new node has a worse evaluation than all nodes stored in the heap. Rejected nodes are not stored, leading to reduced memory load. The only advantage of the \textbf{Sorting} method is its simplicity, but it is inferior to other methods otherwise.
+
+
+\subsection{Sorting beam nodes}
+\label{subsec:SortingBeamNodes}
+When the beam layer is not sorted and during the search the time budget is exhausted, the results of the partially calculated layer cannot be used. In this case there could be some nodes that had better evaluation in the previous layer and were not expanded, and the best nodes are expected to provide the best children nodes. This problem vanishes when the layer is sorted and nodes are expanded from the best to the worst. Then the best state of the partially calculated layer can be used as a result.
+Sorting beam nodes in global beams provides significant improvements; experiment results can be found in Section~\ref{sec:ExperimentsMoveSorting}.
+
+\section{Action Set Pruning}
+Single Beam Search suffers from an exponentially high branching factor. For example, in Cellularena, each organism can place multiple organs on multiple neighboring tiles. In Soak Overflow, each agent can perform up to 5 movement actions. Each possible movement action has to be multiplied by up to 5 shooting actions and possibly dozens of throwing actions. In both games, each entity (organism or agent) very often can do hundreds of actions. If in some state each entity $e \in E$ can have a $A_e$ set of possible actions, there are $\prod_{e\in E} {|A_e|}$ action sets, resulting in a very large number of children states. 
+
+To mitigate the high branching factor, we have to set a limit to the number of generated action sets. We can use action ordering to achieve this. After generating possible actions $A$, each action $a \in A$ is evaluated using heuristics. Actions are grouped by the entity that can perform such actions. $a_{e,o}$ is an action that can be performed by the entity $e$ and is the $o$-th best action for this entity. $o$ is zero-indexed, i.e. $a_{3,0}$ is the best action for the entity $3$, according to the heuristics.
+Action sets are constructed by increasing priority. Given an action set $\mathcal{S}$, its priority is equal to $\sum_{a_{{e_i}{o_i}}\in S}({o_i})$.
+For example, consider 3 entities, each with at least 3 actions.
+
+\begin{itemize}[itemsep=1\itemsep,parsep=1\parsep,partopsep=1\partopsep,topsep=1\topsep]
+    \item Action sets with priority \textbf{0} (1 action set) \{$a_{1,\textbf{0}}, a_{2,\textbf{0}}, a_{3,\textbf{0}}$\}
+    \item Action sets with priority \textbf{1} (3 action sets) \{$a_{1,\textbf{0}}, a_{2,\textbf{0}}, a_{3,\textbf{1}}$\}, \{$a_{1,\textbf{0}}, a_{2,\textbf{1}}, a_{3,\textbf{0}}$\}, \{$a_{1,\textbf{1}}, a_{2,\textbf{0}}, a_{3,\textbf{0}}$\}
+    \item Action sets with priority \textbf{2} (6 action sets) \{$a_{1,\textbf{0}}, a_{2,\textbf{1}}, a_{3,\textbf{1}}$\}, \{$a_{1,\textbf{1}}, a_{2,\textbf{0}}, a_{3,\textbf{1}}$\}, \{$a_{1,\textbf{1}}, a_{2,\textbf{0}}, a_{3,\textbf{0}}$\}, \{$a_{1,\textbf{0}}, a_{2,\textbf{0}}, a_{3,\textbf{2}}$\}, \{$a_{1,\textbf{0}}, a_{2,\textbf{2}}, a_{3,\textbf{0}}$\}, \{$a_{1,\textbf{2}}, a_{2,\textbf{0}}, a_{3,\textbf{0}}$\}
+    \item \ldots
+\end{itemize}
+Using this approach, we can select a limited number of action sets.
+
+\section{Local Beams}
+\label{sec:LocalBeams}
+Although action set pruning allows Beam Search to operate with realistic time constraints, some actions may never get a single chance to show their potential. To address this issue, instead of generating action sets, applying them, and then evaluating the resulting states, we can construct action sets dynamically. This can be done in a Beam Search style by applying actions one at a time and keeping a limited number of intermediate states. This leads to the idea of local beams.
+
+Nested Beam Search extends Single Beam Search by introducing Local Beams. Nested Beam Search is a two-level structure consisting of a single global beam and multiple local beams. The global beam contains a collection of the most promising nodes at the end of a turn. Local beams are used to expand each global node. Nodes in the local beam contain states that have only some action applied, and the turn is not yet finished. Let $G$ denote the width of the global beam and $L$ the width of local beams. 
+
+Initially, the global beam contains a single node corresponding to the initial state. At each layer of the global beam, for every node in the layer, a local beam search is used to find its successors. Local beam search returns nodes corresponding to full moves performed by a player.
+Compared to the previous approach, the local beams replace the explicit generation and application of complete action sets. 
+
+The depth of the local beam is equal to the maximum number of entities that can perform an action in a turn. This means the last layer can contain states where all entities have done an action. However, in some games, it may not be possible to do an action with every entity during a turn. For example, in Cellularena, growing an organ costs proteins, so a player may not be able to grow an organ for every organism because of the limited resources.
+
+Since very often we cannot do an action with every entity during a turn, all states from the local beam layer should be transferred to the next layer before width pruning occurs. This allows states where not all entities performed actions to be included in the local beam search result. Another approach is to create a \texttt{WAIT} action that represents doing nothing with an entity.
+Pseudocode implementing combining Local Beams with Global Beam called Nested Beam Search can be found in Algorithm~\ref{alg:NestedBeamSearch}.
+
+\begin{algorithm}[H]
+\caption{Nested Beam Search (Global + Local Beams)}
+\label{alg:NestedBeamSearch}
+\begin{algorithmic}[1]
+\Procedure{NestedBS}{$initial\_state, G, L$}
+    \State $globalBeam_0 \gets \{(initial\_state, 0)\}$ 
+    \For{$d = 0$ \textbf{to} $D-1$}
+        \If{$globalBeam_d$ is empty \textbf{or} $exceeded\ time\ budget$}
+            \State \textbf{return} best state found in $beam_{d-1}$
+        \EndIf
+        \State $globalBeam_{d+1} \gets \emptyset$ \Comment{Initialize next global layer}
+        \For{\textbf{each} $(state, eval_{state})$ \textbf{in} $globalBeam_k$}
+            \State $E \gets$ identify entities in $state$
+            \For{\textbf{each} $e \in E$}
+                \State $A_e \gets$ generate actions for $e$ in $state$
+            \EndFor
+            \State $resultNodes \gets$ \Call{LocalBS}{$state, L, E, A$} \Comment{Local search starting from a global node}
+            \State add nodes $resultNodes$ to $globalBeam_{d+1}$
+        \EndFor
+        \State \If{$|globalBeam_{d+1}| > G$}
+            \State $globalBeam_{d+1} \gets$ keep only best $G$ nodes from $globalBeam_{d+1}$
+        \EndIf
+    \EndFor
+    \State \textbf{return} best state found in $globalBeam_D$
+\EndProcedure
+\algstore{NestedBeamSearch}
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[h]
+\begin{algorithmic} [1]  
+\algrestore{NestedBeamSearch}
+\Procedure{LocalBS}{$initial\_state, L, E, A$}
+    \State $localBeam_0 \gets \{(initial\_state, 0)\}$ 
+    \For{$d = 0$ \textbf{to} $|E| - 1$}
+        \For{\textbf{each} $(state, eval_{state})$ \textbf{in} $localBeam_d$}
+            \For{\textbf{each} $entity \ e \in E$}
+                \If{e has already done some action in $state$}
+                    \State \textbf{continue}
+                \EndIf
+                \For{\textbf{each} $a_{e,o} \in A_e$}
+                    \State $child \gets$ apply $a_{e,o}$ to $state$
+                    \State add ($child$, $eval_{child}$) to $localBeam_{d+1}$
+                \EndFor
+            \EndFor
+            \State \If{$|localBeam_{d+1}| > L$}
+                \State $localBeam_{d+1} \gets$ keep only best $L$ nodes from $localBeam_{d+1}$
+            \EndIf
+        \EndFor
+    \EndFor
+    \State \textbf{return} $localBeam_{|E|}$
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+\newpage
+\section{Local Beams With Output}
+\label{sec:LocalBeamsWithOutput}
+Local Beams showed some problems in the previous section -- sometimes it is impossible to do an action with every entity during a turn. Local Beams can be improved by following the observation that doing an action only with some entities during a turn is optimal even when we are not forced to do it. In other cases, doing nothing with some entities is very close to being optimal, and doing nothing may save computation time with minimal impact on state value.
+
+In Cellularena, growing organs requires proteins. Search often has to consider saving resources for future turns by making fewer actions than it could. For example, an organism located on the edge of the arena can spread itself to some resources in order to harvest or collect them. On the other hand, the same organism could just wait and allow the organism in the middle of the board to use proteins to defend itself against the opponent. In Soak Overflow, agents have to reload after shooting. In that case, standing still and doing nothing while hiding behind a wall may be a very good action.
+
+In the examples mentioned above, we can find states with high value before the last layer of the local beam. We introduce a variable $O$ that describes local beam output size. The local beam, instead of returning states from the last layer, returns the best $O$ states from all layers of this local beam. Changes to standard Local Beam Search are described in Algorithm~\ref{alg:LocalBeamSearchOutput}. This modification allows us to speed up the local beam by decreasing $L$, keeping $L<O$, while still keeping most of the high-quality moves. The introduction of output allows us to drop the requirement introduced by local beams. Neither transferring all nodes to the next layer nor implementing \texttt{WAIT} moves is necessary.
+
+\begin{algorithm}[h]
+\caption{Local Beam Search with Output}
+\label{alg:LocalBeamSearchOutput}
+\begin{algorithmic} [1]  
+\Procedure{LocalBSWithOutput}{$initial\_state, L, E, A, O$}
+    \State $localBeam_0 \gets \{(initial\_state, 0)\}$ 
+    \State $output \gets \{(initial\_state, 0)\}$
+    \For{$d = 0$ \textbf{to} $|E| - 1$}
+        \For{\textbf{each} $(state, eval_{state})$ \textbf{in} $localBeam_d$}
+            \For{\textbf{each} $entity \ e \in E$}
+                \If{e has already done some action in $state$}
+                    \State \textbf{continue}
+                \EndIf
+                \For{\textbf{each} $a_{e,o} \in A_e$}
+                    \State $child \gets$ apply $a_{e,o}$ to $state$
+                    \State add ($child$, $eval_{child}$) to $localBeam_{d+1}$
+                    \State add ($child$, $eval_{child}$) to $output$
+                \EndFor
+            \EndFor
+            \If{$|localBeam_{d+1}| > L$}
+                \State $localBeam_{d+1} \gets$ keep only best $L$ nodes from $localBeam_{d+1}$
+            \EndIf
+        \EndFor
+    \EndFor
+    \State \Call{sort}{$output, DESC$}
+    \State \textbf{return} best $O$ nodes from output
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+\section{Variable Beam Width}
+\label{sec:VariableBeamWidth}
+Beam width is a crucial parameter of Beam Search. Changing its value determines how thoroughly each depth is searched and how deep the search will be able to reach. It turns out that often it is better to make the beam wider at the beginning and narrower later. This applies to local and global beams. Making the global beam wider at the start allows us to consider more action sets by giving them a chance and only discarding some of them later. However, changing local beam width is more interesting. Firstly, widening local beams at first layers provides the same benefits as for global beams. Moreover, it prevents the search from cluttering the beam with states originating from the same idea.
+
+Let's consider Cellularena when a player has many organisms, and only two of them are close to the center of the board where the battle takes place. With a wide local beam, search would find some good pair of actions for these two organisms. Then in the next layers, Beam Search would find a lot of possible combinations of actions made by the other organisms that are of limited significance. In Cellularena, each organism can make dozens of such actions. 
+
+When reducing beam width in deeper layers, the first layers can be wider. In practice, first layers provide strong candidate states. Then deeper layers extend these states by creating only a few descendants for each candidate. In the case of Soak Overflow, a good example would be a case when only some of the agents are able to shoot or throw water balloons, and other agents are reloading, so the actions of the other agents do not matter too much.
+
+\section{Zobrist Hashing}
+Beam search reduces search space by design. In each layer, beam width is limited. Besides decreasing beam width, other methods exist to reduce the search space.
+
+
+The most important method of reducing search space is removing duplicates from beams and output. When beam or output size is small, the simplest idea consists in comparing the state with all other states in the array. Since two same states should have exactly the same evaluations, duplicates can be removed by taking advantage of sorting done after all nodes are expanded. When a layer is sorted, duplicates can be removed by comparing each pair of adjacent nodes. The drawback of this solution is the fact that different states can also have the same evaluation, thus splitting duplicates in a sorted array. Therefore, more comparisons are needed, or allowing some duplicates to advance to the next layer.
+
+When evaluation of the state is costly, or when comparing two states is expensive, duplicates can be tracked by assigning each state a hash value. This can be achieved using Zobrist Hashing\cite{ZobristHashing}. Hashes are stored in hash tables, and before the state is evaluated or advances further, Beam Search checks whether the corresponding hash value already exists in the hash table. It is beneficial to share hash tables between local beams while doing our moves. If it is possible to reach some state in many ways, it needs to be searched only once. Furthermore, if beam elements are processed from best to worst, then the state selected from duplicates is the state that had the best evaluation in the previous layer. The sharing of hash tables cannot be used during opponent prediction.
+
+Consider an example where the opponent has an action set capable of destroying all of our entities regardless of our actions. If sharing hash tables for opponent prediction were used, we would be able to predict our opponent's "destroy all" action set only the first time. Then, while doing opponent prediction for the next states, we would prune the sequence leading to the "destroy all" action set.
+
+Sometimes, hashing can be designed in such a way that different but similar states yield the same hash. In Cellularena, there are some tiles where an organ can be created from many different parent organs. Direction of the parent organ is not significant. Omitting it during hashing reduces the number of possible states.
+
+\section{Action Pruning}
+Instead of relying on search algorithms to detect bad actions, sometimes it is better to create heuristics that eliminate obviously bad actions. For example, in Cellularena there are many tiles where harvesters can be placed facing a specific protein tile. In such cases, it is optimal to never do an action that places a harvester that is not facing any protein. Placing a harvester towards proteins may start a harvest, and there is no downside to having more proteins. In Soak Overflow, throwing bombs in a tile that is so far away from opponents that we are sure that they will not be affected by it is an example of an action that just wastes resources and can be easily pruned.
+
+
+
+
+\chapter{Opponent Prediction}
+\label{chapter:OpponentPrediction}
+Beam Search, in its vanilla form, is a heuristic search algorithm designed primarily for optimization problems. Consequently, it is not inherently suited for adversarial games. In such scenarios, the environment is not passive. The opponent actively works to minimize our gains. Optimizing a strategy without accounting for the opponent's influence often leads to ``optimistic'' but fragile plans that crumble upon the first countermove. Therefore, to effectively apply Beam Search it must be augmented with a mechanism for opponent modeling.
+
+To improve search performance, it is beneficial to assume that the opponent does some actions. The opponent's action set can be generated using greedy heuristics or by running some search algorithm. In single Beam Search, predicted actions are generated and applied for every state at each layer before applying our own action set. In contrast, in Nested Beam Search and its variants, predicted actions are generated and applied to the root state of each Local Beam.
+
+\section{Local Beam Prediction}
+\label{sec:LocalBeamPrediction}
+Opponent prediction can be implemented by introducing an additional local beam search dedicated to modeling the opponent's behavior. By running a local beam search from the opponent's perspective, we obtain a more accurate estimate of the opponent's most likely actions.
+
+In this approach, the opponent assumes that only he makes a move, which creates a bias in the predicted action set. However, this simplification allows search to find opponent actions efficiently. We select only the best action set from the perspective of the opponent. Then the opponent's action set is passed as a root state to local beam search from our perspective. To balance computational cost, the opponent's local beam should be kept rather narrow to allocate more time towards calculating our own moves. The exception is the first layer of the global beam search. There is only one node at the beginning, so the cost of predicting opponent actions with a wider beam is negligible, and predicting the first opponent move more precisely is the most important among all predictions.
+
+To mitigate the problem of predicting an opponent's actions with the assumption that we do not do anything, the search could perform a simple prediction of our move (using heuristics or a very narrow Local Beam Search) and use the resulting state as the root of the opponent's prediction search.
+Local Beam Opponent Prediction is implemented in ~\ref{alg:BeamSearchOpponentPrediction}.
+
+\begin{algorithm}
+\caption{Nested Beam Search with Local Beam Opponent Prediction}
+\label{alg:BeamSearchOpponentPrediction}
+\begin{algorithmic}[1]
+\Procedure{NestedBS}{$initial\_state, G, L$}
+    \State $globalBeam_0 \gets \{(initial\_state, 0)\}$ 
+    \For{$d = 0$ \textbf{to} $D-1$}
+        \If{$globalBeam_d$ is empty \textbf{or} $exceeded\ time\ budget$}
+            \State \textbf{return} best state found in $beam_{d-1}$
+        \EndIf
+        \State $globalBeam_{d+1} \gets \emptyset$
+        \For{\textbf{each} $(state, eval_{state})$ \textbf{in} $globalBeam_k$}
+            \State $E_m \gets$ identify my entities in $state$
+            \State $E_o \gets$ identify opponent entities in $state$
+            \For{\textbf{each} $e \in (E_m \cup E_o)$}
+                \State $A_e \gets$ generate actions for $e$ in $state$
+            \EndFor
+            \State $oppPred \gets$ \Call{LocalBSWithOutput}{$state, 2, E_o, A$}
+            \State $oppState \gets$ worst state from oppPred
+            \State $resultNodes \gets$ \Call{LocalBSWithOutput}{$oppState, L, E_m, A$}
+            \State add $resultNodes$ to $globalBeam_{d+1}$
+        \EndFor
+        \State \If{$|globalBeam_{d+1}| > G$}
+            \State $globalBeam_{d+1} \gets$ keep only the best $G$ nodes from $globalBeam_{d+1}$
+        \EndIf
+        \State $d \gets d + 1$
+    \EndFor
+    \State \textbf{return} best state found in $globalBeam_D$
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+\section{Prediction With Profiles}
+\label{sec:PredictionWithProfiles}
+Instead of using a single action set as a result of the opponent prediction, we can use multiple action sets, calling each action set an opponent profile. It is possible to generate any number of profiles, each of them derived from different play styles. For example, one focuses on collecting resources, another on expanding territory, and a third focuses on attacking. However, this requires creating heuristics depending on the game's characteristics. 
+
+We propose another approach that does not require domain knowledge. The first profile is created using local beam prediction. The second profile is created by first running local beam prediction from our side to obtain an action set. Then local beam prediction is used to create an opponent profile with our action set applied in root. The first profile can be called aggressive because the opponent assumes we do nothing, so it will be more likely to do more dangerous moves. The second can be called defensive because the opponent has to respond to threats presented by our actions. Then local beam search can be started using these profiles. In each node there is exactly one state for each profile. During node expansion, actions are applied to each profile. Then beam node evaluation is computed using an aggregate function applied to evaluations of every state within the node. Good candidates for aggregate functions are average and min functions. The min function returns the value of the worst state, i.e., the state that is most favorable to the opponent. Incorporating multiple opponent profiles is described in Algorithm~\ref{alg:BeamSearchProfiles}.
+
+\begin{algorithm}
+\caption{Nested Beam Search, Opponent Prediction with profiles}
+\label{alg:BeamSearchProfiles}
+\begin{algorithmic}[1]
+\Procedure{NestedBSWithProfiles}{$initial\_state, G, L$}
+    \State $globalBeam_0 \gets \{(initial\_state, 0)\}$ 
+    \For{$d = 0$ \textbf{to} $D-1$}
+        \If{$globalBeam_d$ is empty \textbf{or} $exceeded\ time\ budget$}
+            \State \textbf{return} best state found in $beam_{d-1}$
+        \EndIf
+        \State $globalBeam_{d+1} \gets \emptyset$
+        \For{\textbf{each} $(state, eval_{state})$ \textbf{in} $globalBeam_k$}
+            \State $E_m \gets$ identify my entities in $state$
+            \State $E_o \gets$ identify opponent entities in $state$
+            \For{\textbf{each} $e \in (E_m \cup E_o)$}
+                \State $A_e \gets$ generate actions for $e$ in $state$
+            \EndFor
+            \State \LineComment{Creating Opponent Prediction as before}
+            \State $oppPred1 \gets$ \Call{LocalBSWithOutput}{$state, 2, E_o, A$}
+            \State $oppState1 \gets$ worst state from $oppPred1$
+            \State
+            \State \LineComment{Creating My Prediction}
+            \State $myPred \gets$ \Call{LocalBSWithOutput}{$state, 2, E_m, A$}
+            \State $myState \gets$ best state from $myPred$
+            \State
+            \State \LineComment{Creating Opponent Prediction with My Prediction as root}
+            \State $oppPred2 \gets$ \Call{LocalBSWithOutput}{$myState, 2, E_o, A$}
+            \State $oppState2 \gets$ worst state from $oppPred2$
+            \State
+            \State \LineComment{Local Beam Search accepting multiple opponent profiles}
+            \State $resultNodes \gets$ \Call{LocalBSProfilesWO}{$[oppState1, oppState2], L, E_m, A$}
+            \State add $resultNodes$ to $globalBeam_{d+1}$
+        \EndFor
+        \State \If{$|globalBeam_{d+1}| > G$}
+            \State $globalBeam_{d+1} \gets$ keep only best $G$ nodes from $globalBeam_{d+1}$
+        \EndIf
+        \State $d \gets d + 1$
+    \EndFor
+    \State \textbf{return} best state found in $globalBeam_D$
+\EndProcedure
+\algstore{NestedBSWithProfiles}
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+\begin{algorithmic}[1]
+\algrestore{NestedBSWithProfiles}
+\Procedure{LocalBSProfilesWO}{$initial\_states, L, E, A, O$}
+    \State $localBeam_0 \gets \{(initial\_states, 0)\}$ 
+    \State $output \gets \{(initial\_states, 0)\}$
+    \For{$d = 0$ \textbf{to} $|E| - 1$}
+        \For{\textbf{each} $(states, eval_{state})$ \textbf{in} $localBeam_d$}
+            \For{\textbf{each} $entity \ e \in E$}
+                \If{e has already done some action in any $state$ in $states$}
+                    \State \textbf{continue}
+                \EndIf
+                \For{\textbf{each} $a_{e,o} \in A_e$}
+                    \State \LineComment{Instead of single child state there are children for every profile}
+                    \State $children \gets \emptyset$
+                    \For{\textbf{each} $state \in states$}
+                        \State $child \gets$ apply $a_{e,o}$ to $state$
+                        \State add $child$ to $children$
+                    \EndFor
+                    \AbsoluteComment{\texttt{min()} can be replaced with another aggregate funtion, e.g. \texttt{avg()}. Using \texttt{min()} means that we evaluate state by the best state from the opponent's perspective.}
+                    \State $eval_{children} \gets \min_{child\in children}{(eval_{child})}$
+                    \State add ($children$, $eval_{children}$) to $localBeam_{d+1}$
+                    \State add ($children$, $eval_{children}$) to $output$
+                \EndFor
+            \EndFor
+            \If{$|localBeam_{d+1}| > L$}
+                \State $localBeam_{d+1} \gets$ keep only the best $L$ nodes from $localBeam_{d+1}$
+            \EndIf
+        \EndFor
+    \EndFor
+    \State \Call{sort}{$output, DESC$}
+    \State \textbf{return} best $O$ nodes from output
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+
+\chapter{Experiments}
+\label{chapter:Experiments}
+Experiments were conducted on a machine with an AMD Ryzen 9950X CPU and 64GB of RAM.
+To perform experiments, a configuration module was created using C++ X macros. The compiled program reads environment variables associated with parameters. Default parameter values are overridden when a matching environment variable exists. If the \texttt{SHOW\_PARAMS} variable is set to \texttt{true}, the program outputs all available parameters with their default value, minimum and maximum acceptable value, and type.
+
+\section{Parameter Tuning}
+Optuna\cite{akiba2019optuna} was used in order to find good parameters for each heuristic function and Beam Search parameters. Optuna takes advantage of the configuration module, especially using the \texttt{SHOW\_PARAMS} option, which allows rapid experimentation setup. The Python app running Optuna receives the tested program and runs it once to determine the parameters' ranges. After this, Optuna is ready to start studying it. 
+
+This approach allows us to perform fairer experiments. Keeping one parameter list with two different algorithms may be biased towards one of them. For example, let's compare Beam Search with and without opponent prediction. An evaluation function that gives low importance to being careful favors Beam Search with opponent prediction. Beam Search without opponent prediction has no idea what the opponent will do, so playing risky moves may lead to a lost position. On the other hand, Beam Search with opponent prediction is aware of potential opponent actions and can play riskily when the opponent is not likely to exploit a risky move.
+
+
+Figure ~\ref{fig:CellularenaOL} presents one of many heatmaps produced by Optuna during the tuning of Cellularena with all improvements described in this thesis turned on. The $X$ -- axis represents parameter $L$ -- local beam width. The $Y$ -- axis represents how much larger the local beam output size $O$ is than the local beam width $L$. It is clearly visible that the parameter pair $(L=3, O=3+11=14)$ is at least very close to being optimal.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=1\textwidth]{images/CellularenaOptuna.png}
+  \caption{Cellularena tuning, image exported from Optuna. The color scale represents the win ratio against a mix of previous versions. }
+  \label{fig:CellularenaOL}
+\end{figure}
+
+
+\section{Improvement Combinations}
+This section provides experiments with different improvements enabled. The \textbf{Opponent Profiles} column has three different values:
+\begin{itemize}[itemsep=1\itemsep,parsep=1\parsep,partopsep=1\partopsep,topsep=1\topsep]
+    \item \textbf{0} when there is no opponent prediction
+    \item \textbf{1} when there is an opponent prediction creating one profile with \textbf{Local Beam} as described in Section~\ref{sec:LocalBeamPrediction}
+    \item \textbf{2} when there are two opponent profiles predicted according to Section~\ref{sec:PredictionWithProfiles}.
+\end{itemize}
+If the \textbf{Output Layer} column has a \emph{Yes} value, Local Beams have Output enabled; otherwise, Output is turned off. \textbf{Wins}, \textbf{Draws}, \textbf{Losses}, \textbf{Win Rate}, and \textbf{95\% CI} describe statistics of 10000 games with a baseline opponent. For Cellularena, the baseline opponent is the agent that reached 4th place during Winter Challenge 2024. The baseline agent for Soak Overflow is an implementation that reached the best league (Legend) in Summer Challenge 2025.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{C{0.11\textwidth}C{0.13\textwidth}C{0.08\textwidth}C{0.08\textwidth}C{0.08\textwidth}C{0.11\textwidth}C{0.22\textwidth}}
+\toprule
+\textbf{Output Layer} & \textbf{Opponent Profiles} & \textbf{Wins} & \textbf{Draws} & \textbf{Losses} & \textbf{Win Rate} & \textbf{95\% CI} \\
+\midrule
+No  & 0 & 5956 & 3 & 4041 & 59.575\% & [58.61\%, 60.53\%]  \\
+No  & 1 & 6710 & 3 & 3287 & 67.115\% & [66.19\%, 68.03\%]  \\
+No  & 2 & 6829 & 2 & 3169 & 68.300\% & [67.38\%, 69.21\%]  \\
+Yes & 0 & 6431 & 7 & 3562 & 64.345\% & [63.40\%, 65.28\%]  \\
+Yes & 1 & 7001 & 4 & 2995 & 70.030\% & [69.12\%, 70.93\%]  \\
+Yes & 2 & 7076 & 5 & 2919 & 70.785\% & [69.89\%, 71.67\%]  \\
+\bottomrule
+\end{tabular}
+\caption{Cellularena - experiments results}
+\end{table}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{C{0.11\textwidth}C{0.13\textwidth}C{0.08\textwidth}C{0.08\textwidth}C{0.08\textwidth}C{0.11\textwidth}C{0.22\textwidth}}
+\toprule
+\textbf{Output Layer} & \textbf{Opponent Profiles} & \textbf{Wins} & \textbf{Draws} & \textbf{Losses} & \textbf{Win Rate} & \textbf{95\% CI} \\
+\midrule
+No  & 0 & 4998 & 0 & 5002 & 49.98\% & [49.00\%, 50.96\%]  \\
+No  & 1 & 5886 & 0 & 4114 & 58.86\% & [57.89\%, 59.83\%]  \\
+No  & 2 & 6144 & 0 & 3856 & 61.44\% & [60.48\%, 62.40\%]  \\
+Yes & 0 & 4889 & 0 & 5111 & 48.89\% & [47.91\%, 49.87\%]  \\
+Yes & 1 & 6110 & 0 & 3890 & 61.10\% & [60.14\%, 62.06\%]  \\
+Yes & 2 & 6247 & 0 & 3753 & 62.47\% & [61.51\%, 63.42\%]  \\
+\bottomrule
+\end{tabular}
+\caption{Soak Overflow - experiments results}
+\end{table}
+
+\clearpage
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\textwidth]{images/SoakOverflow_LODiff.png}
+  \caption{Soak Overflow with all improvements turned on. Local Beam Width at the first layer was increased by $10$. The bot performs the best when Output Width ($O$) is larger than Local Beam Width ($L$) by about 11. }
+  \label{fig:SoakOverflow_LODiff}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\textwidth]{images/SoakOverflow_LWidth.png}
+  \caption{Soak Overflow with all improvements turned on. Local Beam Width at the first layer was increased by $10$. The bot performs the best when Local Beam Width ($L$) is in $5-7$ range. }
+  \label{fig:SoakOverflow_LWidth}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\textwidth]{images/Cellularena_LODiff.png}
+  \caption{Cellularena with all improvements turned on. Local Beam Width at first was increased by $7$. The bot performs the best when Output Width ($O$) is larger than Local Beam Width ($L$) at about 18. Another experiment showed a gradual decline after 20. }
+  \label{fig:Cellularena_LODiff}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\textwidth]{images/Cellularena_LWidth.png}
+  \caption{Cellularena with all improvements turned on. Local Beam Width at first was increased by $7$. Bot performs the best when Local Beam Width ($L$) is equal to $2$ or $3$. }
+  \label{fig:Cellularena_LWidth}
+\end{figure}
+
+\clearpage
+
+\section{CodinGame Arena Results}
+For each game, Beam Search with all the presented improvements was submitted to the appropriate CodinGame arena. Cellularena implementation reaches \textbf{4th} place in the arena, occasionally getting promoted to the podium. Figure~\ref{fig:CellularenaCGMagusgeek} presents statistics against the top 10 users. Most of the highest places in this game are occupied by bots implementing Beam Search \footnote{https://www.codingame.com/forum/t/winter-challenge-2024-feedback-and-strategies/205711} with the notable exception of 1st place, using Minimax with alpha-beta pruning and a neural network to evaluate game states.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=1\textwidth]{images/CellularenaCGMagusgeek.png}
+  \caption{Cellularena -- 4th place on the leaderboard with statistics against top 10 agents}
+  \label{fig:CellularenaCGMagusgeek}
+\end{figure}
+
+Soak Overflow competition was dominated by MCTS variations \footnote{https://www.codingame.com/forum/t/summer-challenge-2025-post-mortem/207074} that outmatch Beam Search. The Soak Overflow implementation presented in this thesis reaches performance, allowing it to place itself in the middle of the first hundred participants, usually placing itself around \textbf{30th} place, where it occupies 29th place. Figure~\ref{fig:CellularenaCGMagusgeek} presents statistics against 10 agents with similar strength. However, a version of Beam Search that performs more advanced opponent prediction, using techniques beyond the scope of this project, reached 8th place during the Challenge, and another Beam Search version was placed one spot higher. A unique approach was represented by the user that reached 4th place by using a non-adversarial genetic algorithm.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=1\textwidth]{images/SoakOverflowCGMagusgeek.png}
+  \caption{SoakOverflow -- 29th place on the leaderboard with statistics against agents with similar strength}
+  \label{fig:SoakOverflowCGMagusgeek}
+\end{figure}
+
+Parameters for the submissions above were found by Optuna. Table~\ref{tab:CellularenaParamComb} and Table~\ref{tab:SoakOverflowParamComb} provide overview of their values. \textbf{Parameter} column has parameters described in Chapter~\ref{chapter:BeamSearch}: G -- Global Beam Width, L -- Local Beam Width, and O -- Output Size. \textbf{Value} column tells what value is applied for these parameters. There are 3 \textbf{Condition} columns that tell when the value is applied. Section ~\ref{sec:VariableBeamWidth} argues why it is beneficial to change beam width during the search. \textbf{Global depth} distinguishes between the first and all subsequent global depths. Similarly, \textbf{Local depth} distinguishes between the first and all subsequent local depths. Global depth corresponds to turns, and local depth corresponds to actions within a single turn. \textbf{Perspective} equal to \emph{Me} means that this parameter value is applied when calculating our actions, value \emph{Opponent} means that the parameter value is applied while doing opponent prediction.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|c|c|c|l|}
+\hline
+\multirow{2}{*}{\textbf{Parameter}} & \multicolumn{3}{c|}{\textbf{Condition}} & \multirow{2}{*}{\textbf{Value}} \\
+\cline{2-4}
+& \textbf{Global depth} & \textbf{Local depth} & \textbf{Perspective} & \\
+\hline
+\texttt{G}   & $1$  & $-$   & -  & $137$ \\
+\texttt{G}   & $>1$ & $-$   & -  & $85$  \\
+
+\texttt{L} & $1$ & $1$  & Me       & $50+80$ \\
+\texttt{L} & $1$ & $>1$ & Me       & $50$    \\
+\texttt{L} & $1$ & $1$  & Opponent & $4+1$   \\
+\texttt{L} & $1$ & $>1$ & Opponent & $4$     \\
+
+\texttt{L} & $>1$ & $1$  & Me       & $3+7$ \\
+\texttt{L} & $>1$ & $>1$ & Me       & $3$   \\
+\texttt{L} & $>1$ & $1$  & Opponent & $2+0$ \\
+\texttt{L} & $>1$ & $>1$ & Opponent & $2$   \\
+
+\texttt{O-L} & $1$  & $all$ & Me & $12$ \\
+\texttt{O-L} & $>1$ & $all$ & Me & $12$ \\
+\hline
+\end{tabular}
+\caption{Best parameters combination found for Cellularena}
+\label{tab:CellularenaParamComb}
+\end{table}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|c|c|c|l|}
+\hline
+\multirow{2}{*}{\textbf{Parameter}} & \multicolumn{3}{c|}{\textbf{Condition}} & \multirow{2}{*}{\textbf{Value}} \\
+\cline{2-4}
+& \textbf{Global depth} & \textbf{Local depth} & \textbf{Perspective} & \\
+\hline
+\texttt{G}   & $1$  & $-$   & -  & $121$ \\
+\texttt{G}   & $>1$ & $-$   & -  & $55$  \\
+
+\texttt{L} & $1$ & $1$  & Me       & $113+60$ \\
+\texttt{L} & $1$ & $>1$ & Me       & $113$    \\
+\texttt{L} & $1$ & $1$  & Opponent & $3+23$   \\
+\texttt{L} & $1$ & $>1$ & Opponent & $3$     \\
+
+\texttt{L} & $>1$ & $1$  & Me       & $6+10$ \\
+\texttt{L} & $>1$ & $>1$ & Me       & $6$   \\
+\texttt{L} & $>1$ & $1$  & Opponent & $5+7$ \\
+\texttt{L} & $>1$ & $>1$ & Opponent & $5$   \\
+
+\texttt{O-L} & $1$  & $all$ & Me & $9$   \\
+\texttt{O-L} & $>1$ & $all$ & Me & $10$  \\
+\hline
+\end{tabular}
+\caption{Best parameters combination found for Soak Overflow}
+\label{tab:SoakOverflowParamComb}
+\end{table}
+
+\clearpage
+
+As expected, the deeper the search goes, the narrower the beams are. It's worth noting that there are two unusual results for the first global layer in Soak Overflow. As shown in Table \ref{tab:SoakOverflowParamComb}, Local Beam Width is smaller for the opponent perspective ($3$ vs $5$). Moreover, extra space in Output ($O-L$) is also smaller ($9$ vs $10$). This is compensated by a wider Local Beam Width on the first layer of Local Beam ($3+23$ vs $5+7$). 
+
+Further analysis shows that optimal budget allocation to Global or Local Beams varies between games. Specifically, a comparison between Cellularena and Soak Overflow indicates that Cellularena favors wider Global Beam Width at the cost of Local Beam Width. In contrast, Soak Overflow appears to benefit from prioritizing more accurate Local Beams.
+
+
+\section{Sorting Moves}
+Sorting moves in Global Beam allows Beam Search to return results from partially calculated layers. Table~\ref{tab:CellularenaMoveSorting} provides results of 10000 matches between \textbf{Cellularena Sorted} and \textbf{Cellularena Unsorted}. The only difference between the two versions is that the former sorts its global beam and is allowed to use partially calculated layers. Similarly, Table ~\ref{tab:SoakOverflowMoveSorting} provides results of 10000 matches between \textbf{Soak Overflow Sorted} and \textbf{Soak Overflow Unsorted}.
+Results from both experiments indicate improvement after introducing Global Beam layer sorting. Change in Cellularena is more significant. This is a result of different typical depths reached in both games. Due to a higher branching factor and more computationally expensive action application in Cellularena, Beam Search reaches shallower depths. Losing a partially computed layer does not matter so much when the search has already explored deeper layers and has some idea about long-term consequences of moves.
+
+\label{sec:ExperimentsMoveSorting}
+\begin{table}[H]
+\centering
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Variation} & \textbf{Wins} & \textbf{Draws} & \textbf{Losses} & \textbf{Win Rate} & \textbf{95\% CI} \\
+\midrule
+Cellularena Sorted    & 6228 & 230 & 3542 & 63,43\% & [62.48\%, 64.37\%]\\
+Cellularena Unsorted  & 3542 & 230 & 6228 & 36,57\% & [35.63\%, 37.52\%]\\
+\bottomrule
+\end{tabular}
+\caption{Cellularena - sorting moves in global beam}
+\label{tab:CellularenaMoveSorting}
+\end{table}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Variation} & \textbf{Wins} & \textbf{Draws} & \textbf{Losses} & \textbf{Win Rate} & \textbf{95\% CI} \\
+\midrule
+Soak Overflow Sorted    & 5776 & 11 & 4213 & 57.815\% & [56.85\%, 58.78\%]\\
+Soak Overflow Unsorted  & 4213 & 11 & 5776 & 42.185\% & [41.22\%, 43.15\%]\\
+\bottomrule
+\end{tabular}
+\caption{Soak Overflow - sorting moves in global beam}
+\label{tab:SoakOverflowMoveSorting}
+\end{table}
+
+\chapter{Conclusions}
+Presented Beam Search variations provide improvements to standard algorithms and outperform them in tested multi-action adversarial games. While well-known algorithms such as MCTS and MinMax and their variations provide great results in various games, Beam Search demonstrates that it can be a viable choice as a search algorithm in the competitive AI field. Moreover, considering the similarities between games with multiple entities and environments with many vehicles in the real world, for example, in warehouses and sorting plants. Further research could explore the usefulness of Nested Beam Search in complex, high-traffic industrial spaces.
+
+\appendix
+\chapter{Implementation}
+\label{chapter:Implementation}
+The project was implemented using C++. Each compilation target can be built using the CMake build system and the provided \texttt{CMakeLists.txt} file. Beam Search implementation is separated from game logic implementation to provide full modularity. Additionally, configuration macros for fast experimentation were implemented. Experiments are described in more detail in Chapter \ref{chapter:Experiments}.
+\section{Main Loop}
+The main file for each game has its own main loop \ref{lst:MainLoop}. It starts by initializing parameters by calling \texttt{Config::init()}. Then the standard flow of communication protocol between referee and solution continues. \texttt{state.readInitialInput(cin)} reads input that the referee provides only once at the beginning of the match. It usually contains information like map size, obstacles, and other constants.
+Then in a while loop \texttt{state.readInput(cin)} is called. \texttt{state.readInput(cin)} may return false when the game has ended, to exit and help referee that will destroy our process anyway. It reads input that the referee provides at the beginning of every turn. \texttt{state.calculateOutput(cout)} calculates the move to play and outputs it.
+
+\begin{lstlisting}[language=C++, caption=Main Loop, label={lst:MainLoop}]
+int main() {
+    Config::init();
+    Cellularena state;
+    state.readInitialInput(cin);
+    while (state.readInput(cin)) {
+        state.calculateOutput(cout);
+        cout.flush();
+        cerr.flush();
+    }
+}
+\end{lstlisting}
+
+\section{Game State}
+For each game there is an implementation of its game state class that extends \texttt{AbstractState}. Game state classes contain data required to represent all information about position at a particular turn. They are also implementing methods required and called by search algorithms.
+
+\begin{lstlisting}[language=C++, caption=Base class for game states, label={lst:AbstractState}]
+class AbstractState {
+public:
+    virtual ~AbstractState() = default;
+
+    
+    // Methods useful for viewer
+    // ...
+
+    // Methods that game state has to implement    
+    virtual void readInitialInput(istream& input) = 0;
+    virtual bool readInput(istream& input) = 0;
+    virtual void calculateOutput(ostream& output) = 0;
+
+    // ...
+};
+\end{lstlisting}
+Each game state exposes \texttt{EvalType} and \texttt{Action} type, allowing search algorithm classes to be more generic.
+\begin{lstlisting}[language=C++, caption=Game state types, label={lst:GameStateTypes}]
+class MyGame {
+    // ...
+    using EvalType = float;
+    using Action = MyGameAction;
+    // ...
+};
+\end{lstlisting}
+There are four methods that are required by the Beam Search.
+\begin{itemize}
+    \item \texttt{generateBeamSearchActions(...)} generates a $2D$ collection of actions, indexed by entity and actions. Each entity owns its collection of available actions. The concrete container type is flexible: any class that implements \texttt{begin()}, \texttt{end()} and \texttt{operator[]} may be used.
+    \item \texttt{applyAction(...)} applies the given action on behalf of the specified player and entity, updating the game state accordingly. It returns \texttt{true} if the action was successfully applied and \texttt{false} otherwise. When \texttt{false} is returned, state correctness is undefined, and the search algorithm should discard this state.
+    \item \texttt{isEntityUsed(...)} returns whether the specified entity has already done an action during the current turn.
+    \item \texttt{endHalfTurn(...)} finalizes the current half-turn, updating internal variables to reflect that further actions will be done by another player.
+    \item \texttt{endTurn(...)} finalizes the current turn and advances the state to the next turn.
+\end{itemize}
+
+\begin{lstlisting}[language=C++, caption=Methods required by Beam Search, label={lst:GameStateMethods}]
+class MyGame {
+    // ...
+    Vector<Vector<MyGameAction, 256>, 16> generateBeamSearchActions(const u64 playerId, const u64 layer) const
+    bool applyAction(const MyGameAction& action, const u64 playerId, const u64 entityId) 
+    INLINE bool isEntityUsed(const u64 entityId)
+    INLINE void endHalfTurn()
+    INLINE void endTurn()
+    // ...
+};
+\end{lstlisting}
+
+\section{Beam Search}
+\texttt{NestedBeamSearch} and \texttt{NestedBeamSearchWithProfiles} are classes that, depending on the parameters, are able to run Beam Search with different configurations described in this thesis.
+\begin{lstlisting}[language=C++, caption=NestedBeamSearch definition, label={lst:NestedBeamSearch}]
+template<typename State, u64 BagSize>
+class NestedBeamSearch {
+    using Action = State::Action;
+    inline static StateTree<State, BagSize, Action, BagSize> stateTree;
+    using StateId = decltype(stateTree)::StateId;
+    using ActionId = decltype(stateTree)::ActionId;
+    using EvalType = State::EvalType;
+
+    explicit NestedBeamSearch(const State& state, const u64 playerId) {
+        /* */
+    }
+    template<u64 PlayerId>
+    void globalStep(const u64 globalBeamWidth, /* */) {
+        /* */
+    }
+    // ...
+};    
+\end{lstlisting}
+
+To implement the Beam Search \texttt{StateTree} class was created. \texttt{StateTree} allows Beam Search to easily manage the child-parent relationship between game states and actions that lead to them. This class allows BeamSearch to easily implement \texttt{restoreActionList(...)} which restores the action sequence leading to a state. It is necessary during advanced move prediction and when Beam Search finishes searching and returns the final result. Moreover, to improve performance, \texttt{StateTree} data is kept on a stack.
+\begin{lstlisting}[language=C++, caption=StateTree definition, label={lst:StateTree}]
+template<typename State, size_t Capacity, typename Action, size_t ActionCapacity>
+class StateTree {
+public:
+    using StateId = SmallestUInt<Capacity>;
+    using ActionId = SmallestUInt<ActionCapacity>;
+
+private:
+    pair<State, ActionId> states[Capacity];
+    ActionTree<Action, ActionCapacity, u16> actionTree;
+
+    Vector<StateId, Capacity> ids;
+    // ...
+};
+\end{lstlisting}
+
+
+\chapter{Compilation}
+\label{chapter:Compilation}
+To compile the project, CMake\footnote{https://cmake.org/} is required. Optionally, Vcpkg\footnote{https://vcpkg.io/en/} allows compilation of build targets that may be useful during debugging.
+
+To configure a project without Vcpkg the user can run the following command in the project root directory.
+\begin{verbatim}
+$ cmake -DCMAKE_BUILD_TYPE=Release \
+  -S . \
+  -B ./build/release
+\end{verbatim}
+Without Vcpkg some warnings will be displayed that warn about missing packages required to run http client. Following command configures project with vcpkg.
+
+\begin{verbatim}
+$ cmake -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_TOOLCHAIN_FILE=/vckpkgpath/vcpkg/scripts/buildsystems/vcpkg.cmake \
+  -S . \
+  -B ./build/release
+\end{verbatim}
+
+After configuration, the project can be compiled using the following command.
+\begin{verbatim}
+$ cmake --build ./build/release --target CellularenaSubmit -- -j 14
+\end{verbatim}
+You can replace \texttt{CellularenaSubmit} with other targets defined in \texttt{CMakeLists.txt}. For example, \texttt{SoakOverflowSubmit} or \texttt{SoakOverflowLocal}. Compilation targets ending with \texttt{Local} are designed for debugging with a visualizer. Compilation targets ending with \texttt{Submit} provide a clean build stripped of debugging overhead, formatted specifically for arena submission.
+
+
+%%%%% BIBLIOGRAFIA
+
+%\begin{thebibliography}{1}
+%\bibitem{example} \ldots
+%\end{thebibliography}
+
+\bibliographystyle{unsrt}
+\bibliography{bibliography}
+
+\end{document}
