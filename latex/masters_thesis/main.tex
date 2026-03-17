@@ -60,9 +60,9 @@
 \englishtitle   {PCG Arena: A Platform for Blind A/B Testing\fmlinebreak of Procedural Content Generators\fmlinebreak with Direct Preference Optimization}
 
 \polishabstract {
-Ewaluacja generator\'ow tre\'sci proceduralnych (PCG) dla gier wideo stanowi istotne wyzwanie metodologiczne, poniewa\.z przyjemno\'s\'c gracza jest z natury subiektywna i~trudna do zmierzenia za pomoc\k{a} automatycznych metryk. Niniejsza praca przedstawia PCG~Arena --- platformę internetow\k{a} do \'slepego testowania A/B generator\'ow poziom\'ow do gry Super Mario Bros poprzez dane o~preferencjach graczy. Platforma umo\.zliwia graczom rozgrywanie dw\'och proceduralnie generowanych poziom\'ow obok siebie w~przegl\k{a}darce, g{\l}osowanie na preferowany poziom oraz opcjonalne tagowanie cech rozgrywki. G{\l}osy s\k{a} agregowane za pomoc\k{a} systemu ratingowego Glicko-2, kt\'ory zapewnia rankingi z~przedzia{\l}ami ufno\'sci.
+Ewaluacja generator\'ow tre\'sci proceduralnych (PCG) dla gier wideo stanowi istotne wyzwanie metodologiczne, poniewa\.z przyjemno\'s\'c gracza jest z natury subiektywna i~trudna do zmierzenia za pomoc\k{a} automatycznych metryk. Niniejsza praca przedstawia PCG~Arenę --- platformę internetow\k{a} do \'slepego testowania A/B generator\'ow poziom\'ow do gry Super Mario Bros poprzez dane o~preferencjach graczy. Platforma umo\.zliwia graczom rozgrywanie dw\'och proceduralnie generowanych poziom\'ow obok siebie w~przegl\k{a}darce, g{\l}osowanie na preferowany poziom oraz opcjonalne tagowanie cech rozgrywki. G{\l}osy s\k{a} agregowane za pomoc\k{a} systemu ratingowego Glicko-2, kt\'ory zapewnia rankingi z~przedzia{\l}ami ufno\'sci.
 
-Na podstawie zebranych danych przeprowadzono rozleg{\l}\k{a} analiz\k{e} eksploracyjn\k{a} badaj\k{a}c\k{a}, co czyni poziomy dobrymi, czy preferencje graczy s\k{a} sp\'ojne oraz czy subiektywne tagi odpowiadaj\k{a} mierzalnym r\'o\.znicom w~rozgrywce. Wyniki te pos{\l}u\.zy{\l}y do opracowania funkcji oceny (Judge Function), kt\'ora koreluje z~preferencjami ludzi na poziomie $r = 0.736$. Wreszcie, praca przedstawia MarioDPO --- generator poziom\'ow wytrenowany metod\k{a} Direct Preference Optimization, kt\'ory osi\k{a}ga najwy\.zszy wska\'znik wygranych (83.3\%) spo\'sr\'od wszystkich metod PCG, ust\k{e}puj\k{a}c jedynie oryginalnym poziomom Nintendo.
+Na podstawie zebranych danych przeprowadzono rozleg{\l}\k{a} analiz\k{e} eksploracyjn\k{a} badaj\k{a}c\k{a}, co czyni poziomy dobrymi, czy preferencje graczy s\k{a} sp\'ojne oraz czy subiektywne tagi odpowiadaj\k{a} mierzalnym r\'o\.znicom w~rozgrywce. Wyniki te pos{\l}u\.zy{\l}y do opracowania funkcji oceny (Judge Function), kt\'ora koreluje z~preferencjami ludzi na poziomie $r = 0.736$. Finalnie, praca przedstawia MarioDPO --- generator poziom\'ow wytrenowany metod\k{a} Direct Preference Optimization, kt\'ory osi\k{a}ga najwy\.zszy wska\'znik wygranych (83.3\%) spo\'sr\'od wszystkich metod PCG, ust\k{e}puj\k{a}c jedynie oryginalnym poziomom Nintendo.
 }
 
 \englishabstract {
@@ -72,10 +72,10 @@ Building on the collected data, we conduct an extensive exploratory data analysi
 }
 
 \author         {Antoni Czapski}
-\advisor        {dr ??? ???}
+\advisor        {dr Jakub Kowalski}
 \date          {March 2026}
 \transcriptnum {??????}
-\advisorgen    {dr. ??? ???}
+\advisorgen    {dr. Jakub Kowalski}
 
 % ============================================================================
 \begin{document}
@@ -458,27 +458,27 @@ shows the opening segment (first 50~columns) of this level:
 \begin{figure}[H]
 \centering
 \begin{lstlisting}[basicstyle=\ttfamily\scriptsize,xleftmargin=0pt,xrightmargin=0pt]
---------------------------------------------------
---------------------------------------------------
---------------------------------------------------
---------------------------------------------------
---------------------------------------------------
---------------------------------------------------
-----------------------!---------------------------
---------------------------------------------------
---------------------------------------------------
---------------------------------------------------
-----------------!---S@S!S---------------------tt--
---------------------------------------tt------tt--
-----------------------------tt--------tt------tt--
----M-----------------g------tt--------tt-g----tt--
-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+---------------------------------------------------------------------------------...------
+---------------------------------------------------------------------------------...------
+---------------------------------------------------------------------------------...------
+--------------------------------oo-----------------------------------------------...------
+---------------------------------------g-g---------------------------------------...------
+----------------------ooor---------%%%%%%%-------------oooo----------R-----------...------
+---------------------%%%%%----------|||||--------------%%%%----------------g----o...------
+----------------------|||-----------|||||----oo---SSSS--||-------------%%%%%%----...------
+----------------------|||-----------|||||---------------||--------------||||-----...------
+----------------------|||-----%%%%%-|||||---------------||--------------||||-----...------
+-------------------%%%%%%%%----|||--|||||---------------||-------%%%----||||-----...------
+--------------------||||||-----|||--|||||-------------U-||--------|-----||||-----...------
+--------------------||||||--o--|||--|||||---------------||--------|-----||||-----...---F--
+-M-----------%%%%---||||||-%%%-|||--|||||---------------||--------|-----||||-----...---#--
+XXXXXXXXXXX---||----||||||--|--|||--|||||----%%%%-----%%%%%-%%%%%-|-----||||-----...XXXXXX
+XXXXXXXXXXX---||----||||||--|--|||--|||||-----||-------|||---|||--|-----||||-----...XXXXXX
 \end{lstlisting}
-\caption{Opening 50~columns of Super Mario Bros World~1-1 in ASCII tilemap format.
+\caption{Original Super Mario Bros Level in ASCII tilemap format.
          \texttt{M}~marks Mario's spawn; \texttt{X}~is solid ground; \texttt{S},
          \texttt{@}, \texttt{!}~are brick and question blocks; \texttt{g}~is a Goomba;
-         \texttt{t}~denotes pipes; \texttt{-}~is empty air.}
+         \texttt{F}~denotes level exit; \texttt{-}~is empty air.}
 \label{fig:ascii-level}
 \end{figure}
 
@@ -643,7 +643,7 @@ The intuition behind Stage~2 is that the most informative battle is one between
 generators of \emph{similar} strength (maximising discriminative power) whose ratings
 are still \emph{uncertain} (maximising information gain per battle), while ensuring
 that every pair accumulates enough head-to-head data for a reliable confusion matrix.
-The four weighted components below formalise these desiderata.
+The four weighted components below formalise these intuitions.
 
 Given the first generator~$g_1$, the second is selected using a composite pair weight:
 
