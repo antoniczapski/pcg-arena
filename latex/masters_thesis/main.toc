@@ -42,56 +42,56 @@
 \contentsline {subsection}{\numberline {3.2.3}Database}{17}{subsection.3.2.3}%
 \contentsline {section}{\numberline {3.3}Game Engine}{17}{section.3.3}%
 \contentsline {subsection}{\numberline {3.3.1}TypeScript Port}{18}{subsection.3.3.1}%
-\contentsline {subsection}{\numberline {3.3.2}Level Format}{18}{subsection.3.3.2}%
-\contentsline {subsection}{\numberline {3.3.3}Level Validation}{19}{subsection.3.3.3}%
+\contentsline {subsection}{\numberline {3.3.2}Level Format}{19}{subsection.3.3.2}%
+\contentsline {subsection}{\numberline {3.3.3}Level Validation}{20}{subsection.3.3.3}%
 \contentsline {section}{\numberline {3.4}Battle and Voting System}{20}{section.3.4}%
-\contentsline {subsection}{\numberline {3.4.1}Battle Flow}{20}{subsection.3.4.1}%
-\contentsline {subsection}{\numberline {3.4.2}Tagging System}{20}{subsection.3.4.2}%
-\contentsline {section}{\numberline {3.5}Matchmaking: AGIS Algorithm}{21}{section.3.5}%
-\contentsline {subsection}{\numberline {3.5.1}Problem Definition}{21}{subsection.3.5.1}%
-\contentsline {subsection}{\numberline {3.5.2}Stage~1: First Generator Selection}{21}{subsection.3.5.2}%
-\contentsline {subsection}{\numberline {3.5.3}Stage~2: Second Generator Selection}{22}{subsection.3.5.3}%
-\contentsline {subsection}{\numberline {3.5.4}Parameters}{22}{subsection.3.5.4}%
-\contentsline {section}{\numberline {3.6}Glicko-2 Rating System}{22}{section.3.6}%
-\contentsline {subsection}{\numberline {3.6.1}Expected Score}{23}{subsection.3.6.1}%
-\contentsline {subsection}{\numberline {3.6.2}Rating Update Procedure}{23}{subsection.3.6.2}%
-\contentsline {subsection}{\numberline {3.6.3}Configuration}{23}{subsection.3.6.3}%
-\contentsline {section}{\numberline {3.7}Builder Profile and Generator Submission}{24}{section.3.7}%
-\contentsline {section}{\numberline {3.8}Authentication}{25}{section.3.8}%
-\contentsline {section}{\numberline {3.9}Deployment and Infrastructure}{25}{section.3.9}%
-\contentsline {chapter}{\numberline {4}User Study and Exploratory Data Analysis}{27}{chapter.4}%
-\contentsline {section}{\numberline {4.1}Study Design and Data Collection}{27}{section.4.1}%
-\contentsline {section}{\numberline {4.2}Dataset Overview}{27}{section.4.2}%
-\contentsline {section}{\numberline {4.3}Generator Rankings and Performance}{27}{section.4.3}%
-\contentsline {section}{\numberline {4.4}RQ1: What Makes a Good Level?}{27}{section.4.4}%
-\contentsline {subsection}{\numberline {4.4.1}Difficulty and the Flow Channel Hypothesis}{27}{subsection.4.4.1}%
-\contentsline {subsection}{\numberline {4.4.2}Structural Variety and Creativity}{27}{subsection.4.4.2}%
-\contentsline {subsection}{\numberline {4.4.3}Path Freedom and Player Agency}{28}{subsection.4.4.3}%
-\contentsline {subsection}{\numberline {4.4.4}Hazard Difficulty and Leniency}{28}{subsection.4.4.4}%
-\contentsline {section}{\numberline {4.5}RQ2: Player Preference Consistency}{28}{section.4.5}%
-\contentsline {subsection}{\numberline {4.5.1}Preference Clusters}{28}{subsection.4.5.1}%
-\contentsline {subsection}{\numberline {4.5.2}Skill--Consistency Relationship}{28}{subsection.4.5.2}%
-\contentsline {section}{\numberline {4.6}RQ3: Tag Semantics and Validation}{28}{section.4.6}%
-\contentsline {subsection}{\numberline {4.6.1}Tag--Telemetry Correspondence}{28}{subsection.4.6.1}%
-\contentsline {subsection}{\numberline {4.6.2}Feature Importance for Tags}{28}{subsection.4.6.2}%
-\contentsline {subsection}{\numberline {4.6.3}Predictive Modelling of Preferences}{28}{subsection.4.6.3}%
-\contentsline {section}{\numberline {4.7}Trajectory Analysis}{28}{section.4.7}%
-\contentsline {section}{\numberline {4.8}Summary of Findings}{29}{section.4.8}%
-\contentsline {chapter}{\numberline {5}MarioDPO --- Preference-Aligned Level Generation}{31}{chapter.5}%
-\contentsline {section}{\numberline {5.1}Motivation and Approach}{31}{section.5.1}%
-\contentsline {section}{\numberline {5.2}Judge Function Development}{31}{section.5.2}%
-\contentsline {subsection}{\numberline {5.2.1}Verticality Reward (Experiment A)}{31}{subsection.5.2.1}%
-\contentsline {subsection}{\numberline {5.2.2}Hazard Hierarchy (Experiment B)}{31}{subsection.5.2.2}%
-\contentsline {subsection}{\numberline {5.2.3}Style Matching (Experiment D)}{31}{subsection.5.2.3}%
-\contentsline {subsection}{\numberline {5.2.4}Final Judge Function}{31}{subsection.5.2.4}%
-\contentsline {section}{\numberline {5.3}Training Pipeline}{32}{section.5.3}%
-\contentsline {subsection}{\numberline {5.3.1}Supervised Fine-Tuning (SFT)}{32}{subsection.5.3.1}%
-\contentsline {subsection}{\numberline {5.3.2}Preference Dataset Construction}{32}{subsection.5.3.2}%
-\contentsline {subsection}{\numberline {5.3.3}DPO Training}{32}{subsection.5.3.3}%
-\contentsline {section}{\numberline {5.4}Column-Major Tokenisation}{32}{section.5.4}%
-\contentsline {section}{\numberline {5.5}Results}{32}{section.5.5}%
-\contentsline {section}{\numberline {5.6}Analysis and Discussion}{32}{section.5.6}%
-\contentsline {chapter}{\numberline {6}Conclusions and Future Work}{33}{chapter.6}%
-\contentsline {section}{\numberline {6.1}Summary of Contributions}{33}{section.6.1}%
-\contentsline {section}{\numberline {6.2}Limitations}{33}{section.6.2}%
-\contentsline {section}{\numberline {6.3}Future Directions}{33}{section.6.3}%
+\contentsline {subsection}{\numberline {3.4.1}Battle Flow}{21}{subsection.3.4.1}%
+\contentsline {subsection}{\numberline {3.4.2}Tagging System}{22}{subsection.3.4.2}%
+\contentsline {section}{\numberline {3.5}Matchmaking: AGIS Algorithm}{23}{section.3.5}%
+\contentsline {subsection}{\numberline {3.5.1}Problem Definition}{23}{subsection.3.5.1}%
+\contentsline {subsection}{\numberline {3.5.2}Stage~1: First Generator Selection}{23}{subsection.3.5.2}%
+\contentsline {subsection}{\numberline {3.5.3}Stage~2: Second Generator Selection}{24}{subsection.3.5.3}%
+\contentsline {subsection}{\numberline {3.5.4}Parameters}{24}{subsection.3.5.4}%
+\contentsline {section}{\numberline {3.6}Glicko-2 Rating System}{25}{section.3.6}%
+\contentsline {subsection}{\numberline {3.6.1}Expected Score}{25}{subsection.3.6.1}%
+\contentsline {subsection}{\numberline {3.6.2}Rating Update Procedure}{25}{subsection.3.6.2}%
+\contentsline {subsection}{\numberline {3.6.3}Configuration}{26}{subsection.3.6.3}%
+\contentsline {section}{\numberline {3.7}Builder Profile and Generator Submission}{27}{section.3.7}%
+\contentsline {section}{\numberline {3.8}Authentication}{28}{section.3.8}%
+\contentsline {section}{\numberline {3.9}Deployment and Infrastructure}{28}{section.3.9}%
+\contentsline {chapter}{\numberline {4}User Study and Exploratory Data Analysis}{31}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Study Design and Data Collection}{31}{section.4.1}%
+\contentsline {section}{\numberline {4.2}Dataset Overview}{31}{section.4.2}%
+\contentsline {section}{\numberline {4.3}Generator Rankings and Performance}{31}{section.4.3}%
+\contentsline {section}{\numberline {4.4}RQ1: What Makes a Good Level?}{31}{section.4.4}%
+\contentsline {subsection}{\numberline {4.4.1}Difficulty and the Flow Channel Hypothesis}{31}{subsection.4.4.1}%
+\contentsline {subsection}{\numberline {4.4.2}Structural Variety and Creativity}{31}{subsection.4.4.2}%
+\contentsline {subsection}{\numberline {4.4.3}Path Freedom and Player Agency}{32}{subsection.4.4.3}%
+\contentsline {subsection}{\numberline {4.4.4}Hazard Difficulty and Leniency}{32}{subsection.4.4.4}%
+\contentsline {section}{\numberline {4.5}RQ2: Player Preference Consistency}{32}{section.4.5}%
+\contentsline {subsection}{\numberline {4.5.1}Preference Clusters}{32}{subsection.4.5.1}%
+\contentsline {subsection}{\numberline {4.5.2}Skill--Consistency Relationship}{32}{subsection.4.5.2}%
+\contentsline {section}{\numberline {4.6}RQ3: Tag Semantics and Validation}{32}{section.4.6}%
+\contentsline {subsection}{\numberline {4.6.1}Tag--Telemetry Correspondence}{32}{subsection.4.6.1}%
+\contentsline {subsection}{\numberline {4.6.2}Feature Importance for Tags}{32}{subsection.4.6.2}%
+\contentsline {subsection}{\numberline {4.6.3}Predictive Modelling of Preferences}{32}{subsection.4.6.3}%
+\contentsline {section}{\numberline {4.7}Trajectory Analysis}{32}{section.4.7}%
+\contentsline {section}{\numberline {4.8}Summary of Findings}{33}{section.4.8}%
+\contentsline {chapter}{\numberline {5}MarioDPO --- Preference-Aligned Level Generation}{35}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Motivation and Approach}{35}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Judge Function Development}{35}{section.5.2}%
+\contentsline {subsection}{\numberline {5.2.1}Verticality Reward (Experiment A)}{35}{subsection.5.2.1}%
+\contentsline {subsection}{\numberline {5.2.2}Hazard Hierarchy (Experiment B)}{35}{subsection.5.2.2}%
+\contentsline {subsection}{\numberline {5.2.3}Style Matching (Experiment D)}{35}{subsection.5.2.3}%
+\contentsline {subsection}{\numberline {5.2.4}Final Judge Function}{35}{subsection.5.2.4}%
+\contentsline {section}{\numberline {5.3}Training Pipeline}{36}{section.5.3}%
+\contentsline {subsection}{\numberline {5.3.1}Supervised Fine-Tuning (SFT)}{36}{subsection.5.3.1}%
+\contentsline {subsection}{\numberline {5.3.2}Preference Dataset Construction}{36}{subsection.5.3.2}%
+\contentsline {subsection}{\numberline {5.3.3}DPO Training}{36}{subsection.5.3.3}%
+\contentsline {section}{\numberline {5.4}Column-Major Tokenisation}{36}{section.5.4}%
+\contentsline {section}{\numberline {5.5}Results}{36}{section.5.5}%
+\contentsline {section}{\numberline {5.6}Analysis and Discussion}{36}{section.5.6}%
+\contentsline {chapter}{\numberline {6}Conclusions and Future Work}{37}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Summary of Contributions}{37}{section.6.1}%
+\contentsline {section}{\numberline {6.2}Limitations}{37}{section.6.2}%
+\contentsline {section}{\numberline {6.3}Future Directions}{37}{section.6.3}%

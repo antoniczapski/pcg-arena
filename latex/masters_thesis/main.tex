@@ -277,11 +277,11 @@ by Vite. Its source tree is organised into five top-level directories:
 
 \begin{lstlisting}
 frontend/src/
-  api/           # Backend communication (fetch wrappers)
-  engine/        # Mario game engine (ported from Java)
-  components/    # Reusable React UI components
-  pages/         # Full-page route components
-  contexts/      # React context providers (auth, theme)
+  api/            # Backend communication (fetch wrappers)
+  engine/         # Mario game engine (ported from Java)
+  components/     # Reusable React UI components
+  pages/          # Full-page route components
+  contexts/       # React context providers (auth, theme)
 \end{lstlisting}
 
 Game rendering uses the HTML5 Canvas API for direct pixel manipulation, while the rest of
@@ -377,13 +377,13 @@ The key engine modules are:
 
 \begin{lstlisting}
 engine/
-  MarioGame.ts     # Game loop (requestAnimationFrame)
-  MarioWorld.ts    # World state, collision, game logic
-  MarioLevel.ts    # ASCII tilemap parser
-  MarioSprite.ts   # Base sprite class (physics, rendering)
-  sprites/         # Mario, enemies, items, projectiles
-  graphics/        # Camera, sprite sheets
-  effects/         # Particle effects
+  MarioGame.ts      # Game loop (requestAnimationFrame)
+  MarioWorld.ts     # World state, collision, game logic
+  MarioLevel.ts     # ASCII tilemap parser
+  MarioSprite.ts    # Base sprite class (physics, rendering)
+  sprites/          # Mario, enemies, items, projectiles
+  graphics/         # Camera, sprite sheets
+  effects/          # Particle effects
 \end{lstlisting}
 
 \begin{table}[H]
@@ -404,9 +404,12 @@ Run speed      & 1.2 \\
 \label{tab:physics}
 \end{table}
 
-The game loop runs at 30~ticks per second (matching the original framework), with
-rendering at 60~FPS via \texttt{requestAnimationFrame}. Physics updates are fully
-deterministic, ensuring consistent gameplay across sessions.
+The game loop runs at 30~ticks per second, matching the original Java framework.
+Rendering runs separately at 60~FPS via \texttt{requestAnimationFrame}, interpolating
+between physics frames. This decoupling preserves the exact physics behaviour of the
+original framework (which assumes 30-tick updates) while providing visually smooth
+animation in the browser. Physics updates are fully deterministic, ensuring consistent
+gameplay across sessions.
 
 \subsection{Level Format}
 \label{subsec:sd-level-format}
@@ -449,7 +452,35 @@ Table~\ref{tab:tile-legend}.
 
 A typical level file consists of 16~rows (the default height) and up to several hundred
 columns, stored with newline-separated rows. For example, the original Super Mario Bros
-World~1-1 is encoded as a $202 \times 16$ character grid.
+World~1-1 is encoded as a $202 \times 16$ character grid. Figure~\ref{fig:ascii-level}
+shows the opening segment (first 50~columns) of this level:
+
+\begin{figure}[H]
+\centering
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize,xleftmargin=0pt,xrightmargin=0pt]
+--------------------------------------------------
+--------------------------------------------------
+--------------------------------------------------
+--------------------------------------------------
+--------------------------------------------------
+--------------------------------------------------
+----------------------!---------------------------
+--------------------------------------------------
+--------------------------------------------------
+--------------------------------------------------
+----------------!---S@S!S---------------------tt--
+--------------------------------------tt------tt--
+----------------------------tt--------tt------tt--
+---M-----------------g------tt--------tt-g----tt--
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+\end{lstlisting}
+\caption{Opening 50~columns of Super Mario Bros World~1-1 in ASCII tilemap format.
+         \texttt{M}~marks Mario's spawn; \texttt{X}~is solid ground; \texttt{S},
+         \texttt{@}, \texttt{!}~are brick and question blocks; \texttt{g}~is a Goomba;
+         \texttt{t}~denotes pipes; \texttt{-}~is empty air.}
+\label{fig:ascii-level}
+\end{figure}
 
 \subsection{Level Validation}
 \label{subsec:sd-level-validation}
@@ -461,7 +492,9 @@ validation procedure, implemented in the backend's \texttt{seed.py} module, chec
     \item \textbf{Height bounds:} the number of rows must satisfy
           $10 \leq h \leq 20$.
     \item \textbf{Width bounds:} the number of columns must satisfy
-          $1 \leq w \leq 250$.
+          $1 \leq w \leq 250$.  In practice, all submitted generators produce levels
+          with widths between 150 and 208~columns; the lower bound of~1 is deliberately
+          permissive and may be tightened in a future revision.
     \item \textbf{Rectangular shape:} all rows must have identical length.
     \item \textbf{Character whitelist:} every character must belong to the set of
           37~allowed tiles (Table~\ref{tab:tile-legend}).
@@ -500,6 +533,26 @@ A battle proceeds through five stages:
     \item \textbf{Rating update.} The backend updates Glicko-2 ratings for both generators
           atomically within a database transaction (Section~\ref{sec:sd-rating}).
 \end{enumerate}
+
+Figure~\ref{fig:gameplay} shows the main gameplay interface. After completing both levels,
+the voting panel (Figure~\ref{fig:voting}) allows the player to cast their preference and
+optionally tag each level.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{main_gameplay.png}
+    \caption{Main gameplay view: the player experiences a procedurally generated level
+             in the browser-based Mario engine.}
+    \label{fig:gameplay}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.90\textwidth]{voting_panel.png}
+    \caption{Voting panel shown after both levels are played, with preference buttons
+             and optional tag selection.}
+    \label{fig:voting}
+\end{figure}
 
 \subsection{Tagging System}
 \label{subsec:sd-tagging}
@@ -550,9 +603,13 @@ accurate final rankings. Na\"ive strategies are suboptimal:
     \item \textbf{Round-robin} ignores rating information and pairs dissimilar generators.
 \end{itemize}
 
-To address these shortcomings, we developed \textbf{AGIS (Adaptive Glicko-Informed
-Selection)}, a two-stage matchmaking algorithm that incorporates rating uncertainty,
-skill similarity, and pairwise coverage into generator selection.
+To address these shortcomings, we designed \textbf{AGIS (Adaptive Glicko-Informed
+Selection)}, a custom two-stage matchmaking algorithm that incorporates rating
+uncertainty, skill similarity, and pairwise coverage into generator selection.
+While the individual components draw on well-known ideas from information-theoretic
+experimental design (uncertainty sampling, coverage balancing), their combination
+into a lightweight, Glicko-2-aware matchmaker tailored to the PCG evaluation setting
+is, to our knowledge, novel.
 
 \subsection{Stage~1: First Generator Selection}
 \label{subsec:sd-agis-stage1}
@@ -575,11 +632,18 @@ weight multiplier for generators with zero games, linearly decaying to~$1\times$
 \min\!\Bigl(1,\;\max\!\bigl(0,\;\tfrac{\mu_i - 600}{800}\bigr)\Bigr)
 \end{equation}
 
-where $q_{\text{bias}} = 0.2$ is the configurable quality bias strength. The first
-generator is then sampled from the resulting categorical distribution.
+where $q_{\text{bias}} = 0.2$ is the configurable quality bias strength. The weights
+are normalised to sum to~1, forming a categorical (discrete) probability distribution;
+the first generator is then drawn from this distribution via weighted random sampling.
 
 \subsection{Stage~2: Second Generator Selection}
 \label{subsec:sd-agis-stage2}
+
+The intuition behind Stage~2 is that the most informative battle is one between
+generators of \emph{similar} strength (maximising discriminative power) whose ratings
+are still \emph{uncertain} (maximising information gain per battle), while ensuring
+that every pair accumulates enough head-to-head data for a reliable confusion matrix.
+The four weighted components below formalise these desiderata.
 
 Given the first generator~$g_1$, the second is selected using a composite pair weight:
 
@@ -665,7 +729,9 @@ yield~0.5 for both. The update proceeds as follows:
 
 \begin{enumerate}
     \item Convert ratings to the internal Glicko-2 scale (centred at~0, divided by
-          $\lambda = 173.7178$).
+          $\lambda = 173.7178$).  This constant equals $400 / \ln 10 \approx 173.7178$
+          and bridges the Elo convention (400~points per tenfold win-probability change)
+          with the natural logistic function used internally by Glicko-2.
     \item Compute the variance~$v$ from the opponent's RD.
     \item Compute $\Delta = v \cdot g(\phi_B)(s - E)$, where $s$ is the actual score.
     \item Update volatility~$\sigma'$ via the iterative Illinois algorithm
@@ -709,6 +775,25 @@ The RD of each generator provides a natural 95\% confidence interval for its tru
 $\text{CI}_{95\%} = [\mu - 1.96\,\text{RD},\;\mu + 1.96\,\text{RD}]$.
 However, the public leaderboard displays only the point-estimate rating; confidence
 intervals are not shown on the platform's frontend.
+Figure~\ref{fig:leaderboard} shows the leaderboard as seen by players.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{leaderboard.png}
+    \caption{Public leaderboard ranking generators by their Glicko-2 rating.}
+    \label{fig:leaderboard}
+\end{figure}
+
+Clicking a generator reveals detailed statistics including rating history, per-opponent
+win rates, a level gallery, and tag distributions
+(Figure~\ref{fig:generator-preview}).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{generator_preview.png}
+    \caption{Generator detail page showing level gallery and performance statistics.}
+    \label{fig:generator-preview}
+\end{figure}
 
 % ----------------------------------------------------------------------------
 \section{Builder Profile and Generator Submission}
@@ -730,9 +815,22 @@ The submission workflow is:
           pool.
 \end{enumerate}
 
-Each user may own at most three generators. Generators that have participated in battles
-are soft-deleted (marked inactive and excluded from matchmaking) to preserve historical
-data integrity; generators without any battles can be hard-deleted.
+Each user may own at most three generators.
+When a user wishes to remove a generator, the system distinguishes two cases.  If the
+generator has already participated in battles, it is \emph{soft-deleted}: marked as
+inactive and excluded from future matchmaking, but its records (levels, ratings, votes)
+are retained so that historical analyses and the confusion matrix remain consistent.
+If the generator has never appeared in a battle, it is \emph{hard-deleted} (fully
+removed from the database) since no other data depends on it.
+
+Figure~\ref{fig:builder} shows the Builder Profile page.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{builder_profile.png}
+    \caption{Builder Profile page for submitting and managing generators.}
+    \label{fig:builder}
+\end{figure}
 
 % ----------------------------------------------------------------------------
 \section{Authentication}
