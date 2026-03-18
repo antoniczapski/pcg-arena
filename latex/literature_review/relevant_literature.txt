@@ -1,0 +1,45 @@
+Smith & Whitehead (2010) — Analyzing the Expressive Range of a Level Generator
+https://doi.org/10.1145/1814256.1814260
+
+Pedersen, Togelius, & Yannakakis (2010) — Modeling Player Experience for Content Creation
+https://doi.org/10.1109/TCIAIG.2010.2043950
+
+Shaker et al. (2011) — The 2010 Mario AI Championship: Level Generation Track
+https://doi.org/10.1109/TCIAIG.2011.2166267
+
+Shaker, Yannakakis, & Togelius (2011) — Feature Analysis for Modeling Game Content Quality
+https://doi.org/10.1109/CIG.2011.6031998
+
+Shaker et al. (2012) — Evolving Levels for Super Mario Bros Using Grammatical Evolution
+https://doi.org/10.1109/CIG.2012.6374170
+
+Horn et al. (2014) — A Comparative Evaluation of Procedural Level Generators in the Mario AI Framework
+https://www.fdg2014.org/papers/fdg2014_paper_14.pdf
+
+Marino, Reis, & Lelis (2015) — An Empirical Evaluation of Evaluation Metrics of Procedurally Generated Mario Levels
+https://ojs.aaai.org/index.php/AIIDE/article/view/12785
+
+Summerville et al. (2016) — Learning Player Tailored Content From Observation: Platformer Level Generation from Video Traces using LSTMs
+https://ojs.aaai.org/index.php/AIIDE/article/view/12895
+
+Summerville et al. (2017) — Understanding Mario: An Evaluation of Design Metrics For Platformers
+https://doi.org/10.1145/3102071.3102080
+
+Volz et al. (2018) — Evolving Mario Levels in the Latent Space of a Deep Convolutional Generative Adversarial Network
+https://doi.org/10.1145/3205455.3205517
+
+Nam et al. (2024) — Using Reinforcement Learning to Generate Levels of Super Mario Bros. With Quality and Diversity
+https://doi.org/10.1109/TG.2024.3416472
+
+Schaa & Barriga (2024) — Evaluating the Expressive Range of Super Mario Bros Level Generators
+https://doi.org/10.3390/a17070307
+
+Bazzaz & Cooper (2025) — Level Generation with Constrained Expressive Range
+https://doi.org/10.1145/3723498.3723845
+
+Shi & Chen (2016) — Online Level Generation in Super Mario Bros via Learning Constructive Primitives
+https://doi.org/10.1109/CIG.2016.7860397
+
+Likely paper for the ambiguous “Dahlskog & Togelius (patterns/n-grams line)” row:
+Dahlskog & Togelius (2014) — Procedural Content Generation Using Patterns as Objectives
+https://doi.org/10.1007/978-3-662-45523-4_27
