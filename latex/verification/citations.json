@@ -1,0 +1,1003 @@
+{
+  "total_citation_instances": 77,
+  "unique_citation_keys": 33,
+  "citations": [
+    {
+      "citation_key": "bradley1952rank",
+      "count": 1,
+      "occurrences": [
+        {
+          "citation_type": "citep",
+          "line_number": 585,
+          "chapter": "Background and Related Work",
+          "section": "The Elo Rating System",
+          "context": "e mathematical foundations underlying the platform's rating engine. \\subsection{The Elo Rating System} \\label{subsec:bg-elo} All modern skill-rating systems rest on the \\textbf{Bradley-Terry model}~\\citep{bradley1952rank}: each item $i$ is assigned a strength parameter $\\pi_i$, and the probability that item $i$ is preferred to item $j$ is % \\begin{equation} \\label{eq:bt} P(i \\succ j) = \\frac{\\pi_i}{\\pi_i + \\pi_j}. \\en",
+          "thesis_claim": "All modern skill-rating systems rest on the Bradley-Terry model: P(i > j) = pi_i / (pi_i + pi_j)",
+          "reference_citation": "Bradley & Terry (1952) proposed the paired-comparison model. The paper defines the probability that item i is preferred to j as pi_i/(pi_i+pi_j). See the original paper: 'Rank Analysis of Incomplete Block Designs: I. The Method of Paired Comparisons', Biometrika 39(3/4), 324-345."
+        }
+      ],
+      "reference_documents": [
+        "latex/literature_review/additional/bradley1952-rank-analysis-paired-comparisons.md"
+      ]
+    },
+    {
+      "citation_key": "chiang2024chatbot",
+      "count": 1,
+      "occurrences": [
+        {
+          "citation_type": "citet",
+          "line_number": 647,
+          "chapter": "Background and Related Work",
+          "section": "Arena-Style Evaluation Platforms",
+          "context": "} \\label{subsec:bg-arenas} The \\textbf{arena paradigm}---collecting anonymous pairwise votes from a crowd to rank competing systems---has recently been adopted beyond games. \\textbf{Chatbot Arena.} \\citet{chiang2024chatbot} deployed a web platform where users chat simultaneously with two anonymous LLMs and vote for the better response. Over 240,000 votes from 90,000+ users have been collected; rankings are computed via",
+          "thesis_claim": "Chiang et al. deployed a web platform where users chat simultaneously with two anonymous LLMs and vote for the better response. Over 240,000 votes from 90,000+ users have been collected; rankings are computed via Bradley-Terry MLE. Active sampling strategy concentrates votes on close model pairs.",
+          "reference_citation": "chiang2024-chatbot-arena.md confirms: '240K+ votes', Bradley-Terry model and Elo ratings for ranking, 'active sampling strategy concentrates votes on model pairs with close ratings, maximising information gain per comparison.'"
+        }
+      ],
+      "reference_documents": [
+        "latex/literature_review/rankings_and_rlhf/chiang2024-chatbot-arena.md"
+      ]
+    },
+    {
+      "citation_key": "christiano2017deep",
+      "count": 1,
+      "occurrences": [
+        {
+          "citation_type": "citet",
+          "line_number": 688,
+          "chapter": "Background and Related Work",
+          "section": "Reinforcement Learning from Human Feedback",
+          "context": "mise a reward signal derived from human preferences rather than a hand-designed reward function. The pipeline crystallised over a sequence of four landmark papers: \\begin{enumerate}[nosep] \\item \\citet{christiano2017deep} proposed learning a reward model $\\hat{r}$ from pairwise trajectory comparisons and optimising the policy against $\\hat{r}$ via PPO. Applied to Atari and MuJoCo. \\item \\citet{ziegler2019f",
+          "thesis_claim": "Christiano et al. proposed learning a reward model from pairwise trajectory comparisons and optimising the policy against it via PPO. Applied to Atari and MuJoCo.",
+          "reference_citation": "christiano2017-deep-rl-human-preferences.md confirms: 'Learns a reward function from non-expert human preferences between trajectory segment pairs, then optimises RL policy against the learned reward.' Applied to Atari and MuJoCo. 'Solves complex RL tasks with feedback on <1% of agent-environment interactions.'"
+        }
+      ],
+      "reference_documents": [
+        "latex/literature_review/rankings_and_rlhf/christiano2017-deep-rl-human-preferences.md"
+      ]
+    },
+    {
+      "citation_key": "dahlskog2014procedural",
+      "count": 1,
+      "occurrences": [
+        {
+          "citation_type": "citep",
+          "line_number": 372,
+          "chapter": "Background and Related Work",
+          "section": "Mario Level Generators in the Literature",
+          "context": "rch-based generators.} The \\emph{Grammatical Evolution} (GE) generator~\\citep{shaker2012evolving} evolves level-construction programs via a context-free grammar. Three \\emph{Pattern-based} generators~\\citep{dahlskog2014procedural} represent levels as sequences of micro-patterns extracted from original SMB levels and use evolutionary search with different fitness functions: pattern count (maximising motif frequency), pattern oc",
+          "thesis_claim": "Three Pattern-based generators represent levels as sequences of micro-patterns extracted from original SMB levels and use evolutionary search with different fitness functions: pattern count, pattern occurrence, and weighted pattern count.",
+          "reference_citation": "horn2014-comparative-evaluation-mario-generators.md describes the Dahlskog & Togelius pattern-based generators in detail: '23 micro-patterns extracted from original SMB levels; 43 meso-pattern rules across 5 pattern categories.' NOTE: The Dahlskog & Togelius 2014 paper itself does not have its own .md extraction — it is cross-referenced via horn2014."
+        }
+      ],
+      "reference_documents": [
+        "latex/literature_review/seed_generators/horn2014-comparative-evaluation-mario-generators.md"
+      ]
+    },
+    {
+      "citation_key": "elo1978rating",
+      "count": 1,
+      "occurrences": [
+        {
+          "citation_type": "citet",
+          "line_number": 593,
+          "chapter": "Background and Related Work",
+          "section": "The Elo Rating System",
+          "context": "i$ is assigned a strength parameter $\\pi_i$, and the probability that item $i$ is preferred to item $j$ is % \\begin{equation} \\label{eq:bt} P(i \\succ j) = \\frac{\\pi_i}{\\pi_i + \\pi_j}. \\end{equation} \\citet{elo1978rating} operationalised this model for competitive chess. Each player carries a scalar rating $R$; the expected score of player~$A$ against player~$B$ is % \\begin{equation} \\label{eq:elo} E_A = \\frac{1}{1 +",
+          "thesis_claim": "Elo operationalised the Bradley-Terry model for competitive chess. Expected score E_A = 1/(1+10^((R_B-R_A)/400)). Update: R_A' = R_A + K(S_A - E_A).",
+          "reference_citation": "elo1978-rating-of-chessplayers.md: Elo system described with 'expected score', 'performance rating formula', rating difference scaled by 400, and K-factor update rule."
+        }
+      ],
+      "reference_documents": [
+        "latex/literature_review/additional/elo1978-rating-of-chessplayers.md"
+      ]
+    },
+    {
+      "citation_key": "glickman1999parameter",
+      "count": 1,
+      "occurrences": [
+        {
+          "citation_type": "citet",
+          "line_number": 611,
+          "chapter": "Background and Related Work",
+          "section": "The Glicko-2 Rating System",
+          "context": "online games, but its constant $K$ cannot distinguish a well-established rating from a newcomer's, motivating Bayesian extensions. \\subsection{The Glicko-2 Rating System} \\label{subsec:bg-glicko2} \\citet{glickman1999parameter} recast Elo in a Bayesian framework (\\textbf{Glicko}), modelling each player's rating as a Gaussian $\\mathcal{N}(\\mu, \\sigma^2)$ where $\\sigma$---the \\emph{rating deviation} (RD)---quantifies uncertai",
+          "thesis_claim": "Glickman recast Elo in a Bayesian framework (Glicko), modelling each player's rating as a Gaussian N(mu, sigma^2) where sigma (rating deviation) quantifies uncertainty. Between rating periods, RD grows to reflect increased uncertainty from inactivity.",
+          "reference_citation": "glickman1999-parameter-estimation-paired-comparison.md confirms: 'A non-iterative algorithm for dynamic paired comparison models extending Bradley-Terry with uncertainty tracking.' 'Reparameterised win probability: P(win) = 1/(1+10^((theta_i-theta_j)/400)); prior distribution N(1500, sigma_0^2).' 'Incorporates rating deviation (RD) — uncertainty increases over time via sigma_t^2 growth model.' Applied to 30,000+ USCF chess players."
+        }
+      ],
+      "reference_documents": [
+        "latex/literature_review/rankings_and_rlhf/glickman1999-parameter-estimation-paired-comparison.md"
+      ]
+    },
+    {
+      "citation_key": "glickman2012glicko2",
+      "count": 2,
+      "occurrences": [
+        {
+          "citation_type": "citep",
+          "line_number": 617,
+          "chapter": "Background and Related Work",
+          "section": "The Glicko-2 Rating System",
+          "context": "al{N}(\\mu, \\sigma^2)$ where $\\sigma$---the \\emph{rating deviation} (RD)---quantifies uncertainty. Between rating periods, RD grows to reflect increased uncertainty from inactivity. \\textbf{Glicko-2}~\\citep{glickman2012glicko2} extends Glicko with a third parameter, \\emph{volatility}~$\\sigma_v$, which captures how erratic an entity's performance is. The update pipeline converts ratings to an internal scale, estimates varian",
+          "thesis_claim": "Glicko-2 extends Glicko with a third parameter, volatility sigma_v, which captures how erratic an entity's performance is. The update pipeline converts ratings to an internal scale, estimates variance and improvement from outcomes, iteratively updates volatility, and then updates RD and rating.",
+          "reference_citation": "glickman2012-example-glicko2-system.md is the Glicko-2 technical report describing the full algorithm: volatility parameter, the update pipeline (convert to internal scale, compute variance, iteratively solve for volatility, update RD and rating)."
+        },
+        {
+          "citation_type": "cite",
+          "line_number": 1225,
+          "chapter": "PCG Arena --- System Design",
+          "section": "Glicko-2 Rating System",
+          "context": "tabular} \\caption{AGIS algorithm parameters and default values.} \\label{tab:agis-params} \\end{table} \\section{Glicko-2 Rating System} \\label{sec:sd-rating} PCG Arena uses the Glicko-2 rating system \\cite{glickman2012glicko2} to maintain uncertainty-aware rankings. Each generator carries three parameters: \\begin{itemize} \\item \\textbf{Rating ($\\mu$):} the skill estimate, displayed on a scale centred at 1000. \\ite",
+          "thesis_claim": "PCG Arena uses the Glicko-2 rating system to maintain uncertainty-aware rankings.",
+          "reference_citation": "This is a factual system design claim about PCG Arena itself, supported by glickman2012-example-glicko2-system.md which defines the algorithm."
+        }
+      ],
+      "reference_documents": [
+        "latex/literature_review/additional/glickman2012-example-glicko2-system.md"
+      ]
+    },
+    {
+      "citation_key": "horn2014comparative",
+      "count": 4,
+      "occurrences": [
+        {
+          "citation_type": "citep",
+          "line_number": 109,
+          "chapter": "Introduction",
+          "section": "The Evaluation Problem",
+          "context": "ant limitations. \\textbf{Automated structural metrics}, such as linearity, leniency, and density, can be computed directly from level tilemaps and are widely used for characterising generator output~\\citep{smith2010analyzing, horn2014comparative}. However, \\citet{marino2015empirical} demonstrated that these metrics only weakly correlate with human-rated difficulty and enjoyment, concluding that ``current computational metrics should not be us",
+          "thesis_claim": "Automated structural metrics such as linearity, leniency, and density are widely used for characterising generator output.",
+          "reference_citation": "horn2014-comparative-evaluation-level-generators.md defines and uses 6 expressivity metrics (linearity, leniency, density, pattern density, pattern variation, compression distance) to compare 7 generators plus original SMB levels."
+        },
+        {
+          "citation_type": "citep",
+          "line_number": 435,
+          "chapter": "Background and Related Work",
+          "section": "Automated Metrics",
+          "context": "g gameplay. \\textbf{Linearity} measures how closely a level's vertical profile follows a straight line. \\citet{smith2010analyzing} defined it via linear regression on platform midpoints; later works~\\citep{horn2014comparative, summerville2017understanding} use $R^2$ goodness-of-fit instead, inverting the scale. These incompatible definitions complicate cross-paper comparisons. \\textbf{Leniency} approximates difficulty through weighted sums of game obj",
+          "thesis_claim": "Later works (horn2014, summerville2017) use R^2 goodness-of-fit for linearity instead of Smith's original definition, inverting the scale.",
+          "reference_citation": "horn2014-comparative-evaluation-level-generators.md uses a linearity metric defined differently from Smith & Whitehead (2010). Uses R^2 goodness-of-fit."
+        },
+        {
+          "citation_type": "citep",
+          "line_number": 448,
+          "chapter": "Background and Related Work",
+          "section": "Automated Metrics",
+          "context": "rrelates with human-rated difficulty. \\textbf{Compression distance} (gzip-based Normalised Compression Distance) quantifies structural similarity between level pairs and is used as a diversity proxy~\\citep{shaker2012evolving, horn2014comparative}. \\textbf{Expressive Range Analysis} (ERA), introduced by \\citet{smith2010analyzing}, generates a large sample of levels, computes two metrics per level (classically linearity vs.\\ leniency), and vis",
+          "thesis_claim": "Compression distance (NCD) is used as a diversity proxy.",
+          "reference_citation": "horn2014-comparative-evaluation-level-generators.md uses NCD (gzip-based Normalized Compression Distance) as one of 6 evaluation metrics. States that original SMB levels have highest compression distance."
+        },
+        {
+          "citation_type": "citep",
+          "line_number": 454,
+          "chapter": "Background and Related Work",
+          "section": "Automated Metrics",
+          "context": "metrics per level (classically linearity vs.\\ leniency), and visualises the joint distribution as a 2D histogram, revealing a generator's output peaks, holes, and biases. ERA has been widely adopted~\\citep{horn2014comparative, shaker2012evolving} but is purely descriptive---it characterises \\emph{what} a generator produces, not whether players enjoy it. \\subsection{Agent-Based Testing} \\label{subsec:bg-eval-agents} AI agents serving as play",
+          "thesis_claim": "ERA has been widely adopted (horn2014, shaker2012).",
+          "reference_citation": "horn2014-comparative-evaluation-level-generators.md performs ERA across all 7 generators, generating 1000 levels per generator and plotting joint distributions of linearity vs. leniency."
+        }
+      ],
+      "reference_documents": [
+        "latex/literature_review/pcg/horn2014-comparative-evaluation-level-generators.md",
+        "latex/literature_review/seed_generators/horn2014-comparative-evaluation-mario-generators.md"
+      ]
+    },
+    {
+      "citation_key": "karakovskiy2012marioai",
+      "count": 4,
+      "occurrences": [
+        {
+          "citation_type": "citep",
+          "line_number": 94,
+          "chapter": "Introduction",
+          "section": "Procedural Content Generation in Video Games",
+          "context": "emerged as the \\emph{de facto} benchmark for PCG research. Its 2D tile-grid format provides a rich yet tractable design space, its physics are well understood, and the open-source Mario AI Framework~\\citep{karakovskiy2012marioai} offers a standardised environment for both automated and human evaluation. Over 15 years of research has produced dozens of Mario level generators spanning every major PCG paradigm---yet evaluating a",
+          "thesis_claim": "The open-source Mario AI Framework offers a standardised environment for both automated and human evaluation.",
+          "reference_citation": "karakovskiy2012-mario-ai-benchmark-competitions.md describes the Mario AI Framework: an open-source Java implementation of Infinite Mario Bros providing the standard experimental environment, competition tracks, and standardised level format."
+        },
+        {
+          "citation_type": "citep",
+          "line_number": 255,
+          "chapter": "Background and Related Work",
+          "section": "Grammar-Based and Rule-Based Approaches",
+          "context": "mar} Constructive generators build content sequentially according to hand-authored rules, typically working left-to-right through a level. The Notch generator shipped with \\emph{Infinite Mario Bros}~\\citep{karakovskiy2012marioai} is the canonical example: it iterates through section templates (straight, hill, tubes, gaps, cannons) with fixed selection probabilities and basic playability checks. Constructive methods are fast a",
+          "thesis_claim": "The Notch generator shipped with Infinite Mario Bros is the canonical constructive example.",
+          "reference_citation": "karakovskiy2012-mario-ai-benchmark-competitions.md describes the original Infinite Mario Bros game by Markus Persson (Notch) and its built-in level generator."
+        },
+        {
+          "citation_type": "citep",
+          "line_number": 317,
+          "chapter": "Background and Related Work",
+          "section": "The Mario AI Framework",
+          "context": "ntrols and goals, and the open-source Mario AI Framework provides a standardised evaluation environment. \\subsection{The Mario AI Framework} \\label{subsec:bg-mario-framework} The Mario AI Framework~\\citep{karakovskiy2012marioai} is an open-source Java implementation based on \\emph{Infinite Mario Bros}, a public-domain clone of Nintendo's Super Mario Bros created by Markus Persson in 2008. It served as the basis for three tra",
+          "thesis_claim": "The Mario AI Framework is an open-source Java implementation based on Infinite Mario Bros, created by Markus Persson in 2008. Served as basis for three championship tracks.",
+          "reference_citation": "karakovskiy2012-mario-ai-benchmark-competitions.md confirms: the framework served as basis for three tracks (Gameplay, Learning, Level Generation) of the Mario AI Championship (2009-2012). Created by Markus Persson (Notch)."
+        },
+        {
+          "citation_type": "cite",
+          "line_number": 885,
+          "chapter": "PCG Arena --- System Design",
+          "section": "Game Engine",
+          "context": "bles} \\end{table} \\section{Game Engine} \\label{sec:sd-engine} A critical component of PCG Arena is the browser-based Super Mario Bros engine, which was ported from the Java-based Mario AI Framework \\cite{karakovskiy2012marioai} to TypeScript. The port required faithful preservation of gameplay physics while adapting rendering and input handling to browser constraints. \\subsection{TypeScript Port} \\label{subsec:sd-ts-port}",
+          "thesis_claim": "The game engine was ported from the Java-based Mario AI Framework to TypeScript.",
+          "reference_citation": "This is a factual claim about the PCG Arena system design. karakovskiy2012-mario-ai-benchmark-competitions.md is the source for the Mario AI Framework being ported."
+        }
+      ],
+      "reference_documents": [
+        "latex/literature_review/additional/karakovskiy2012-mario-ai-benchmark-competitions.md"
+      ]
+    },
+    {
+      "citation_key": "khalifa2020pcgrl",
+      "count": 2,
+      "occurrences": [
+        {
+          "citation_type": "citep",
+          "line_number": 299,
+          "chapter": "Background and Related Work",
+          "section": "Machine Learning-Based Generation (PCGML)",
+          "context": "s a text-conditioned UNet denoiser to generate $16 \\times 16$-tile scenes from natural-language captions, representing the latest generation of multimodal PCG. \\textbf{Reinforcement learning.} PCGRL~\\citep{khalifa2020pcgrl} formulates level design as an MDP and trains an RL agent to edit tile grids, bypassing the need for training data entirely. \\section{Super Mario Bros as a PCG Benchmark} \\label{sec:bg-mario} Super",
+          "thesis_claim": "PCGRL formulates level design as an MDP and trains an RL agent to edit tile grids, bypassing the need for training data entirely.",
+          "reference_citation": "khalifa2020-pcgrl-procedural-content-generation-rl.md describes PCGRL: framing level design as an MDP where an agent iteratively edits a tile grid, receiving reward for satisfying playability and design constraints. Unlike PCGML, PCGRL requires no training corpus."
+        },
+        {
+          "citation_type": "citep",
+          "line_number": 466,
+          "chapter": "Background and Related Work",
+          "section": "Agent-Based Testing",
+          "context": "playability and difficulty. \\textbf{Playability gates.} A level is deemed playable if a strong A* agent can complete it. This binary check is the most common first stage in PCG evaluation pipelines~\\citep{volz2018evolving, summerville2016super, khalifa2020pcgrl}. \\textbf{Difficulty proxies.} Agent-derived metrics include jump count (the number of jumps the A* agent performs, interpreted as difficulty), completion fraction (progress along the $x$-axis if the",
+          "thesis_claim": "A* agent playability check is the most common first stage in PCG evaluation pipelines (volz2018, summerville2016, khalifa2020).",
+          "reference_citation": "khalifa2020-pcgrl-procedural-content-generation-rl.md uses agent-based playability checks as part of its evaluation pipeline."
+        }
+      ],
+      "reference_documents": [
+        "latex/literature_review/additional/khalifa2020-pcgrl-procedural-content-generation-rl.md"
+      ]
+    },
+    {
+      "citation_key": "marino2015empirical",
+      "count": 7,
+      "occurrences": [
+        {
+          "citation_type": "citet",
+          "line_number": 110,
+          "chapter": "Introduction",
+          "section": "The Evaluation Problem",
+          "context": "uch as linearity, leniency, and density, can be computed directly from level tilemaps and are widely used for characterising generator output~\\citep{smith2010analyzing, horn2014comparative}. However, \\citet{marino2015empirical} demonstrated that these metrics only weakly correlate with human-rated difficulty and enjoyment, concluding that ``current computational metrics should not be used in lieu of user studies.'' Multiple",
+          "thesis_claim": "Marino et al. demonstrated that automated metrics only weakly correlate with human-rated difficulty and enjoyment, concluding that 'current computational metrics should not be used in lieu of user studies.'",
+          "reference_citation": "marino2015-empirical-evaluation-metrics.md confirms: 'Two PCG systems rated identically by all computational metrics were rated significantly differently by humans on enjoyment.' 'Leniency only weakly correlated with human-rated difficulty.' n=37 participants, 7-point Likert scales."
+        },
+        {
+          "citation_type": "citep",
+          "line_number": 125,
+          "chapter": "Introduction",
+          "section": "The Evaluation Problem",
+          "context": "ng a systematic bias that is rarely quantified. \\textbf{Human evaluation studies} remain the gold standard but are expensive and typically small-scale: controlled lab studies use 15--37 participants~\\citep{shaker2011mario, marino2015empirical}, while larger web-based studies sacrifice experimental control~\\citep{pedersen2010modeling}. Critically, no prior platform offers \\emph{blind} comparison---when participants know which algorithm prod",
+          "thesis_claim": "Controlled lab studies use 15-37 participants (shaker2011, marino2015).",
+          "reference_citation": "marino2015-empirical-evaluation-metrics.md: n=37 participants."
+        },
+        {
+          "citation_type": "citep",
+          "line_number": 441,
+          "chapter": "Background and Related Work",
+          "section": "Automated Metrics",
+          "context": "extbf{Leniency} approximates difficulty through weighted sums of game objects. At least three incompatible formulations exist in the literature, using different tile weights and normalisation schemes~\\citep{smith2010analyzing, shaker2012evolving, marino2015empirical}. Critically, \\citet{marino2015empirical} showed that leniency only weakly correlates with human-rated difficulty. \\textbf{Compression distance} (gzip-based Normalised Compression Distance) quantifie",
+          "thesis_claim": "At least three incompatible leniency formulations exist (smith2010, shaker2012, marino2015).",
+          "reference_citation": "marino2015-empirical-evaluation-metrics.md discusses leniency and its definition, contributing one of at least three incompatible formulations across the literature."
+        },
+        {
+          "citation_type": "citet",
+          "line_number": 443,
+          "chapter": "Background and Related Work",
+          "section": "Automated Metrics",
+          "context": "least three incompatible formulations exist in the literature, using different tile weights and normalisation schemes~\\citep{smith2010analyzing, shaker2012evolving, marino2015empirical}. Critically, \\citet{marino2015empirical} showed that leniency only weakly correlates with human-rated difficulty. \\textbf{Compression distance} (gzip-based Normalised Compression Distance) quantifies structural similarity between level pai",
+          "thesis_claim": "Leniency only weakly correlates with human-rated difficulty.",
+          "reference_citation": "marino2015-empirical-evaluation-metrics.md: direct finding — 'Leniency only weakly correlated with human-rated difficulty.'"
+        },
+        {
+          "citation_type": "citet",
+          "line_number": 490,
+          "chapter": "Background and Related Work",
+          "section": "Human Evaluation Studies",
+          "context": "r2011mario} asked 15 judges to play two levels and select ``which was more fun?'' without further defining ``fun.'' This protocol directly inspired PCG Arena's design. \\textbf{Likert-scale ratings.} \\citet{marino2015empirical} used 7-point Likert scales for enjoyment, aesthetics, and difficulty ($n = 37$). \\citet{summerville2017understanding} collected ratings across 85 design metrics and showed that inter-rater agreement",
+          "thesis_claim": "Marino et al. used 7-point Likert scales for enjoyment, aesthetics, and difficulty (n=37).",
+          "reference_citation": "marino2015-empirical-evaluation-metrics.md confirms: 'User study with n=37 participants using 7-point Likert scales.'"
+        },
+        {
+          "citation_type": "citet",
+          "line_number": 549,
+          "chapter": "Background and Related Work",
+          "section": "Comparison of Approaches and Their Limitations",
+          "context": "Analysis; H\\,=\\,human study; ML\\,=\\,learned predictor.} \\label{tab:eval-comparison} \\end{table} Three persistent problems emerge from this landscape: \\textbf{Metrics--experience misalignment.} \\citet{marino2015empirical} showed that two generators rated identically by all computational metrics were rated \\emph{significantly differently} by human players on enjoyment. \\citet{summerville2017understanding} further demon",
+          "thesis_claim": "Two generators rated identically by all computational metrics were rated significantly differently by human players on enjoyment.",
+          "reference_citation": "marino2015-empirical-evaluation-metrics.md: 'Two PCG systems rated identically by all computational metrics were rated significantly differently by humans on enjoyment.' This is the paper's key finding."
+        },
+        {
+          "citation_type": "citep",
+          "line_number": 707,
+          "chapter": "Background and Related Work",
+          "section": "Reinforcement Learning from Human Feedback",
+          "context": "as PCG Arena: \\emph{metric mismatch}. Just as ROUGE fails to capture summary quality~\\citep{stiennon2020learning}, automated PCG metrics fail to capture fun, aesthetics, or challenge appropriateness~\\citep{marino2015empirical}. PCG Arena's paired-comparison voting is the game-design analogue of RLHF's preference collection phase. \\subsection{Direct Preference Optimization} \\label{subsec:bg-dpo} \\citet{rafailov2023direct}",
+          "thesis_claim": "Automated PCG metrics fail to capture fun, aesthetics, or challenge appropriateness (in context of metric mismatch parallel with ROUGE).",
+          "reference_citation": "marino2015-empirical-evaluation-metrics.md concludes that computational metrics are insufficient proxies for player experience."
+        }
+      ],
+      "reference_documents": [
+        "latex/literature_review/pcg/marino2015-empirical-evaluation-metrics.md"
+      ]
+    },
+    {
+      "citation_key": "mawhorter2010occupancy",
+      "count": 1,
+      "occurrences": [
+        {
+          "citation_type": "citep",
+          "line_number": 365,
+          "chapter": "Background and Related Work",
+          "section": "Mario Level Generators in the Literature",
+          "context": "ers per level, and \\emph{Hopper}, which alternates generated and pre-designed segments with adaptive probability adjustment. \\textbf{Chunk-based assembly.} \\emph{Occupancy-Regulated Extension} (ORE)~\\citep{mawhorter2010occupancy} builds levels by iteratively attaching hand-authored chunks at compatible anchor points, producing structurally distinctive levels. \\textbf{Search-based generators.} The \\emph{Grammatical Evolution}",
+          "thesis_claim": "ORE builds levels by iteratively attaching hand-authored chunks at compatible anchor points, producing structurally distinctive levels.",
+          "reference_citation": "mawhorter2010-ore-occupancy-regulated-extension.md confirms: 'Assembles levels from a library of 42 hand-authored chunks (up to 10x10 tiles) using anchor points.' 'Three iterative steps: context selection, chunk selection, chunk integration.' 'Prioritises variety over playability.'"
+        }
+      ],
+      "reference_documents": [
+        "latex/literature_review/seed_generators/mawhorter2010-ore-occupancy-regulated-extension.md"
+      ]
+    },
+    {
+      "citation_key": "nam2024using",
+      "count": 1,
+      "occurrences": [
+        {
+          "citation_type": "citep",
+          "line_number": 472,
+          "chapter": "Background and Related Work",
+          "section": "Agent-Based Testing",
+          "context": "as difficulty), completion fraction (progress along the $x$-axis if the level is not fully completable), and virtual damage from stochastic ``human-like'' agents that model input timing inaccuracies~\\citep{nam2024using}. Agent-based evaluation is fast, reproducible, and incurs no participant cost, but agent bias is a fundamental concern: superhuman agents can solve levels humans cannot, and difficulty estimates dep",
+          "thesis_claim": "Virtual damage from stochastic 'human-like' agents that model input timing inaccuracies.",
+          "reference_citation": "nam2024-rl-quality-diversity.md confirms: 'Introduces human-like AI agents with input timing inaccuracies for more realistic difficulty assessment.' 'Difficulty = total damage (enemy hits + hole falls) with hole coefficient 1.1.' Human study (n=33) validates the approach."
+        }
+      ],
+      "reference_documents": [
+        "latex/literature_review/pcg/nam2024-rl-quality-diversity.md"
+      ]
+    },
+    {
+      "citation_key": "ouyang2022training",
+      "count": 1,
+      "occurrences": [
+        {
+          "citation_type": "citet",
+          "line_number": 698,
+          "chapter": "Background and Related Work",
+          "section": "Reinforcement Learning from Human Feedback",
+          "context": "model. \\item \\citet{stiennon2020learning} scaled to summarisation (6.7B model, 64K comparisons) and showed that the learned reward predicts human preferences better than ROUGE. \\item \\citet{ouyang2022training} codified the three-step recipe (SFT~$\\to$~Reward Model~$\\to$~PPO). A 1.3B InstructGPT was preferred over 175B GPT-3, demonstrating that alignment quality matters more than model scale. \\e",
+          "thesis_claim": "Ouyang et al. codified the three-step recipe (SFT -> Reward Model -> PPO). A 1.3B InstructGPT was preferred over 175B GPT-3, demonstrating that alignment quality matters more than model scale.",
+          "reference_citation": "ouyang2022-instructgpt-training-language-models-instructions.md confirms: '1.3B InstructGPT preferred over 175B GPT-3 (100x fewer parameters); 175B InstructGPT preferred 85 plus/minus 3% over 175B GPT-3.' Three-step recipe: SFT, RM, PPO."
+        }
+      ],
+      "reference_documents": [
+        "latex/literature_review/rankings_and_rlhf/ouyang2022-instructgpt-training-language-models-instructions.md"
+      ]
+    },
+    {
+      "citation_key": "pedersen2010modeling",
+      "count": 2,
+      "occurrences": [
+        {
+          "citation_type": "citep",
+          "line_number": 126,
+          "chapter": "Introduction",
+          "section": "The Evaluation Problem",
+          "context": "but are expensive and typically small-scale: controlled lab studies use 15--37 participants~\\citep{shaker2011mario, marino2015empirical}, while larger web-based studies sacrifice experimental control~\\citep{pedersen2010modeling}. Critically, no prior platform offers \\emph{blind} comparison---when participants know which algorithm produced a level, expectations contaminate their judgments. This persistent gap between scalabl",
+          "thesis_claim": "Larger web-based studies sacrifice experimental control (pedersen2010).",
+          "reference_citation": "pedersen2010-modeling-player-experience.md confirms a web-based study design with 181 subjects."
+        },
+        {
+          "citation_type": "citet",
+          "line_number": 496,
+          "chapter": "Background and Related Work",
+          "section": "Human Evaluation Studies",
+          "context": "rville2017understanding} collected ratings across 85 design metrics and showed that inter-rater agreement imposes ceilings on achievable metric--human correlations. \\textbf{Large-scale web studies.} \\citet{pedersen2010modeling} recruited 181 subjects to play \\emph{Infinite Mario Bros} variants and report pairwise affective preferences; a follow-up by \\citet{shaker2011features} collected 600 game-pair comparisons via an unco",
+          "thesis_claim": "Pedersen et al. recruited 181 subjects to play Infinite Mario Bros variants and report pairwise affective preferences.",
+          "reference_citation": "pedersen2010-modeling-player-experience.md confirms: '120-181 subjects (240 game pairs, 480 sessions).' 'Uses neuroevolutionary preference learning to model player experience.' '4 controllable level parameters; 6 affective states modeled.'"
+        }
+      ],
+      "reference_documents": [
+        "latex/literature_review/pcg/pedersen2010-modeling-player-experience.md"
+      ]
+    },
+    {
+      "citation_key": "rafailov2023direct",
+      "count": 1,
+      "occurrences": [
+        {
+          "citation_type": "citet",
+          "line_number": 714,
+          "chapter": "Background and Related Work",
+          "section": "Direct Preference Optimization",
+          "context": "citep{marino2015empirical}. PCG Arena's paired-comparison voting is the game-design analogue of RLHF's preference collection phase. \\subsection{Direct Preference Optimization} \\label{subsec:bg-dpo} \\citet{rafailov2023direct} observed that the optimal RLHF policy can be expressed in closed form as a function of the reward model. Substituting this solution back into the reward-model loss yields \\textbf{Direct Preference Op",
+          "thesis_claim": "Rafailov et al. observed that the optimal RLHF policy can be expressed in closed form as a function of the reward model. Substituting back yields DPO, which directly fine-tunes the policy using preference pairs — eliminating the reward model and RL loop. DPO matched or exceeded PPO-based RLHF on sentiment, summarisation, and dialogue.",
+          "reference_citation": "rafailov2023-direct-preference-optimization.md confirms: 'Key insight: analytical change-of-variables from Bradley-Terry reward model to optimal policy yields a simple binary cross-entropy loss.' 'Matches or exceeds PPO-based RLHF on sentiment, summarisation, and dialogue tasks.' 'Policy network implicitly represents both language model and reward.'"
+        }
+      ],
+      "reference_documents": [
+        "latex/literature_review/rankings_and_rlhf/rafailov2023-direct-preference-optimization.md"
+      ]
+    },
+    {
+      "citation_key": "sarkar2017glicko2",
+      "count": 1,
+      "occurrences": [
+        {
+          "citation_type": "citet",
+          "line_number": 660,
+          "chapter": "Background and Related Work",
+          "section": "Arena-Style Evaluation Platforms",
+          "context": "luation, achieving $>$80\\% agreement with human preferences. PCG Arena's \\emph{Judge Function} plays an analogous role: a lightweight model predicting which of two Mario levels a human would prefer. \\citet{sarkar2017glicko2} applied Glicko-2 to the human computation game \\emph{Paradox}, treating both players and puzzle-tasks as rated entities. This is the most direct precedent for PCG Arena's design, demonstrating that p",
+          "thesis_claim": "Sarkar applied Glicko-2 to the human computation game Paradox, treating both players and puzzle-tasks as rated entities. This is the most direct precedent for PCG Arena's design.",
+          "reference_citation": "sarkar2017-player-rating-matchmaking-human-computation.md confirms: 'Uses Glicko-2 rating system for difficulty balancing in Paradox.' 'Both matchmaking-based and difficulty-based ordering led to significantly more attempted/completed levels than random ordering.' n=294."
+        }
+      ],
+      "reference_documents": [
+        "latex/literature_review/rankings_and_rlhf/sarkar2017-player-rating-matchmaking-human-computation.md"
+      ]
+    },
+    {
+      "citation_key": "schrum2025mariodiffusion",
+      "count": 2,
+      "occurrences": [
+        {
+          "citation_type": "citep",
+          "line_number": 295,
+          "chapter": "Background and Related Work",
+          "section": "Machine Learning-Based Generation (PCGML)",
+          "context": "enemies, low elevation''), enabling the first natural-language-controllable level generator. 88\\% of generated levels are playable without post-processing. \\textbf{Diffusion models.} MarioDiffusion~\\citep{schrum2025mariodiffusion} uses a text-conditioned UNet denoiser to generate $16 \\times 16$-tile scenes from natural-language captions, representing the latest generation of multimodal PCG. \\textbf{Reinforcement learning.} PC",
+          "thesis_claim": "MarioDiffusion uses a text-conditioned UNet denoiser to generate 16x16-tile scenes from natural-language captions, representing the latest generation of multimodal PCG.",
+          "reference_citation": "schrum2025-mariodiffusion-text-to-level.md confirms: 'Text-conditioned diffusion model for Super Mario Bros level generation.' '16x16 scenes extracted via sliding window.' 'Deterministic caption assignment from scene features.'"
+        },
+        {
+          "citation_type": "citep",
+          "line_number": 382,
+          "chapter": "Background and Related Work",
+          "section": "Mario Level Generators in the Literature",
+          "context": "\\citep{volz2018evolving} combines a DCGAN with CMA-ES latent-space search. \\emph{MarioGPT}~\\citep{sudhakaran2023mariogpt} uses a fine-tuned DistilGPT-2 with text-prompt control. \\emph{MarioDiffusion}~\\citep{schrum2025mariodiffusion} generates tile scenes from natural-language captions via a diffusion model. Finally, \\emph{MarioDPO}---this thesis's contribution---fine-tunes a GPT-2-based generator with Direct Preference Optimisat",
+          "thesis_claim": "MarioDiffusion generates tile scenes from natural-language captions via a diffusion model.",
+          "reference_citation": "Same source confirms this."
+        }
+      ],
+      "reference_documents": [
+        "latex/literature_review/seed_generators/schrum2025-mariodiffusion-text-to-level.md"
+      ]
+    },
+    {
+      "citation_key": "shaker2011features",
+      "count": 1,
+      "occurrences": [
+        {
+          "citation_type": "citet",
+          "line_number": 498,
+          "chapter": "Background and Related Work",
+          "section": "Human Evaluation Studies",
+          "context": "relations. \\textbf{Large-scale web studies.} \\citet{pedersen2010modeling} recruited 181 subjects to play \\emph{Infinite Mario Bros} variants and report pairwise affective preferences; a follow-up by \\citet{shaker2011features} collected 600 game-pair comparisons via an uncontrolled web applet, but the number of unique participants is not reported and the study predates the recent wave of ML-based generators (GANs, LSTMs, d",
+          "thesis_claim": "A follow-up by Shaker et al. collected 600 game-pair comparisons via an uncontrolled web applet, predating modern ML-based generators.",
+          "reference_citation": "shaker2011-feature-analysis-game-content-quality.md: 'data set of 600 human players', 'based on the 600 game pairs that have been collected', data collected via Internet Java applet advertised on 'social networks, mailing lists and blogs'."
+        }
+      ],
+      "reference_documents": [
+        "latex/literature_review/pcg/shaker2011-feature-analysis-game-content-quality.md",
+        "latex/literature_review/additional/shaker2011-feature-analysis-game-content-quality.md"
+      ]
+    },
+    {
+      "citation_key": "shaker2011mario",
+      "count": 5,
+      "occurrences": [
+        {
+          "citation_type": "citep",
+          "line_number": 125,
+          "chapter": "Introduction",
+          "section": "The Evaluation Problem",
+          "context": "ng a systematic bias that is rarely quantified. \\textbf{Human evaluation studies} remain the gold standard but are expensive and typically small-scale: controlled lab studies use 15--37 participants~\\citep{shaker2011mario, marino2015empirical}, while larger web-based studies sacrifice experimental control~\\citep{pedersen2010modeling}. Critically, no prior platform offers \\emph{blind} comparison---when participants know which algorithm prod",
+          "thesis_claim": "Controlled lab studies use 15-37 participants (shaker2011mario).",
+          "reference_citation": "shaker2011-mario-level-generation-track.md describes the Level Generation Track competition. The evaluation used 15 human judges in pairwise forced-choice."
+        },
+        {
+          "citation_type": "citep",
+          "line_number": 244,
+          "chapter": "Background and Related Work",
+          "section": "Search-Based Approaches",
+          "context": "candidate level). Second, designing good fitness functions is itself a difficult problem---one that mirrors the evaluation challenge motivating this thesis. The Mario AI Level Generation Competition~\\citep{shaker2011mario} featured several search-based entries. More recent work has applied CMA-ES to the latent space of trained generative models~\\citep{volz2018evolving}, effectively combining search-based and ML-based p",
+          "thesis_claim": "The Mario AI Level Generation Competition featured several search-based entries.",
+          "reference_citation": "shaker2011-mario-level-generation-track.md describes all competing generators in the Level Generation Track."
+        },
+        {
+          "citation_type": "citep",
+          "line_number": 330,
+          "chapter": "Background and Related Work",
+          "section": "The Mario AI Framework",
+          "context": "ck}---build a controller that learns to play. \\item \\textbf{Level Generation Track}---build software that generates levels for human players. \\end{enumerate} The Level Generation Track~\\citep{shaker2011mario} was the first academic PCG competition. Generators received gameplay metrics from a test level and had 60~seconds to produce a personalised level. Six entries competed; evaluation used pairwise force",
+          "thesis_claim": "The Level Generation Track was the first academic PCG competition. Generators received gameplay metrics from a test level and had 60 seconds to produce a personalised level. Six entries competed; evaluation used pairwise forced-choice with 15 human judges.",
+          "reference_citation": "shaker2011-mario-level-generation-track.md describes all details: first academic PCG competition, 60-second time limit, 6 entries, pairwise human evaluation."
+        },
+        {
+          "citation_type": "citep",
+          "line_number": 359,
+          "chapter": "Background and Related Work",
+          "section": "Mario Level Generators in the Literature",
+          "context": "els left-to-right using probabilistic placement: the \\emph{Notch} generator shipped with Infinite Mario Bros, its \\emph{Parameterized} variant (NotchParam) exposing six tunable difficulty/style knobs~\\citep{shaker2011mario}, a \\emph{Randomized} variant (NotchParamRand) that randomly samples parameters per level, and \\emph{Hopper}, which alternates generated and pre-designed segments with adaptive probability adjustment.",
+          "thesis_claim": "NotchParam exposing six tunable difficulty/style knobs.",
+          "reference_citation": "shaker2011-mario-level-generation-track.md describes the NotchParam generator and its parameterization."
+        },
+        {
+          "citation_type": "citep",
+          "line_number": 486,
+          "chapter": "Background and Related Work",
+          "section": "Human Evaluation Studies",
+          "context": "Studies} \\label{subsec:bg-eval-human} Human studies remain the gold standard for PCG evaluation but vary widely in scale and methodology. \\textbf{Pairwise forced-choice.} The Mario AI Championship~\\citep{shaker2011mario} asked 15 judges to play two levels and select ``which was more fun?'' without further defining ``fun.'' This protocol directly inspired PCG Arena's design. \\textbf{Likert-scale ratings.} \\citet{mari",
+          "thesis_claim": "The Mario AI Championship asked 15 judges to play two levels and select 'which was more fun?' This protocol directly inspired PCG Arena's design.",
+          "reference_citation": "shaker2011-mario-level-generation-track.md describes the pairwise 'which was more fun?' evaluation protocol. The 'directly inspired PCG Arena's design' is a thesis-level interpretive claim."
+        }
+      ],
+      "reference_documents": [
+        "latex/literature_review/additional/shaker2011-mario-level-generation-track.md"
+      ]
+    },
+    {
+      "citation_key": "shaker2012evolving",
+      "count": 5,
+      "occurrences": [
+        {
+          "citation_type": "citet",
+          "line_number": 261,
+          "chapter": "Background and Related Work",
+          "section": "Grammar-Based and Rule-Based Approaches",
+          "context": "checks. Constructive methods are fast and guarantee structural validity, but their expressive range is narrow. Grammar-based approaches extend this idea by encoding design rules in a formal grammar. \\citet{shaker2012evolving} used \\textbf{Grammatical Evolution} (GE) to map integer genotypes to level phenotypes via context-free grammar productions, combining the interpretability of grammars with evolutionary search. \\citet",
+          "thesis_claim": "Shaker et al. used Grammatical Evolution (GE) to map integer genotypes to level phenotypes via context-free grammar productions, combining interpretability of grammars with evolutionary search.",
+          "reference_citation": "shaker2012-evolving-levels-grammatical-evolution.md confirms: 'Uses Grammatical Evolution to evolve playable 2D platformer levels using context-free design grammars.' '8 chunk types; context-free grammar maps integer genotypes to phenotypes.'"
+        },
+        {
+          "citation_type": "citep",
+          "line_number": 370,
+          "chapter": "Background and Related Work",
+          "section": "Mario Level Generators in the Literature",
+          "context": "y iteratively attaching hand-authored chunks at compatible anchor points, producing structurally distinctive levels. \\textbf{Search-based generators.} The \\emph{Grammatical Evolution} (GE) generator~\\citep{shaker2012evolving} evolves level-construction programs via a context-free grammar. Three \\emph{Pattern-based} generators~\\citep{dahlskog2014procedural} represent levels as sequences of micro-patterns extracted from ori",
+          "thesis_claim": "The GE generator evolves level-construction programs via a context-free grammar.",
+          "reference_citation": "Same source. shaker2012-grammatical-evolution-mario-levels.md confirms the GE mechanism."
+        },
+        {
+          "citation_type": "citep",
+          "line_number": 441,
+          "chapter": "Background and Related Work",
+          "section": "Automated Metrics",
+          "context": "extbf{Leniency} approximates difficulty through weighted sums of game objects. At least three incompatible formulations exist in the literature, using different tile weights and normalisation schemes~\\citep{smith2010analyzing, shaker2012evolving, marino2015empirical}. Critically, \\citet{marino2015empirical} showed that leniency only weakly correlates with human-rated difficulty. \\textbf{Compression distance} (gzip-based Normalised Compression Distance) quantifie",
+          "thesis_claim": "At least three incompatible leniency formulations exist (smith2010, shaker2012, marino2015).",
+          "reference_citation": "shaker2012-evolving-levels-grammatical-evolution.md uses its own leniency definition, contributing one of the three incompatible formulations."
+        },
+        {
+          "citation_type": "citep",
+          "line_number": 448,
+          "chapter": "Background and Related Work",
+          "section": "Automated Metrics",
+          "context": "rrelates with human-rated difficulty. \\textbf{Compression distance} (gzip-based Normalised Compression Distance) quantifies structural similarity between level pairs and is used as a diversity proxy~\\citep{shaker2012evolving, horn2014comparative}. \\textbf{Expressive Range Analysis} (ERA), introduced by \\citet{smith2010analyzing}, generates a large sample of levels, computes two metrics per level (classically linearity vs.\\ leniency), and vis",
+          "thesis_claim": "NCD is used as a diversity proxy (shaker2012, horn2014).",
+          "reference_citation": "shaker2012-evolving-levels-grammatical-evolution.md uses NCD. States: 'NCD > 0.6 indicates substantial dissimilarity; gzip-based compression distance used for structural diversity measurement.'"
+        },
+        {
+          "citation_type": "citep",
+          "line_number": 454,
+          "chapter": "Background and Related Work",
+          "section": "Automated Metrics",
+          "context": "metrics per level (classically linearity vs.\\ leniency), and visualises the joint distribution as a 2D histogram, revealing a generator's output peaks, holes, and biases. ERA has been widely adopted~\\citep{horn2014comparative, shaker2012evolving} but is purely descriptive---it characterises \\emph{what} a generator produces, not whether players enjoy it. \\subsection{Agent-Based Testing} \\label{subsec:bg-eval-agents} AI agents serving as play",
+          "thesis_claim": "ERA has been widely adopted (horn2014, shaker2012).",
+          "reference_citation": "shaker2012-evolving-levels-grammatical-evolution.md performs ERA with linearity, leniency, density metrics."
+        }
+      ],
+      "reference_documents": [
+        "latex/literature_review/pcg/shaker2012-evolving-levels-grammatical-evolution.md",
+        "latex/literature_review/seed_generators/shaker2012-grammatical-evolution-mario-levels.md"
+      ]
+    },
+    {
+      "citation_key": "smith2010analyzing",
+      "count": 5,
+      "occurrences": [
+        {
+          "citation_type": "citep",
+          "line_number": 109,
+          "chapter": "Introduction",
+          "section": "The Evaluation Problem",
+          "context": "ant limitations. \\textbf{Automated structural metrics}, such as linearity, leniency, and density, can be computed directly from level tilemaps and are widely used for characterising generator output~\\citep{smith2010analyzing, horn2014comparative}. However, \\citet{marino2015empirical} demonstrated that these metrics only weakly correlate with human-rated difficulty and enjoyment, concluding that ``current computational metrics should not be us",
+          "thesis_claim": "Automated structural metrics such as linearity, leniency, and density are widely used for characterising generator output (smith2010, horn2014).",
+          "reference_citation": "smith2010-analyzing-expressive-range.md defines the founding metrics: 'Two founding metrics: linearity and leniency.' This paper introduced ERA as the dominant characterisation method."
+        },
+        {
+          "citation_type": "citet",
+          "line_number": 264,
+          "chapter": "Background and Related Work",
+          "section": "Grammar-Based and Rule-Based Approaches",
+          "context": "lving} used \\textbf{Grammatical Evolution} (GE) to map integer genotypes to level phenotypes via context-free grammar productions, combining the interpretability of grammars with evolutionary search. \\citet{smith2010analyzing} introduced \\textbf{Launchpad}, a rhythm-based generator that maps player actions to level geometry via a design grammar. The same paper introduced \\textbf{Expressive Range Analysis} (ERA)---the pract",
+          "thesis_claim": "Smith & Whitehead introduced Launchpad, a rhythm-based generator mapping player actions to level geometry via a design grammar. The same paper introduced Expressive Range Analysis (ERA).",
+          "reference_citation": "smith2010-analyzing-expressive-range.md confirms: 'Introduces the concept of Expressive Range Analysis (ERA) for evaluating PCG generators. Applied to Launchpad, a rhythm-based 2D platformer level generator.' 'Framework: determine metrics, generate content (1000-10000 levels), visualise generative space as 2D histograms.'"
+        },
+        {
+          "citation_type": "citet",
+          "line_number": 434,
+          "chapter": "Background and Related Work",
+          "section": "Automated Metrics",
+          "context": "proach computes \\emph{static structural metrics} directly from the tile grid, without simulating gameplay. \\textbf{Linearity} measures how closely a level's vertical profile follows a straight line. \\citet{smith2010analyzing} defined it via linear regression on platform midpoints; later works~\\citep{horn2014comparative, summerville2017understanding} use $R^2$ goodness-of-fit instead, inverting the scale. These incompatibl",
+          "thesis_claim": "Smith et al. defined linearity via linear regression on platform midpoints.",
+          "reference_citation": "smith2010-analyzing-expressive-range.md defines linearity as height variation/profile metric using regression."
+        },
+        {
+          "citation_type": "citep",
+          "line_number": 441,
+          "chapter": "Background and Related Work",
+          "section": "Automated Metrics",
+          "context": "extbf{Leniency} approximates difficulty through weighted sums of game objects. At least three incompatible formulations exist in the literature, using different tile weights and normalisation schemes~\\citep{smith2010analyzing, shaker2012evolving, marino2015empirical}. Critically, \\citet{marino2015empirical} showed that leniency only weakly correlates with human-rated difficulty. \\textbf{Compression distance} (gzip-based Normalised Compression Distance) quantifie",
+          "thesis_claim": "At least three incompatible leniency formulations exist (smith2010, shaker2012, marino2015).",
+          "reference_citation": "smith2010-analyzing-expressive-range.md defines leniency as 'difficulty approximation via weighted component scores.'"
+        },
+        {
+          "citation_type": "citet",
+          "line_number": 451,
+          "chapter": "Background and Related Work",
+          "section": "Automated Metrics",
+          "context": "stance) quantifies structural similarity between level pairs and is used as a diversity proxy~\\citep{shaker2012evolving, horn2014comparative}. \\textbf{Expressive Range Analysis} (ERA), introduced by \\citet{smith2010analyzing}, generates a large sample of levels, computes two metrics per level (classically linearity vs.\\ leniency), and visualises the joint distribution as a 2D histogram, revealing a generator's output peak",
+          "thesis_claim": "ERA, introduced by Smith & Whitehead, generates a large sample of levels, computes two metrics per level, and visualises the joint distribution as a 2D histogram.",
+          "reference_citation": "smith2010-analyzing-expressive-range.md: 'Framework: determine metrics, generate content (1000-10000 levels), visualise generative space as 2D histograms, analyse parameter impact.' 'ERA is descriptive, not evaluative.'"
+        }
+      ],
+      "reference_documents": [
+        "latex/literature_review/pcg/smith2010-analyzing-expressive-range.md"
+      ]
+    },
+    {
+      "citation_key": "snow2008cheap",
+      "count": 1,
+      "occurrences": [
+        {
+          "citation_type": "citet",
+          "line_number": 666,
+          "chapter": "Background and Related Work",
+          "section": "Arena-Style Evaluation Platforms",
+          "context": "rs and puzzle-tasks as rated entities. This is the most direct precedent for PCG Arena's design, demonstrating that player-rating systems can simultaneously estimate human skill and task difficulty. \\citet{snow2008cheap} showed that aggregating labels from multiple non-expert annotators can match expert-level quality, underpinning the design assumption that a sufficient number of non-expert pairwise votes, properly a",
+          "thesis_claim": "Snow et al. showed that aggregating labels from multiple non-expert annotators can match expert-level quality.",
+          "reference_citation": "snow2008-cheap-fast-non-expert-annotations.md confirms: '5 tasks: affect recognition, word similarity, recognising textual entailment, event temporal ordering, word sense disambiguation.' 'High agreement between non-expert and gold-standard labels for all 5 tasks.' '10 independent annotations collected per item.'"
+        }
+      ],
+      "reference_documents": [
+        "latex/literature_review/rankings_and_rlhf/snow2008-cheap-fast-non-expert-annotations.md"
+      ]
+    },
+    {
+      "citation_key": "stiennon2020learning",
+      "count": 2,
+      "occurrences": [
+        {
+          "citation_type": "citet",
+          "line_number": 695,
+          "chapter": "Background and Related Work",
+          "section": "Reinforcement Learning from Human Feedback",
+          "context": "er2019fine} adapted the scheme to language models (GPT-2) and introduced a KL penalty $\\beta\\,\\mathrm{KL}[\\pi \\| \\pi_{\\mathrm{ref}}]$ to prevent drift from the pretrained model. \\item \\citet{stiennon2020learning} scaled to summarisation (6.7B model, 64K comparisons) and showed that the learned reward predicts human preferences better than ROUGE. \\item \\citet{ouyang2022training} codified the three-",
+          "thesis_claim": "Stiennon et al. scaled RLHF to summarisation (6.7B model, 64K comparisons) and showed that the learned reward predicts human preferences better than ROUGE.",
+          "reference_citation": "stiennon2020-learning-summarize-human-feedback.md confirms: 'Reddit TL;DR dataset: 123,169 posts; 64,832 summary comparisons collected.' 'Models up to 6.7B parameters.' 'Reward model outperforms ROUGE at predicting human preferences.'"
+        },
+        {
+          "citation_type": "citep",
+          "line_number": 706,
+          "chapter": "Background and Related Work",
+          "section": "Reinforcement Learning from Human Feedback",
+          "context": "ality matters more than model scale. \\end{enumerate} The RLHF pipeline addresses the same fundamental problem as PCG Arena: \\emph{metric mismatch}. Just as ROUGE fails to capture summary quality~\\citep{stiennon2020learning}, automated PCG metrics fail to capture fun, aesthetics, or challenge appropriateness~\\citep{marino2015empirical}. PCG Arena's paired-comparison voting is the game-design analogue of RLHF's preference",
+          "thesis_claim": "Just as ROUGE fails to capture summary quality (stiennon2020), automated PCG metrics fail to capture fun.",
+          "reference_citation": "stiennon2020-learning-summarize-human-feedback.md: 'Reward model outperforms ROUGE at predicting human preferences.' This supports the metric mismatch analogy."
+        }
+      ],
+      "reference_documents": [
+        "latex/literature_review/rankings_and_rlhf/stiennon2020-learning-summarize-human-feedback.md"
+      ]
+    },
+    {
+      "citation_key": "sudhakaran2023mariogpt",
+      "count": 2,
+      "occurrences": [
+        {
+          "citation_type": "citep",
+          "line_number": 289,
+          "chapter": "Background and Related Work",
+          "section": "Machine Learning-Based Generation (PCGML)",
+          "context": "mise fitness functions based on tile distributions or agent-derived playability. This work established the \\textbf{Latent Variable Evolution} (LVE) paradigm. \\textbf{Large language models.} MarioGPT~\\citep{sudhakaran2023mariogpt} fine-tunes DistilGPT-2 on column-tokenised Mario levels with text-prompt conditioning (e.g., ``many pipes, many enemies, low elevation''), enabling the first natural-language-controllable level gener",
+          "thesis_claim": "MarioGPT fine-tunes DistilGPT-2 on column-tokenised Mario levels with text-prompt conditioning, enabling the first natural-language-controllable level generator. 88% of generated levels are playable without post-processing.",
+          "reference_citation": "sudhakaran2023-mariogpt-text2level-generation.md confirms: 'Fine-tunes DistilGPT-2 on VGLC corpus; uses frozen BART encoder for cross-attention conditioning on text prompts.' '88% of generated levels are playable without post-processing.' 'First text-to-level model.'"
+        },
+        {
+          "citation_type": "citep",
+          "line_number": 380,
+          "chapter": "Background and Related Work",
+          "section": "Mario Level Generators in the Literature",
+          "context": "diversity), and weighted pattern count (rewarding rare motifs). \\textbf{Neural generators.} \\emph{MarioGAN}~\\citep{volz2018evolving} combines a DCGAN with CMA-ES latent-space search. \\emph{MarioGPT}~\\citep{sudhakaran2023mariogpt} uses a fine-tuned DistilGPT-2 with text-prompt control. \\emph{MarioDiffusion}~\\citep{schrum2025mariodiffusion} generates tile scenes from natural-language captions via a diffusion model. Finally, \\em",
+          "thesis_claim": "MarioGPT uses a fine-tuned DistilGPT-2 with text-prompt control.",
+          "reference_citation": "Same source confirms this."
+        }
+      ],
+      "reference_documents": [
+        "latex/literature_review/seed_generators/sudhakaran2023-mariogpt-text2level-generation.md"
+      ]
+    },
+    {
+      "citation_key": "summerville2016super",
+      "count": 3,
+      "occurrences": [
+        {
+          "citation_type": "citet",
+          "line_number": 278,
+          "chapter": "Background and Related Work",
+          "section": "Machine Learning-Based Generation (PCGML)",
+          "context": "rain neural networks on existing content to learn implicit design knowledge~\\citep{summerville2018pcgml}. Several architectures have been applied to Mario level generation: \\textbf{Sequence models.} \\citet{summerville2016super} trained a 3-layer LSTM to generate levels column-by-column using a ``snaking'' tokenisation that preserves vertical adjacency. Co-generating levels with A*-agent play traces achieved 97\\% playability",
+          "thesis_claim": "Summerville & Mateas trained a 3-layer LSTM to generate levels column-by-column using a 'snaking' tokenisation that preserves vertical adjacency. Co-generating levels with A*-agent play traces achieved 97% playability.",
+          "reference_citation": "summerville2016-learning-player-tailored-content.md confirms: '3-layer LSTM architecture with 512 units; column-major snaking tokenisation preserves vertical adjacency.' 'LSTM-generated levels completed by AI at 97% rate.' 'Play traces extracted from YouTube video using OpenCV.'"
+        },
+        {
+          "citation_type": "citep",
+          "line_number": 341,
+          "chapter": "Background and Related Work",
+          "section": "The Mario AI Framework",
+          "context": "he A* agent as a \\emph{de facto} playability oracle. Levels are stored as 2D character grids (ASCII tilemaps), where each character encodes a functional tile type. The Video Game Level Corpus (VGLC)~\\citep{summerville2016super} standardised this encoding across all 32 original SMB levels and has been widely used as training data for neural generators. \\subsection{Mario Level Generators in the Literature} \\label{subsec:bg-m",
+          "thesis_claim": "The Video Game Level Corpus (VGLC) standardised the ASCII tilemap encoding across all 32 original SMB levels.",
+          "reference_citation": "summerville2016-learning-player-tailored-content.md introduces/uses the VGLC and the standardised tilemap encoding."
+        },
+        {
+          "citation_type": "citep",
+          "line_number": 466,
+          "chapter": "Background and Related Work",
+          "section": "Agent-Based Testing",
+          "context": "playability and difficulty. \\textbf{Playability gates.} A level is deemed playable if a strong A* agent can complete it. This binary check is the most common first stage in PCG evaluation pipelines~\\citep{volz2018evolving, summerville2016super, khalifa2020pcgrl}. \\textbf{Difficulty proxies.} Agent-derived metrics include jump count (the number of jumps the A* agent performs, interpreted as difficulty), completion fraction (progress along the $x$-axis if the",
+          "thesis_claim": "A* agent playability check is the most common first stage in PCG evaluation pipelines (volz2018, summerville2016, khalifa2020).",
+          "reference_citation": "summerville2016-learning-player-tailored-content.md uses A* agent for playability evaluation (97% completion rate reported)."
+        }
+      ],
+      "reference_documents": [
+        "latex/literature_review/pcg/summerville2016-learning-player-tailored-content.md"
+      ]
+    },
+    {
+      "citation_key": "summerville2017understanding",
+      "count": 3,
+      "occurrences": [
+        {
+          "citation_type": "citep",
+          "line_number": 435,
+          "chapter": "Background and Related Work",
+          "section": "Automated Metrics",
+          "context": "g gameplay. \\textbf{Linearity} measures how closely a level's vertical profile follows a straight line. \\citet{smith2010analyzing} defined it via linear regression on platform midpoints; later works~\\citep{horn2014comparative, summerville2017understanding} use $R^2$ goodness-of-fit instead, inverting the scale. These incompatible definitions complicate cross-paper comparisons. \\textbf{Leniency} approximates difficulty through weighted sums of game obj",
+          "thesis_claim": "Later works (horn2014, summerville2017) use R^2 goodness-of-fit for linearity, inverting the scale.",
+          "reference_citation": "summerville2017-understanding-mario-evaluation-metrics.md discusses linearity metrics and their definitions across the literature."
+        },
+        {
+          "citation_type": "citet",
+          "line_number": 492,
+          "chapter": "Background and Related Work",
+          "section": "Human Evaluation Studies",
+          "context": "fun.'' This protocol directly inspired PCG Arena's design. \\textbf{Likert-scale ratings.} \\citet{marino2015empirical} used 7-point Likert scales for enjoyment, aesthetics, and difficulty ($n = 37$). \\citet{summerville2017understanding} collected ratings across 85 design metrics and showed that inter-rater agreement imposes ceilings on achievable metric--human correlations. \\textbf{Large-scale web studies.} \\citet{pedersen2010model",
+          "thesis_claim": "Summerville et al. collected ratings across 85 design metrics and showed that inter-rater agreement imposes ceilings on achievable metric-human correlations.",
+          "reference_citation": "summerville2017-understanding-mario-evaluation-metrics.md evaluates design metrics against human ratings and measures inter-rater agreement bounds, showing aesthetics are inherently noisy — capping achievable metric-human correlations."
+        },
+        {
+          "citation_type": "citet",
+          "line_number": 552,
+          "chapter": "Background and Related Work",
+          "section": "Comparison of Approaches and Their Limitations",
+          "context": "erience misalignment.} \\citet{marino2015empirical} showed that two generators rated identically by all computational metrics were rated \\emph{significantly differently} by human players on enjoyment. \\citet{summerville2017understanding} further demonstrated that inter-rater agreement imposes ceilings on achievable metric--human correlations, with aesthetics being particularly noisy. Automated metrics are useful characterisation tool",
+          "thesis_claim": "Summerville et al. further demonstrated that inter-rater agreement imposes ceilings on metric-human correlations, with aesthetics being particularly noisy.",
+          "reference_citation": "Same source as occurrence 1."
+        }
+      ],
+      "reference_documents": [
+        "latex/literature_review/additional/summerville2017-understanding-mario-evaluation-metrics.md"
+      ]
+    },
+    {
+      "citation_key": "summerville2018pcgml",
+      "count": 3,
+      "occurrences": [
+        {
+          "citation_type": "citep",
+          "line_number": 82,
+          "chapter": "Introduction",
+          "section": "Procedural Content Generation in Video Games",
+          "context": "mes} \\label{sec:intro-pcg} Procedural Content Generation (PCG) refers to the algorithmic creation of game content---levels, maps, characters, items, narratives---with limited or indirect human input~\\citep{togelius2011search, summerville2018pcgml}. PCG has a long commercial history: \\emph{Rogue}~(1980) and \\emph{Elite}~(1984) used algorithmic generation to overcome memory constraints, and modern titles such as \\emph{Minecraft}, \\emph{No Man's",
+          "thesis_claim": "PCG refers to the algorithmic creation of game content with limited or indirect human input (togelius2011, summerville2018).",
+          "reference_citation": "summerville2018-pcgml-procedural-content-generation-ml.md is the PCGML survey defining PCG via machine learning. It provides the standard definition and taxonomy."
+        },
+        {
+          "citation_type": "citep",
+          "line_number": 195,
+          "chapter": "Background and Related Work",
+          "section": "Procedural Content Generation",
+          "context": "neration} \\label{sec:bg-pcg} Procedural Content Generation (PCG) is the algorithmic creation of game content with limited or indirect human input~\\citep{togelius2011search}. The most common taxonomy~\\citep{togelius2011search, summerville2018pcgml} distinguishes five generation paradigms: \\begin{description}[style=nextline, leftmargin=1.5em] \\item[Constructive / Rule-based] Sequentially place content according to hand-authored rules or",
+          "thesis_claim": "The most common taxonomy (togelius2011, summerville2018) distinguishes five generation paradigms.",
+          "reference_citation": "summerville2018-pcgml-procedural-content-generation-ml.md presents the taxonomy of PCG approaches."
+        },
+        {
+          "citation_type": "citep",
+          "line_number": 275,
+          "chapter": "Background and Related Work",
+          "section": "Machine Learning-Based Generation (PCGML)",
+          "context": "\\subsection{Machine Learning-Based Generation (PCGML)} \\label{subsec:bg-pcgml} Machine learning approaches to PCG (PCGML) train neural networks on existing content to learn implicit design knowledge~\\citep{summerville2018pcgml}. Several architectures have been applied to Mario level generation: \\textbf{Sequence models.} \\citet{summerville2016super} trained a 3-layer LSTM to generate levels column-by-column using a ``snakin",
+          "thesis_claim": "PCGML trains neural networks on existing content to learn implicit design knowledge.",
+          "reference_citation": "summerville2018-pcgml-procedural-content-generation-ml.md is the defining paper for the PCGML paradigm. Describes training neural networks on existing human-designed content."
+        }
+      ],
+      "reference_documents": [
+        "latex/literature_review/additional/summerville2018-pcgml-procedural-content-generation-ml.md"
+      ]
+    },
+    {
+      "citation_key": "togelius2011search",
+      "count": 4,
+      "occurrences": [
+        {
+          "citation_type": "citep",
+          "line_number": 82,
+          "chapter": "Introduction",
+          "section": "Procedural Content Generation in Video Games",
+          "context": "mes} \\label{sec:intro-pcg} Procedural Content Generation (PCG) refers to the algorithmic creation of game content---levels, maps, characters, items, narratives---with limited or indirect human input~\\citep{togelius2011search, summerville2018pcgml}. PCG has a long commercial history: \\emph{Rogue}~(1980) and \\emph{Elite}~(1984) used algorithmic generation to overcome memory constraints, and modern titles such as \\emph{Minecraft}, \\emph{No Man's",
+          "thesis_claim": "PCG refers to the algorithmic creation of game content with limited or indirect human input.",
+          "reference_citation": "togelius2011-search-based-pcg-taxonomy-survey.md is the primary PCG survey defining the term and proposing the search-based PCG taxonomy."
+        },
+        {
+          "citation_type": "citep",
+          "line_number": 194,
+          "chapter": "Background and Related Work",
+          "section": "Procedural Content Generation",
+          "context": "\\label{ch:background} \\section{Procedural Content Generation} \\label{sec:bg-pcg} Procedural Content Generation (PCG) is the algorithmic creation of game content with limited or indirect human input~\\citep{togelius2011search}. The most common taxonomy~\\citep{togelius2011search, summerville2018pcgml} distinguishes five generation paradigms: \\begin{description}[style=nextline, leftmargin=1.5em] \\item[Constructive / Rul",
+          "thesis_claim": "PCG is the algorithmic creation of game content with limited or indirect human input.",
+          "reference_citation": "Same as occurrence 0."
+        },
+        {
+          "citation_type": "citep",
+          "line_number": 195,
+          "chapter": "Background and Related Work",
+          "section": "Procedural Content Generation",
+          "context": "neration} \\label{sec:bg-pcg} Procedural Content Generation (PCG) is the algorithmic creation of game content with limited or indirect human input~\\citep{togelius2011search}. The most common taxonomy~\\citep{togelius2011search, summerville2018pcgml} distinguishes five generation paradigms: \\begin{description}[style=nextline, leftmargin=1.5em] \\item[Constructive / Rule-based] Sequentially place content according to hand-authored rules or",
+          "thesis_claim": "The most common taxonomy (togelius2011, summerville2018) distinguishes five generation paradigms.",
+          "reference_citation": "togelius2011-search-based-pcg-taxonomy-survey.md proposes the taxonomy of PCG approaches."
+        },
+        {
+          "citation_type": "citep",
+          "line_number": 231,
+          "chapter": "Background and Related Work",
+          "section": "Search-Based Approaches",
+          "context": "sired content features and produce content that complies. \\subsection{Search-Based Approaches} \\label{subsec:bg-search} Search-Based PCG (SBPCG) frames content generation as an optimisation problem~\\citep{togelius2011search}. A \\emph{fitness function} encodes the desired properties of the content (e.g., playability, target difficulty, aesthetic criteria), and an evolutionary algorithm---typically a genetic algorithm or C",
+          "thesis_claim": "Search-Based PCG (SBPCG) frames content generation as an optimisation problem.",
+          "reference_citation": "togelius2011-search-based-pcg-taxonomy-survey.md: 'Search-based PCG frames generation as optimisation.' This is the core concept of the paper."
+        }
+      ],
+      "reference_documents": [
+        "latex/literature_review/additional/togelius2011-search-based-pcg-taxonomy-survey.md"
+      ]
+    },
+    {
+      "citation_key": "volz2018evolving",
+      "count": 6,
+      "occurrences": [
+        {
+          "citation_type": "citep",
+          "line_number": 119,
+          "chapter": "Introduction",
+          "section": "The Evaluation Problem",
+          "context": "AI controllers---typically the A* agent from the 2009 Mario AI Championship---as player proxies. Agent-derived features such as jump count or completion fraction provide scalable difficulty estimates~\\citep{volz2018evolving}, but superhuman agents can solve levels that human players cannot. Difficulty estimates depend on the specific agent policy, introducing a systematic bias that is rarely quantified. \\textbf{Human ev",
+          "thesis_claim": "Agent-derived features such as jump count or completion fraction provide scalable difficulty estimates.",
+          "reference_citation": "volz2018-evolving-mario-latent-space-gan.md confirms: 'Fitness functions optimize tile distribution, playability (A* agent), and jumping actions (jump cost set to 2, other actions cost 1).' Uses agent-derived metrics as difficulty proxies."
+        },
+        {
+          "citation_type": "citep",
+          "line_number": 217,
+          "chapter": "Background and Related Work",
+          "section": "Procedural Content Generation",
+          "context": "construct content. Requires no training corpus but depends on reward design. \\end{description} These paradigms are not mutually exclusive; many modern systems are hybrids. For instance, MarioGAN~\\citep{volz2018evolving} combines a learned GAN with CMA-ES search in its latent space. A further useful distinction is between \\emph{offline} generation (content pre-computed before the game ships) and \\emph{online} generat",
+          "thesis_claim": "MarioGAN combines a learned GAN with CMA-ES search in its latent space (hybrid paradigm).",
+          "reference_citation": "volz2018-evolving-mario-latent-space-gan.md confirms: 'DCGAN trained on segments from one level; CMA-ES searches latent space to optimise fitness functions.' Established the Latent Variable Evolution (LVE) paradigm."
+        },
+        {
+          "citation_type": "citep",
+          "line_number": 246,
+          "chapter": "Background and Related Work",
+          "section": "Search-Based Approaches",
+          "context": "thesis. The Mario AI Level Generation Competition~\\citep{shaker2011mario} featured several search-based entries. More recent work has applied CMA-ES to the latent space of trained generative models~\\citep{volz2018evolving}, effectively combining search-based and ML-based paradigms. \\subsection{Grammar-Based and Rule-Based Approaches} \\label{subsec:bg-grammar} Constructive generators build content sequentially accordi",
+          "thesis_claim": "More recent work has applied CMA-ES to the latent space of trained generative models, combining search-based and ML-based paradigms.",
+          "reference_citation": "Same source. volz2018-mariogan-latent-space-evolution.md confirms: 'Established the Latent Variable Evolution (LVE) paradigm for PCGML.'"
+        },
+        {
+          "citation_type": "citep",
+          "line_number": 283,
+          "chapter": "Background and Related Work",
+          "section": "Machine Learning-Based Generation (PCGML)",
+          "context": "olumn using a ``snaking'' tokenisation that preserves vertical adjacency. Co-generating levels with A*-agent play traces achieved 97\\% playability. \\textbf{Generative adversarial networks.} MarioGAN~\\citep{volz2018evolving} trains a Deep Convolutional GAN on sliding-window segments from a single original SMB level. CMA-ES then searches the GAN's latent space to optimise fitness functions based on tile distributions or a",
+          "thesis_claim": "MarioGAN trains a DCGAN on sliding-window segments from a single original SMB level. CMA-ES then searches the GAN's latent space to optimise fitness functions.",
+          "reference_citation": "volz2018-evolving-mario-latent-space-gan.md: 'GAN maps 32-dimensional latent vectors to 28x14 tile grids; trained on sliding-window segments from one original level.' volz2018-mariogan-latent-space-evolution.md confirms all details."
+        },
+        {
+          "citation_type": "citep",
+          "line_number": 378,
+          "chapter": "Background and Related Work",
+          "section": "Mario Level Generators in the Literature",
+          "context": "unctions: pattern count (maximising motif frequency), pattern occurrence (maximising motif diversity), and weighted pattern count (rewarding rare motifs). \\textbf{Neural generators.} \\emph{MarioGAN}~\\citep{volz2018evolving} combines a DCGAN with CMA-ES latent-space search. \\emph{MarioGPT}~\\citep{sudhakaran2023mariogpt} uses a fine-tuned DistilGPT-2 with text-prompt control. \\emph{MarioDiffusion}~\\citep{schrum2025mariodi",
+          "thesis_claim": "MarioGAN combines a DCGAN with CMA-ES latent-space search.",
+          "reference_citation": "Same source, confirmed."
+        },
+        {
+          "citation_type": "citep",
+          "line_number": 466,
+          "chapter": "Background and Related Work",
+          "section": "Agent-Based Testing",
+          "context": "playability and difficulty. \\textbf{Playability gates.} A level is deemed playable if a strong A* agent can complete it. This binary check is the most common first stage in PCG evaluation pipelines~\\citep{volz2018evolving, summerville2016super, khalifa2020pcgrl}. \\textbf{Difficulty proxies.} Agent-derived metrics include jump count (the number of jumps the A* agent performs, interpreted as difficulty), completion fraction (progress along the $x$-axis if the",
+          "thesis_claim": "A* agent playability check is the most common first stage in PCG evaluation pipelines (volz2018, summerville2016, khalifa2020).",
+          "reference_citation": "volz2018-evolving-mario-latent-space-gan.md uses A* agent for playability evaluation in its fitness function."
+        }
+      ],
+      "reference_documents": [
+        "latex/literature_review/pcg/volz2018-evolving-mario-latent-space-gan.md",
+        "latex/literature_review/seed_generators/volz2018-mariogan-latent-space-evolution.md"
+      ]
+    },
+    {
+      "citation_key": "yannakakis2011experience",
+      "count": 1,
+      "occurrences": [
+        {
+          "citation_type": "citep",
+          "line_number": 223,
+          "chapter": "Background and Related Work",
+          "section": "Procedural Content Generation",
+          "context": "ne} generation (content created at runtime, potentially adapting to the player). Online generation enables personalisation but imposes stricter time budgets---a theme central to experience-driven PCG~\\citep{yannakakis2011experience}. A desirable property of any generator is \\textbf{controllability}: the ability to accept parameters describing desired content features and produce content that complies. \\subsection{Search-Based A",
+          "thesis_claim": "Online generation enables personalisation but imposes stricter time budgets — a theme central to experience-driven PCG.",
+          "reference_citation": "yannakakis2011-experience-driven-pcg.md describes experience-driven PCG: generators optimising empirically derived player models for adaptive/personalized content generation."
+        }
+      ],
+      "reference_documents": [
+        "latex/literature_review/additional/yannakakis2011-experience-driven-pcg.md"
+      ]
+    },
+    {
+      "citation_key": "zheng2023judging",
+      "count": 1,
+      "occurrences": [
+        {
+          "citation_type": "citet",
+          "line_number": 655,
+          "chapter": "Background and Related Work",
+          "section": "Arena-Style Evaluation Platforms",
+          "context": "airs, mirroring the information-gain logic that motivates PCG Arena's AGIS algorithm. Chatbot Arena is the closest structural analogue to PCG Arena outside the games domain. \\textbf{LLM-as-a-Judge.} \\citet{zheng2023judging} studied using GPT-4 as a surrogate judge for pairwise evaluation, achieving $>$80\\% agreement with human preferences. PCG Arena's \\emph{Judge Function} plays an analogous role: a lightweight model pr",
+          "thesis_claim": "Zheng et al. studied using GPT-4 as a surrogate judge for pairwise evaluation, achieving >80% agreement with human preferences.",
+          "reference_citation": "zheng2023-judging-llm-as-judge.md confirms: 'GPT-4 achieves >80% agreement with human preferences.' 'Identifies biases: position bias, verbosity bias, self-enhancement bias.' '3,000 expert votes + 30,000 crowdsourced conversations.'"
+        }
+      ],
+      "reference_documents": [
+        "latex/literature_review/rankings_and_rlhf/zheng2023-judging-llm-as-judge.md"
+      ]
+    },
+    {
+      "citation_key": "ziegler2019fine",
+      "count": 1,
+      "occurrences": [
+        {
+          "citation_type": "citet",
+          "line_number": 691,
+          "chapter": "Background and Related Work",
+          "section": "Reinforcement Learning from Human Feedback",
+          "context": "christiano2017deep} proposed learning a reward model $\\hat{r}$ from pairwise trajectory comparisons and optimising the policy against $\\hat{r}$ via PPO. Applied to Atari and MuJoCo. \\item \\citet{ziegler2019fine} adapted the scheme to language models (GPT-2) and introduced a KL penalty $\\beta\\,\\mathrm{KL}[\\pi \\| \\pi_{\\mathrm{ref}}]$ to prevent drift from the pretrained model. \\item \\citet{stie",
+          "thesis_claim": "Ziegler et al. adapted the RLHF scheme to language models (GPT-2) and introduced a KL penalty beta*KL[pi || pi_ref] to prevent drift from the pretrained model.",
+          "reference_citation": "ziegler2019-finetuning-language-models-human-preferences.md confirms: 'Adapts RLHF to language models (774M GPT-2). Four tasks: positive sentiment, physically descriptive, TL;DR summarisation, CNN/DM summarisation.' 'Introduces KL penalty beta*KL(pi || rho) to prevent policy drift.' '5,000 human comparisons; fine-tuned model preferred 86% vs zero-shot.'"
+        }
+      ],
+      "reference_documents": [
+        "latex/literature_review/rankings_and_rlhf/ziegler2019-finetuning-language-models-human-preferences.md"
+      ]
+    }
+  ],
+  "papers_with_no_reference_document": [],
+  "papers_with_incomplete_extraction": [],
+  "notes": "ONLY actual paper extractions are used as reference_documents. AI-generated summaries (*_background.md, deep_research_reports/*.md) are EXCLUDED. Papers in 'papers_with_no_reference_document' have no PDF/.md available. Papers in 'papers_with_incomplete_extraction' have .md files that are empty/incomplete or no dedicated extraction."
+}
