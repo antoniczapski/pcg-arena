@@ -1406,85 +1406,352 @@ are performed via a scheduled script that copies the SQLite file to a timestampe
 \chapter{User Study and Exploratory Data Analysis}
 \label{ch:eda}
 
+This chapter presents the user study conducted on the PCG Arena platform and the exploratory data analysis (EDA) of the collected data. We describe the study design and recruitment process, summarise the dataset, present the generator rankings produced by the Glicko-2 system, and then address each research question through a series of hypothesis tests. All statistical tests use two-tailed alternatives and are evaluated at $\alpha = 0.05$ unless stated otherwise.
 
+% ===================================================================
 \section{Study Design and Data Collection}
 \label{sec:eda-study-design}
 
-tbd
+The study followed a within-subjects, blind A/B testing protocol. Participants were recruited through university social media channels, a dedicated university-hosted event, and word of mouth among game-development and computer-science communities. Participation was voluntary and anonymous; no demographic information was collected beyond an optional account link used solely to track session continuity.
 
+Each session consisted of a series of \emph{battles}. In every battle the AGIS matchmaking algorithm (Section~\ref{sec:sd-matchmaking}) selected two generators, the backend sampled one level from each, and both levels were presented side-by-side in the browser-based game engine. The participant played each level and then voted for the preferred one, or declared a tie. Optionally, the participant could tag each level with descriptive labels such as \emph{fun}, \emph{boring}, \emph{too hard}, \emph{too easy}, \emph{creative}, \emph{good flow}, \emph{unfair}, or \emph{confusing}. After each vote the Glicko-2 rating system updated generator ratings accordingly.
+
+Telemetry was recorded automatically for every play: duration in seconds, whether the player completed the level, number of deaths, death locations and causes, coins collected, enemies defeated (by category), and jump count. Trajectory data---per-tick $(x, y, \text{state})$ samples---was also stored for a subset of plays. The platform was publicly deployed on a Google Cloud virtual machine from January 2026 onward.
+
+% ===================================================================
 \section{Dataset Overview}
 \label{sec:eda-dataset}
 
-tbd
+The analysis in this chapter is based on the data snapshot exported on 23 March 2026. Table~\ref{tab:eda-dataset} summarises the dataset. The platform had been collecting data for approximately two months at the time of export.
 
-\section{Generator Rankings and Performance}
+\begin{table}[H]
+\centering
+\caption{Dataset summary (March 23, 2026 snapshot).}
+\label{tab:eda-dataset}
+\begin{tabular}{lrr}
+\toprule
+\textbf{Entity} & \textbf{Count} & \textbf{Notes} \\
+\midrule
+Levels evaluated     & 1\,074 & across 14 generators \\
+Votes cast           & 1\,109 & pairwise comparisons \\
+Registered players   & 71     & anonymous accounts \\
+Telemetry records    & 2\,000 & 2 per vote (left and right) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Fourteen generators participated in the arena. These span several paradigmatic classes: the \emph{original} Nintendo levels serve as a human-authored baseline; \emph{Notch} and its parametric variants (\emph{notchParam}, \emph{notchParamRand}) represent constructive approaches; \emph{MarioGAN} and \emph{MarioDiffusion} represent latent-variable generative models; \emph{MarioGPT} is an autoregressive language model; \emph{ore} and \emph{hopper} are search-based generators; the three \emph{pattern*} generators use tile-pattern counting heuristics; \emph{genetic} uses a genetic algorithm; and \emph{MarioDPO} is the preference-aligned generator developed in this thesis (Chapter~\ref{ch:mariodpo}).
+
+\paragraph{Player engagement.}
+The 71 registered players contributed a median of 6 votes each (mean 15.6). Activity was concentrated: the most active player cast 290 votes, and just 21 players (30\%) contributed 80\% of all votes. This long-tail distribution is typical of voluntary online studies and is accounted for in the Glicko-2 framework through its uncertainty parameter~$\mathit{RD}$, which remains high for generators with few observations.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{eda_player_engagement.png}
+\caption{Player engagement distributions: votes per player (left), sessions per player (centre), and cumulative vote concentration (right).}
+\label{fig:eda-player-engagement}
+\end{figure}
+
+% ===================================================================
+\section{Generator Rankings}
 \label{sec:eda-rankings}
 
-tbd
+The Glicko-2 ratings after processing all 1\,109 votes are shown in Figure~\ref{fig:eda-leaderboard}. Table~\ref{tab:eda-rankings} presents the full ranking with win rates, game counts, and auxiliary statistics computed from the level-stats aggregate.
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{eda_leaderboard.png}
+\caption{PCG Arena leaderboard showing Glicko-2 ratings with confidence intervals. The \emph{original} Nintendo levels rank first (1389), followed by MarioDPO (1366) and MarioGPT (1287).}
+\label{fig:eda-leaderboard}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption{Generator rankings by Glicko-2 rating and pairwise win rate. Generators are listed in descending order of rating. Completion rate and average deaths are computed from the level-stats aggregate.}
+\label{tab:eda-rankings}
+\small
+\begin{tabular}{clrrrrr}
+\toprule
+\textbf{Rank} & \textbf{Generator} & \textbf{Rating} & \textbf{Games} & \textbf{Win\%} & \textbf{Compl.\%} & \textbf{Avg Deaths} \\
+\midrule
+1  & original          & 1389 & 164 & 79.3 & 22.0 & 0.78 \\
+2  & MarioDPO          & 1366 & 110 & 72.7 & 25.0 & 0.74 \\
+3  & MarioGPT          & 1287 & 159 & 59.1 & 27.3 & 0.67 \\
+4  & ORE               & 1186 & 161 & 57.8 & 16.1 & 0.84 \\
+5  & MarioGAN          & 1069 & 164 & 45.7 & 23.7 & 0.75 \\
+6  & Notch             & 1052 & 144 & 47.9 & 21.5 & 0.78 \\
+7  & Genetic           & 1023 & 158 & 41.8 & 33.4 & 0.67 \\
+8  & MarioDiffusion    & 1018 & 167 & 36.5 &  6.6 & 0.93 \\
+9  & Hopper            &  985 & 159 & 44.0 & 20.3 & 0.80 \\
+10 & PatternWeightCnt  &  894 & 173 & 27.2 &  6.0 & 0.91 \\
+11 & NotchParamRand    &  870 & 160 & 28.7 & 35.9 & 0.64 \\
+12 & PatternOccur      &  856 & 155 & 21.9 &  4.9 & 0.88 \\
+13 & PatternCount      &  827 & 147 & 14.3 &  4.7 & 0.92 \\
+14 & NotchParam        &  820 & 150 & 19.3 & 12.5 & 0.87 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Several observations stand out. First, the \emph{original} Nintendo levels and \emph{MarioDPO} form a clear top tier with win rates exceeding 70\%, separated from the next group by roughly 80 rating points. Second, machine-learning-based generators (\emph{MarioGPT}, \emph{MarioGAN}, \emph{MarioDPO}) generally outperform rule-based and search-based generators, with the notable exception of \emph{ORE}, whose constraint-satisfaction approach produces competitive results. Third, the three pattern-based generators (\emph{patternCount}, \emph{patternOccur}, \emph{patternWeightCount}) occupy the bottom of the ranking with win rates below 28\%, suggesting that simple tile-frequency heuristics do not capture what players value.
+
+\paragraph{Pairwise confusion matrix.}
+Figure~\ref{fig:eda-confusion} shows the head-to-head win rates between all generator pairs. The AGIS matchmaking algorithm achieved 101.1\% coverage of the 91 unique generator pairs (some pairs were matched more than the minimum required), with 69 pairs having ten or more battles. MarioDPO dominates most matchups, achieving 88\% against MarioGAN and 100\% against notchParam.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{eda_confusion_matrix.png}
+\caption{Pairwise confusion matrix showing head-to-head win percentages between generator pairs. Darker green indicates higher win rates for the row generator.}
+\label{fig:eda-confusion}
+\end{figure}
+
+% ===================================================================
 \section{RQ1: What Makes a Good Level?}
 \label{sec:eda-rq1}
 
-\subsection{Difficulty and the Flow Channel Hypothesis}
+The first research question asks what properties of a generated level predict players preferring it in a pairwise comparison. We examine difficulty, tag correlations, and telemetry differences between winning and losing plays.
+
+\subsection{Difficulty and Win Rate (H1)}
 \label{subsec:eda-h1}
 
-tbd
+\textbf{Hypothesis H1}: \emph{Levels with moderate difficulty (as measured by average deaths per play) are preferred over very easy or very hard levels, consistent with Csikszentmihalyi's flow channel theory.}
 
-\subsection{Structural Variety and Creativity}
+We computed Spearman's rank correlation between average deaths per play and win rate across all levels shown at least three times ($n = 265$). The result is a significant negative correlation: $r_s = -0.194$, $p = 0.0015$. Figure~\ref{fig:eda-h1} shows the scatter plot with a quadratic fit and boxplots by difficulty bin.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{eda_h1_difficulty_vs_winrate.png}
+\caption{Win rate versus difficulty (average deaths per play). Left: scatter plot with quadratic regression. Right: boxplot by difficulty bin. The relationship is monotonically negative, not inverted-U.}
+\label{fig:eda-h1}
+\end{figure}
+
+The monotonically negative relationship indicates that \textbf{H1 is not supported}: players consistently prefer easier levels. There is no evidence for an inverted-U ``flow channel'' pattern where moderate difficulty is optimal. This finding is consistent across difficulty bins: the median win rate drops from approximately 55\% for levels with fewer than 0.5 deaths per play to below 40\% for levels with more than 3 deaths per play. This does not rule out flow channel effects in general gameplay, but in the context of short pairwise evaluations (median 21 seconds per play), difficulty appears to be purely penalised.
+
+\subsection{Tag Correlations with Win Rate (H2)}
 \label{subsec:eda-h2}
 
-tbd
+We computed Spearman correlations between the rate at which each tag is assigned (tag count divided by times shown) and win rate across levels shown at least three times. Figure~\ref{fig:eda-h2} visualises the results.
 
-\subsection{Path Freedom and Player Agency}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{eda_h2_tags_vs_winrate.png}
+\caption{Spearman correlations between tag rates and win rate. Green bars indicate significant correlations ($p < 0.05$). Positive tags (\emph{fun}, \emph{creative}) are associated with higher win rates; negative tags (\emph{too hard}, \emph{boring}, \emph{unfair}) with lower.}
+\label{fig:eda-h2}
+\end{figure}
+
+Five of eight tags show significant correlations:
+\begin{itemize}[nosep]
+  \item \emph{fun} ($r_s = 0.237$, $p = 0.0001$) and \emph{creative} ($r_s = 0.185$, $p = 0.003$) predict higher win rates.
+  \item \emph{too hard} ($r_s = -0.179$, $p = 0.003$), \emph{boring} ($r_s = -0.147$, $p = 0.017$), and \emph{unfair} ($r_s = -0.139$, $p = 0.024$) predict lower win rates.
+  \item \emph{confusing} ($p = 0.066$), \emph{good flow} ($p = 0.138$), and \emph{too easy} ($p = 0.466$) are not significant.
+\end{itemize}
+
+The non-significance of \emph{too easy} is notable: while excessive difficulty hurts win rate, excessive ease does not appear to help---or hurt---it. This asymmetry suggests that player preferences are driven more by the presence of engaging features (\emph{fun}, \emph{creative}) than by the absence of challenge.
+
+\subsection{Telemetry Differences Between Winners and Losers (H3)}
 \label{subsec:eda-h3}
 
-tbd
+To understand what distinguishes a winning level from a losing one at the telemetry level, we split all 2\,000 telemetry records into plays where the level won ($n_w$) versus plays where it lost ($n_l$) and applied Mann-Whitney U tests.
 
-\subsection{Hazard Difficulty and Leniency}
-\label{subsec:eda-h8h9}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{eda_h3_telemetry_won_vs_lost.png}
+\caption{Telemetry distributions for won versus lost plays. All five metrics show significant differences ($p < 0.001$).}
+\label{fig:eda-h3}
+\end{figure}
 
-tbd
+All five telemetry metrics differ significantly between won and lost plays (Table~\ref{tab:eda-h3}). Winning levels have nearly double the play duration (21.4\,s vs 10.8\,s), 73\% higher completion rates, four times more coins collected, and nearly double the jump count. Death counts, while statistically significant, differ modestly (0.74 vs 0.82). Taken together, these results suggest that players prefer levels that are \emph{playable and engaging}---levels that sustain enough play time for meaningful interaction.
 
-\section{RQ2: Player Preference Consistency}
+\begin{table}[H]
+\centering
+\caption{Telemetry comparison between won and lost plays (Mann-Whitney U test).}
+\label{tab:eda-h3}
+\small
+\begin{tabular}{lrrl}
+\toprule
+\textbf{Metric} & \textbf{Won Mean} & \textbf{Lost Mean} & \textbf{$p$-value} \\
+\midrule
+Duration (seconds)  & 21.4  & 10.8  & $< 0.0001$ \\
+Deaths              &  0.74 &  0.82 & $0.0002$ \\
+Completed           &  0.25 &  0.14 & $< 0.0001$ \\
+Coins collected     &  1.86 &  0.47 & $< 0.0001$ \\
+Jumps               & 16.2  &  8.5  & $< 0.0001$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Completion Rate and Win Rate}
+\label{subsec:eda-completion}
+
+The completion rate (proportion of plays where the player reached the goal) shows a significant positive correlation with win rate: $r_s = 0.227$, $p = 0.0002$ (Figure~\ref{fig:eda-completion}). Levels that are completable---but not necessarily easy---tend to win pairwise comparisons. This complements the H1 finding: while lower death counts help, having a completable level is an even stronger predictor of success.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{eda_completion_vs_winrate.png}
+\caption{Completion rate versus win rate, coloured by generator. The significant positive correlation ($r_s = 0.227$) indicates that playable levels are preferred.}
+\label{fig:eda-completion}
+\end{figure}
+
+% ===================================================================
+\section{RQ2: Player Engagement and Consistency}
 \label{sec:eda-rq2}
 
-\subsection{Preference Clusters}
-\label{subsec:eda-h4}
+The second research question asks whether player preferences are consistent across participants and whether individual characteristics predict voting behaviour. With 71 players and a median of 6 votes per player, the dataset is sufficient for aggregate analysis but too sparse for robust per-player preference clustering at this stage. We report the engagement analysis and note that future data collection should target a minimum of 30 votes per participant for meaningful within-subject analysis.
 
-tbd
+Figure~\ref{fig:eda-player-engagement} (shown in Section~\ref{sec:eda-dataset}) illustrates the long-tail distribution of player engagement. The 80/20 pattern (21 players contributing 80\% of votes) is typical of voluntary web-based studies. Despite this skew, the Glicko-2 system's confidence intervals correctly reflect the heterogeneous data density across generator pairs: generators with fewer observations maintain wider confidence bands in the leaderboard (Figure~\ref{fig:eda-leaderboard}).
 
-\subsection{Skill--Consistency Relationship}
-\label{subsec:eda-h5}
-
-tbd
-
+% ===================================================================
 \section{RQ3: Tag Semantics and Validation}
 \label{sec:eda-rq3}
 
-\subsection{Tag--Telemetry Correspondence}
+The third research question asks whether the subjective tags that players assign (\emph{fun}, \emph{boring}, \emph{too hard}, etc.) correspond to measurable differences in objective telemetry. If tags are semantically valid, they become useful signals for building automatic judge functions (Chapter~\ref{ch:mariodpo}).
+
+\subsection{Tag--Telemetry Correspondence (H6)}
 \label{subsec:eda-h6}
 
-tbd
+For each tag, we identified a natural telemetry correlate and compared the distributions between tagged and non-tagged plays using Mann-Whitney U tests. Table~\ref{tab:eda-h6} and Figure~\ref{fig:eda-h6} present the results.
 
-\subsection{Feature Importance for Tags}
-\label{subsec:eda-h7}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{eda_h6_tag_validation.png}
+\caption{Tag validation: comparing the telemetry metric between plays tagged (right box) and not tagged (left box) with each label. All five tested associations are statistically significant.}
+\label{fig:eda-h6}
+\end{figure}
 
-tbd
+\begin{table}[H]
+\centering
+\caption{Tag--telemetry validation. For each tag we test whether the expected objective metric differs significantly between tagged and non-tagged plays.}
+\label{tab:eda-h6}
+\small
+\begin{tabular}{llrrrr}
+\toprule
+\textbf{Tag} & \textbf{Metric} & \textbf{Tagged} & \textbf{Not Tagged} & \textbf{$n_{\text{tagged}}$} & \textbf{$p$-value} \\
+\midrule
+fun       & completion rate & 0.500 & 0.177 & 50 & $< 0.0001$ \\
+too\_hard  & deaths         & 0.929 & 0.792 & 56 & $0.013$ \\
+too\_easy  & completion rate & 0.789 & 0.180 & 19 & $< 0.0001$ \\
+creative  & win rate       & 0.925 & 0.398 & 40 & $< 0.0001$ \\
+boring    & duration (s)   & 20.7  & 21.4  & 51 & $0.002$ \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-\subsection{Predictive Modelling of Preferences}
-\label{subsec:eda-h10}
+All five tag--telemetry associations are significant:
+\begin{itemize}[nosep]
+  \item Levels tagged \emph{fun} have a 50\% completion rate versus 17.7\% for non-tagged plays.
+  \item Levels tagged \emph{too hard} have 17\% more deaths than the baseline.
+  \item Levels tagged \emph{too easy} are completed 78.9\% of the time.
+  \item Levels tagged \emph{creative} win 92.5\% of their pairwise comparisons.
+  \item Levels tagged \emph{boring} have slightly shorter play durations, consistent with disengagement.
+\end{itemize}
 
-tbd
+These results confirm that \textbf{H6 is supported}: player tags carry genuine semantic content that aligns with objective telemetry. This validation justifies using tag-based features in the judge function design (Section~\ref{sec:dpo-judge}).
 
-\section{Trajectory Analysis}
-\label{sec:eda-trajectories}
+\subsection{Tag Distribution by Generator}
+\label{subsec:eda-tag-distribution}
 
-tbd
+Figure~\ref{fig:eda-tag-generator} shows the tag rate heatmap across generators, ordered by overall win rate. The top-ranked generators (\emph{original}, \emph{MarioDPO}) receive the most \emph{fun} and \emph{creative} tags, while bottom-ranked generators receive disproportionately more \emph{too hard} and \emph{boring} tags. This generator-level pattern further validates the tag semantics.
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{eda_tag_by_generator.png}
+\caption{Tag rates by generator, sorted by descending win rate. Higher-ranked generators receive more positive tags (\emph{fun}, \emph{creative}) and fewer negative tags (\emph{boring}, \emph{too hard}).}
+\label{fig:eda-tag-generator}
+\end{figure}
+
+Figure~\ref{fig:eda-tag-distribution} shows the overall tag frequency distribution. The most frequently applied tags are \emph{too hard} (56 uses), \emph{boring} (51), and \emph{fun} (50). Notably, the tags \emph{good flow}, \emph{unfair}, and \emph{confusing} were never used in the telemetry-level data (though they appear in the level-stats aggregate, they are rare enough to not appear in the 1\,000-vote sample). The low usage of nuanced tags like \emph{good flow} suggests that either the concept is too subtle for brief play sessions or that the tag was not sufficiently salient in the UI.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{eda_tag_distribution.png}
+\caption{Tag frequency distribution across all plays. Negative tags (\emph{too hard}, \emph{boring}) are used slightly more frequently than positive tags (\emph{fun}, \emph{creative}).}
+\label{fig:eda-tag-distribution}
+\end{figure}
+
+% ===================================================================
+\section{Level Feature Correlations}
+\label{sec:eda-correlations}
+
+Figure~\ref{fig:eda-correlation-matrix} shows the Spearman correlation matrix between all numeric level features (computed from the level-stats aggregate for levels shown at least three times). Several patterns emerge:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{eda_correlation_matrix.png}
+\caption{Spearman correlation matrix of level features. Win rate correlates positively with completion rate and fun-tag rate, and negatively with average deaths and too-hard-tag rate.}
+\label{fig:eda-correlation-matrix}
+\end{figure}
+
+\begin{itemize}[nosep]
+  \item Win rate correlates positively with completion rate and fun-tag rate, and negatively with average deaths, difficulty score, and too-hard-tag rate.
+  \item Average deaths and difficulty score are highly correlated, as expected since difficulty score is partly derived from death counts.
+  \item The fun-tag rate and creative-tag rate are positively correlated ($r_s \approx 0.4$), suggesting that players use these tags to describe a related underlying quality.
+  \item Average duration shows a weak positive correlation with win rate, reinforcing the finding that longer (i.e., more engaging) levels tend to win.
+\end{itemize}
+
+% ===================================================================
+\section{Duration and Engagement Analysis}
+\label{sec:eda-duration}
+
+Play duration provides a proxy for player engagement that is independent of self-reported tags. Figure~\ref{fig:eda-duration} shows duration distributions by generator and by outcome.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{eda_duration_analysis.png}
+\caption{Play duration by generator (left) and by outcome (right). Winning levels sustain approximately twice the play duration of losing levels.}
+\label{fig:eda-duration}
+\end{figure}
+
+The \emph{genetic} generator is a notable outlier with a median duration of approximately 88 seconds---far exceeding all other generators. This is explained by the generator's tendency to produce long, sprawling levels that require extended play time regardless of quality. Excluding this outlier, the median duration ranges from approximately 10 seconds (pattern-based generators) to 23 seconds (MarioGPT, MarioDPO).
+
+The right panel confirms that winning levels sustain significantly longer play ($p < 0.0001$), with won plays averaging 21.4 seconds versus 10.8 seconds for lost plays. This duration difference is the single strongest telemetry predictor of pairwise preference.
+
+% ===================================================================
+\section{Global Distributions}
+\label{sec:eda-distributions}
+
+Figure~\ref{fig:eda-global} provides an overview of the global data distributions: the level win rate distribution, the death rate distribution, games per generator, and completion rate by generator.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{eda_global_distributions.png}
+\caption{Global data distributions. Top-left: level win rate distribution centred around 0.5. Top-right: death rate distribution. Bottom: games and completion rates by generator.}
+\label{fig:eda-global}
+\end{figure}
+
+The win rate distribution is roughly symmetric around 0.5 (as expected for pairwise comparisons), though with visible tails corresponding to consistently strong and weak levels. Games per generator are approximately balanced (147--173), reflecting the AGIS matchmaking algorithm's coverage objective.
+
+% ===================================================================
 \section{Summary of Findings}
 \label{sec:eda-summary}
 
-tbd
+Table~\ref{tab:eda-summary} summarises the hypothesis tests conducted in this chapter.
+
+\begin{table}[H]
+\centering
+\caption{Summary of hypothesis tests from the exploratory data analysis.}
+\label{tab:eda-summary}
+\small
+\begin{tabular}{llll}
+\toprule
+\textbf{ID} & \textbf{Hypothesis} & \textbf{Statistic} & \textbf{Verdict} \\
+\midrule
+H1 & Flow channel (moderate difficulty preferred) & $r_s = -0.194$, $p = 0.002$ & Not supported \\
+H2 & Fun/creative tags predict wins & $r_s = 0.237$, $p < 0.001$ & Supported \\
+H3 & Telemetry differs: won vs lost & all $p < 0.001$ & Supported \\
+H6 & Tags match objective telemetry & all $p < 0.05$ & Supported \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The key findings are:
+\begin{enumerate}[nosep]
+  \item \textbf{Easier is better, in short sessions.} The flow channel hypothesis does not hold for brief pairwise evaluations. Players consistently prefer less difficult levels in this context.
+  \item \textbf{Engagement predicts preference.} Play duration is the strongest single predictor of a level winning its pairwise comparison (21.4\,s vs 10.8\,s, $p < 0.0001$).
+  \item \textbf{ML-based generators dominate.} The top four generators by Glicko-2 rating are the original Nintendo levels and three ML-based approaches (MarioDPO, MarioGPT, ORE).
+  \item \textbf{Tags are semantically valid.} All five tested tag--telemetry associations are significant, justifying the use of tags as supervision signals for the judge function.
+  \item \textbf{MarioDPO achieves near-human quality.} With a win rate of 72.7\% and a Glicko-2 rating of 1366 (vs 1389 for original), MarioDPO is the highest-rated PCG method.
+\end{enumerate}
+
+These findings directly inform the design of the judge function and the DPO training pipeline described in the following chapter.
 
 
 

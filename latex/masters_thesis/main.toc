@@ -61,37 +61,38 @@
 \contentsline {section}{\numberline {3.9}Deployment and Infrastructure}{38}{section.3.9}%
 \contentsline {chapter}{\numberline {4}User Study and Exploratory Data Analysis}{41}{chapter.4}%
 \contentsline {section}{\numberline {4.1}Study Design and Data Collection}{41}{section.4.1}%
-\contentsline {section}{\numberline {4.2}Dataset Overview}{41}{section.4.2}%
-\contentsline {section}{\numberline {4.3}Generator Rankings and Performance}{41}{section.4.3}%
-\contentsline {section}{\numberline {4.4}RQ1: What Makes a Good Level?}{41}{section.4.4}%
-\contentsline {subsection}{\numberline {4.4.1}Difficulty and the Flow Channel Hypothesis}{41}{subsection.4.4.1}%
-\contentsline {subsection}{\numberline {4.4.2}Structural Variety and Creativity}{41}{subsection.4.4.2}%
-\contentsline {subsection}{\numberline {4.4.3}Path Freedom and Player Agency}{42}{subsection.4.4.3}%
-\contentsline {subsection}{\numberline {4.4.4}Hazard Difficulty and Leniency}{42}{subsection.4.4.4}%
-\contentsline {section}{\numberline {4.5}RQ2: Player Preference Consistency}{42}{section.4.5}%
-\contentsline {subsection}{\numberline {4.5.1}Preference Clusters}{42}{subsection.4.5.1}%
-\contentsline {subsection}{\numberline {4.5.2}Skill--Consistency Relationship}{42}{subsection.4.5.2}%
-\contentsline {section}{\numberline {4.6}RQ3: Tag Semantics and Validation}{42}{section.4.6}%
-\contentsline {subsection}{\numberline {4.6.1}Tag--Telemetry Correspondence}{42}{subsection.4.6.1}%
-\contentsline {subsection}{\numberline {4.6.2}Feature Importance for Tags}{42}{subsection.4.6.2}%
-\contentsline {subsection}{\numberline {4.6.3}Predictive Modelling of Preferences}{42}{subsection.4.6.3}%
-\contentsline {section}{\numberline {4.7}Trajectory Analysis}{42}{section.4.7}%
-\contentsline {section}{\numberline {4.8}Summary of Findings}{43}{section.4.8}%
-\contentsline {chapter}{\numberline {5}MarioDPO --- Preference-Aligned Level Generation}{45}{chapter.5}%
-\contentsline {section}{\numberline {5.1}Motivation and Approach}{45}{section.5.1}%
-\contentsline {section}{\numberline {5.2}Judge Function Development}{45}{section.5.2}%
-\contentsline {subsection}{\numberline {5.2.1}Verticality Reward (Experiment A)}{45}{subsection.5.2.1}%
-\contentsline {subsection}{\numberline {5.2.2}Hazard Hierarchy (Experiment B)}{45}{subsection.5.2.2}%
-\contentsline {subsection}{\numberline {5.2.3}Style Matching (Experiment D)}{45}{subsection.5.2.3}%
-\contentsline {subsection}{\numberline {5.2.4}Final Judge Function}{45}{subsection.5.2.4}%
-\contentsline {section}{\numberline {5.3}Training Pipeline}{46}{section.5.3}%
-\contentsline {subsection}{\numberline {5.3.1}Supervised Fine-Tuning (SFT)}{46}{subsection.5.3.1}%
-\contentsline {subsection}{\numberline {5.3.2}Preference Dataset Construction}{46}{subsection.5.3.2}%
-\contentsline {subsection}{\numberline {5.3.3}DPO Training}{46}{subsection.5.3.3}%
-\contentsline {section}{\numberline {5.4}Column-Major Tokenisation}{46}{section.5.4}%
-\contentsline {section}{\numberline {5.5}Results}{46}{section.5.5}%
-\contentsline {section}{\numberline {5.6}Analysis and Discussion}{46}{section.5.6}%
-\contentsline {chapter}{\numberline {6}Conclusions and Future Work}{47}{chapter.6}%
-\contentsline {section}{\numberline {6.1}Summary of Contributions}{47}{section.6.1}%
-\contentsline {section}{\numberline {6.2}Limitations}{47}{section.6.2}%
-\contentsline {section}{\numberline {6.3}Future Directions}{47}{section.6.3}%
+\contentsline {section}{\numberline {4.2}Dataset Overview}{42}{section.4.2}%
+\contentsline {paragraph}{Player engagement.}{42}{section*.18}%
+\contentsline {section}{\numberline {4.3}Generator Rankings}{43}{section.4.3}%
+\contentsline {paragraph}{Pairwise confusion matrix.}{44}{section*.22}%
+\contentsline {section}{\numberline {4.4}RQ1: What Makes a Good Level?}{45}{section.4.4}%
+\contentsline {subsection}{\numberline {4.4.1}Difficulty and Win Rate (H1)}{45}{subsection.4.4.1}%
+\contentsline {subsection}{\numberline {4.4.2}Tag Correlations with Win Rate (H2)}{46}{subsection.4.4.2}%
+\contentsline {subsection}{\numberline {4.4.3}Telemetry Differences Between Winners and Losers (H3)}{47}{subsection.4.4.3}%
+\contentsline {subsection}{\numberline {4.4.4}Completion Rate and Win Rate}{48}{subsection.4.4.4}%
+\contentsline {section}{\numberline {4.5}RQ2: Player Engagement and Consistency}{49}{section.4.5}%
+\contentsline {section}{\numberline {4.6}RQ3: Tag Semantics and Validation}{49}{section.4.6}%
+\contentsline {subsection}{\numberline {4.6.1}Tag--Telemetry Correspondence (H6)}{50}{subsection.4.6.1}%
+\contentsline {subsection}{\numberline {4.6.2}Tag Distribution by Generator}{51}{subsection.4.6.2}%
+\contentsline {section}{\numberline {4.7}Level Feature Correlations}{52}{section.4.7}%
+\contentsline {section}{\numberline {4.8}Duration and Engagement Analysis}{53}{section.4.8}%
+\contentsline {section}{\numberline {4.9}Global Distributions}{54}{section.4.9}%
+\contentsline {section}{\numberline {4.10}Summary of Findings}{55}{section.4.10}%
+\contentsline {chapter}{\numberline {5}MarioDPO --- Preference-Aligned Level Generation}{57}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Motivation and Approach}{57}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Judge Function Development}{57}{section.5.2}%
+\contentsline {subsection}{\numberline {5.2.1}Verticality Reward (Experiment A)}{57}{subsection.5.2.1}%
+\contentsline {subsection}{\numberline {5.2.2}Hazard Hierarchy (Experiment B)}{57}{subsection.5.2.2}%
+\contentsline {subsection}{\numberline {5.2.3}Style Matching (Experiment D)}{57}{subsection.5.2.3}%
+\contentsline {subsection}{\numberline {5.2.4}Final Judge Function}{57}{subsection.5.2.4}%
+\contentsline {section}{\numberline {5.3}Training Pipeline}{58}{section.5.3}%
+\contentsline {subsection}{\numberline {5.3.1}Supervised Fine-Tuning (SFT)}{58}{subsection.5.3.1}%
+\contentsline {subsection}{\numberline {5.3.2}Preference Dataset Construction}{58}{subsection.5.3.2}%
+\contentsline {subsection}{\numberline {5.3.3}DPO Training}{58}{subsection.5.3.3}%
+\contentsline {section}{\numberline {5.4}Column-Major Tokenisation}{58}{section.5.4}%
+\contentsline {section}{\numberline {5.5}Results}{58}{section.5.5}%
+\contentsline {section}{\numberline {5.6}Analysis and Discussion}{58}{section.5.6}%
+\contentsline {chapter}{\numberline {6}Conclusions and Future Work}{59}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Summary of Contributions}{59}{section.6.1}%
+\contentsline {section}{\numberline {6.2}Limitations}{59}{section.6.2}%
+\contentsline {section}{\numberline {6.3}Future Directions}{59}{section.6.3}%
