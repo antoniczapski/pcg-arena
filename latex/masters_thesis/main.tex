@@ -209,8 +209,9 @@ generation paradigms:
     human-designed content. Data-driven and expressive, but may lack diversity
     or playability guarantees.
     \item[Reinforcement Learning (PCGRL)] Frame level design as a Markov
-    Decision Process; train an agent to construct content. Requires no training
-    corpus but depends on reward design.
+    Decision Process; train an agent to construct content. Unlike PCGML,
+    requires no corpus of existing levels---only a reward function that
+    encodes the desired content properties.
 \end{description}
 
 These paradigms are not mutually exclusive; many modern systems are hybrids. For
@@ -494,12 +495,14 @@ and showed that inter-rater agreement imposes ceilings on achievable
 metric--human correlations.
 
 \textbf{Large-scale web studies.} \citet{pedersen2010modeling} recruited 181
-subjects to play \emph{Infinite Mario Bros} variants and report pairwise
-affective preferences; a follow-up by \citet{shaker2011features} collected 600
+subjects via the web to play \emph{Infinite Mario Bros} variants and report
+pairwise affective preferences, although only the first 120 participants
+(240~game pairs) were used in the analysis.
+A follow-up by \citet{shaker2011features} collected 600
 game-pair comparisons via an uncontrolled web applet, but the number of unique
-participants is not reported and the study predates the recent wave of
-ML-based generators (GANs, LSTMs, diffusion models) that have since reshaped
-the field.
+participants is not reported.
+Both studies date from 2010--2011 and predate the wave of ML-based generators
+(GANs, LSTMs, diffusion models) that have since reshaped the field.
 
 These studies collectively demonstrate that while human evaluation provides the
 most valid quality signal, it is expensive, typically small-scale ($n < 40$ in
@@ -628,9 +631,9 @@ and then updates RD and rating:
   \label{eq:glicko-mu-bg}
 \end{align}
 %
-where $g(\phi) = 1/\sqrt{1 + 3\phi^2/\pi^2}$ attenuates predictions for
-uncertain opponents, $s_j$ is the observed outcome, and $E_j$ the expected
-outcome.
+where $g(\phi) = 1/\sqrt{1 + 3\phi^2/\pi^2}$ down-weights predictions
+involving uncertain opponents, $s_j$ is the observed outcome, and $E_j$ the
+expected outcome.
 
 PCG Arena uses Glicko-2 with generators and levels treated as ``players'': each
 human vote corresponds to a match outcome. RD provides a built-in measure of
@@ -658,10 +661,9 @@ preferences. PCG Arena's \emph{Judge Function} plays an analogous role: a
 lightweight model predicting which of two Mario levels a human would prefer.
 
 \citet{sarkar2017glicko2} applied Glicko-2 to the human computation game
-\emph{Paradox}, treating both players and puzzle-tasks as rated entities. This is
-the most direct precedent for PCG Arena's design, demonstrating that
-player-rating systems can simultaneously estimate human skill and task
-difficulty.
+\emph{Paradox}, treating puzzle-tasks as rated entities alongside players.
+This is the most direct precedent for PCG Arena's use of Glicko-2 to rate
+game content rather than human players.
 
 \citet{snow2008cheap} showed that aggregating labels from multiple non-expert
 annotators can match expert-level quality, underpinning the design assumption
@@ -1242,8 +1244,8 @@ The expected score when generator $A$ faces generator $B$ is:
 E(\mu_A, \mu_B, \phi_B) = \frac{1}{1 + \exp\!\bigl(-g(\phi_B)(\mu_A - \mu_B)\bigr)}
 \end{equation}
 
-where $g(\phi) = 1 / \sqrt{1 + 3\phi^2/\pi^2}$ attenuates the prediction when the
-opponent's rating is uncertain.
+where $g(\phi) = 1 / \sqrt{1 + 3\phi^2/\pi^2}$ down-weights the prediction when
+the opponent's rating is uncertain.
 
 \subsection{Rating Update Procedure}
 \label{subsec:sd-glicko-update}
