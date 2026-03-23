@@ -10,6 +10,7 @@ Ralph~Allan Bradley and Milton~E. Terry.
 \newblock Rank analysis of incomplete block designs: {I}. {T}he method of
   paired comparisons.
 \newblock \emph{Biometrika}, 39\penalty0 (3/4):\penalty0 324--345, 1952.
+\newblock \doi{10.1093/biomet/39.3-4.324}.
 
 \bibitem[Chiang et~al.(2024)Chiang, Zheng, Sheng, Angelopoulos, Li, Li, Zhang,
   Zhu, Jordan, Gonzalez, and Stoica]{chiang2024chatbot}
@@ -19,19 +20,25 @@ Wei-Lin Chiang, Lianmin Zheng, Ying Sheng, Anastasios~Nikolas Angelopoulos,
 \newblock Chatbot arena: An open platform for evaluating {LLMs} by human
   preference.
 \newblock \emph{arXiv preprint arXiv:2403.04132}, 2024.
+\newblock URL \url{https://arxiv.org/abs/2403.04132}.
 
-\bibitem[Christiano et~al.(2017)Christiano, Leike, Brown, Marber, Legg, and
+\bibitem[Christiano et~al.(2017)Christiano, Leike, Brown, Martic, Legg, and
   Amodei]{christiano2017deep}
-Paul~F. Christiano, Jan Leike, Tom Brown, Miljan Marber, Shane Legg, and Dario
-  Amodei.
+Paul~F. Christiano, Jan Leike, Tom~B. Brown, Miljan Martic, Shane Legg, and
+  Dario Amodei.
 \newblock Deep reinforcement learning from human preferences.
 \newblock In \emph{Advances in Neural Information Processing Systems
   (NeurIPS)}, 2017.
+\newblock URL \url{https://arxiv.org/abs/1706.03741}.
+\newblock arXiv:1706.03741.
 
 \bibitem[Dahlskog and Togelius(2014)]{dahlskog2014procedural}
 Steve Dahlskog and Julian Togelius.
 \newblock Procedural content generation using patterns as objectives.
-\newblock In \emph{EvoApplications 2014}, 2014.
+\newblock In \emph{Applications of Evolutionary Computation (EvoApplications)},
+  volume 8602 of \emph{Lecture Notes in Computer Science}, pages 325--336.
+  Springer, 2014.
+\newblock \doi{10.1007/978-3-662-45523-4_27}.
 
 \bibitem[Elo(1978)]{elo1978rating}
 Arpad~E. Elo.
@@ -41,8 +48,9 @@ Arpad~E. Elo.
 \bibitem[Glickman(1999)]{glickman1999parameter}
 Mark~E. Glickman.
 \newblock Parameter estimation in large dynamic paired comparison experiments.
-\newblock \emph{Journal of the Royal Statistical Society: Series C},
-  48\penalty0 (3):\penalty0 377--394, 1999.
+\newblock \emph{Journal of the Royal Statistical Society: Series C (Applied
+  Statistics)}, 48\penalty0 (3):\penalty0 377--394, 1999.
+\newblock \doi{10.1111/1467-9876.00120}.
 
 \bibitem[Glickman(2012)]{glickman2012glicko2}
 Mark~E. Glickman.
@@ -57,12 +65,14 @@ Britton Horn, Steve Dahlskog, Noor Shaker, Gillian Smith, and Julian Togelius.
   AI} framework.
 \newblock In \emph{Proceedings of the 9th International Conference on the
   Foundations of Digital Games (FDG)}, 2014.
+\newblock URL \url{https://www.fdg2014.org/papers/fdg2014_paper_14.pdf}.
 
 \bibitem[Karakovskiy and Togelius(2012)]{karakovskiy2012marioai}
 Sergey Karakovskiy and Julian Togelius.
 \newblock The {Mario AI} benchmark and competitions.
 \newblock \emph{IEEE Transactions on Computational Intelligence and AI in
   Games}, 4\penalty0 (1):\penalty0 55--67, 2012.
+\newblock \doi{10.1109/TCIAIG.2012.2188528}.
 
 \bibitem[Khalifa et~al.(2020)Khalifa, Bontrager, Earle, and
   Togelius]{khalifa2020pcgrl}
@@ -70,20 +80,25 @@ Ahmed Khalifa, Philip Bontrager, Sam Earle, and Julian Togelius.
 \newblock {PCGRL}: Procedural content generation via reinforcement learning.
 \newblock In \emph{Proceedings of the AAAI Conference on Artificial
   Intelligence and Interactive Digital Entertainment (AIIDE)}, 2020.
+\newblock URL \url{https://ojs.aaai.org/index.php/AIIDE/article/view/7416}.
+\newblock arXiv:2001.09212.
 
-\bibitem[Marino et~al.(2015)Marino, Reis, and Lelis]{marino2015empirical}
-Jos{\'e} Rafael~Hern{\'a}ndez Marino, Walber Moreira~Penna Reis, and Levi H.~S.
-  Lelis.
+\bibitem[Mari{\~n}o et~al.(2015)Mari{\~n}o, Reis, and
+  Lelis]{marino2015empirical}
+Jos{\'e} Rafael~Hern{\'a}ndez Mari{\~n}o, Walber Moreira~Penna Reis, and Levi
+  H.~S. Lelis.
 \newblock An empirical evaluation of evaluation metrics of procedurally
   generated {Mario} levels.
 \newblock In \emph{Proceedings of the AAAI Conference on Artificial
   Intelligence and Interactive Digital Entertainment (AIIDE)}, 2015.
+\newblock URL \url{https://ojs.aaai.org/index.php/AIIDE/article/view/12785}.
 
 \bibitem[Mawhorter and Mateas(2010)]{mawhorter2010occupancy}
 Peter Mawhorter and Michael Mateas.
 \newblock Procedural level generation using occupancy-regulated extension.
 \newblock In \emph{Proceedings of the IEEE Conference on Computational
-  Intelligence and Games (CIG)}, 2010.
+  Intelligence and Games (CIG)}, pages 351--358. IEEE, 2010.
+\newblock \doi{10.1109/ITW.2010.5593333}.
 
 \bibitem[Nam et~al.(2024)Nam, Hsueh, Rerkjirattikal, and Ikeda]{nam2024using}
 Seong-Geon Nam, Chih-Hung Hsueh, Pasit Rerkjirattikal, and Kokolo Ikeda.
@@ -102,6 +117,8 @@ Long Ouyang, Jeffrey Wu, Xu~Jiang, Diogo Almeida, Carroll~L. Wainwright, Pamela
 \newblock Training language models to follow instructions with human feedback.
 \newblock In \emph{Advances in Neural Information Processing Systems
   (NeurIPS)}, 2022.
+\newblock URL \url{https://arxiv.org/abs/2203.02155}.
+\newblock arXiv:2203.02155.
 
 \bibitem[Pedersen et~al.(2010)Pedersen, Togelius, and
   Yannakakis]{pedersen2010modeling}
@@ -118,6 +135,8 @@ Rafael Rafailov, Archit Sharma, Eric Mitchell, Stefano Ermon, Christopher~D.
   reward model.
 \newblock In \emph{Advances in Neural Information Processing Systems
   (NeurIPS)}, 2023.
+\newblock URL \url{https://arxiv.org/abs/2305.18290}.
+\newblock arXiv:2305.18290.
 
 \bibitem[Sarkar and Cooper(2017)]{sarkar2017glicko2}
 Anurag Sarkar and Seth Cooper.
@@ -125,14 +144,18 @@ Anurag Sarkar and Seth Cooper.
   games.
 \newblock In \emph{Proceedings of the AAAI Conference on Artificial
   Intelligence and Interactive Digital Entertainment (AIIDE)}, 2017.
+\newblock URL \url{https://ojs.aaai.org/index.php/AIIDE/article/view/12948}.
 
 \bibitem[Schrum et~al.(2025)Schrum, Kilday, Salas, Hagan, and
   Williams]{schrum2025mariodiffusion}
-Jacob Schrum, Ocealyn Kilday, Erin Salas, Brent Hagan, and Robert Williams.
+Jacob Schrum, Olivia Kilday, Emilio Salas, Bess Hagan, and Reid Williams.
 \newblock Text-to-level diffusion models with various text encoders for {Super
   Mario Bros}.
 \newblock In \emph{Proceedings of the AAAI Conference on Artificial
-  Intelligence and Interactive Digital Entertainment (AIIDE)}, 2025.
+  Intelligence and Interactive Digital Entertainment (AIIDE)}, pages 110--120,
+  2025.
+\newblock \doi{10.1609/aiide.v21i1.36815}.
+\newblock URL \url{https://ojs.aaai.org/index.php/AIIDE/article/view/36815}.
 
 \bibitem[Shaker et~al.(2011{\natexlab{a}})Shaker, Togelius, Yannakakis, Weber,
   Shimizu, Hashiyama, Sorenson, Pasquier, Mawhorter, Takahashi, Smith, and
@@ -143,6 +166,7 @@ Noor Shaker, Julian Togelius, Georgios~N. Yannakakis, Ben Weber, Tomoyuki
 \newblock The 2010 {Mario AI} championship: {L}evel generation track.
 \newblock \emph{IEEE Transactions on Computational Intelligence and AI in
   Games}, 3\penalty0 (4):\penalty0 332--347, 2011{\natexlab{a}}.
+\newblock \doi{10.1109/TCIAIG.2011.2166267}.
 
 \bibitem[Shaker et~al.(2011{\natexlab{b}})Shaker, Yannakakis, and
   Togelius]{shaker2011features}
@@ -150,6 +174,7 @@ Noor Shaker, Georgios~N. Yannakakis, and Julian Togelius.
 \newblock Feature analysis for modeling game content quality.
 \newblock In \emph{Proceedings of the IEEE Conference on Computational
   Intelligence and Games (CIG)}, 2011{\natexlab{b}}.
+\newblock \doi{10.1109/CIG.2011.6031998}.
 
 \bibitem[Shaker et~al.(2012)Shaker, Nicolau, Yannakakis, Togelius, and
   O'Neill]{shaker2012evolving}
@@ -157,20 +182,24 @@ Noor Shaker, Miguel Nicolau, Georgios~N. Yannakakis, Julian Togelius, and
   Michael O'Neill.
 \newblock Evolving levels for {Super Mario Bros} using grammatical evolution.
 \newblock In \emph{Proceedings of the IEEE Conference on Computational
-  Intelligence and Games (CIG)}, 2012.
+  Intelligence and Games (CIG)}, pages 304--311, 2012.
+\newblock \doi{10.1109/CIG.2012.6374170}.
 
 \bibitem[Smith and Whitehead(2010)]{smith2010analyzing}
 Gillian Smith and Jim Whitehead.
 \newblock Analyzing the expressive range of a level generator.
 \newblock In \emph{Proceedings of the 2010 Workshop on Procedural Content
-  Generation in Games (PCGames)}. ACM, 2010.
+  Generation in Games (PCGames)}, pages 4:1--4:7. ACM, 2010.
+\newblock \doi{10.1145/1814256.1814260}.
 
 \bibitem[Snow et~al.(2008)Snow, O'Connor, Jurafsky, and Ng]{snow2008cheap}
 Rion Snow, Brendan O'Connor, Daniel Jurafsky, and Andrew~Y. Ng.
 \newblock Cheap and fast --- but is it good? {E}valuating non-expert
   annotations for natural language tasks.
 \newblock In \emph{Proceedings of the Conference on Empirical Methods in
-  Natural Language Processing (EMNLP)}, 2008.
+  Natural Language Processing (EMNLP)}, pages 254--263. Association for
+  Computational Linguistics, 2008.
+\newblock URL \url{https://aclanthology.org/D08-1027/}.
 
 \bibitem[Stiennon et~al.(2020)Stiennon, Ouyang, Wu, Ziegler, Lowe, Voss,
   Radford, Amodei, and Christiano]{stiennon2020learning}
@@ -179,6 +208,8 @@ Nisan Stiennon, Long Ouyang, Jeffrey Wu, Daniel~M. Ziegler, Ryan Lowe, Chelsea
 \newblock Learning to summarize with human feedback.
 \newblock In \emph{Advances in Neural Information Processing Systems
   (NeurIPS)}, 2020.
+\newblock URL \url{https://arxiv.org/abs/2009.01325}.
+\newblock arXiv:2009.01325.
 
 \bibitem[Sudhakaran et~al.(2023)Sudhakaran, Gonz{\'a}lez-Duque, Glanois,
   Freiberger, Najarro, and Risi]{sudhakaran2023mariogpt}
@@ -188,21 +219,27 @@ Shyam Sudhakaran, Miguel Gonz{\'a}lez-Duque, Claire Glanois, Matthias
   models.
 \newblock In \emph{Advances in Neural Information Processing Systems
   (NeurIPS)}, 2023.
+\newblock URL
+  \url{https://papers.neurips.cc/paper_files/paper/2023/file/a9bbeb2858dfbdbd4c19814e5d80ec60-Paper-Conference.pdf}.
+\newblock arXiv:2302.05981.
 
 \bibitem[Summerville and Mateas(2016)]{summerville2016super}
 Adam Summerville and Michael Mateas.
 \newblock Super {Mario} as a string: Platformer level generation via {LSTMs}.
 \newblock In \emph{Proceedings of the 1st International Joint Conference of
   DiGRA and FDG}, 2016.
+\newblock \doi{10.26503/dl.v2016i1.752}.
+\newblock arXiv:1603.00930.
 
-\bibitem[Summerville et~al.(2017)Summerville, Mariño, Snodgrass, Ontañón,
-  and Lelis]{summerville2017understanding}
-Adam Summerville, José Rafael~Hernández Mariño, Sam Snodgrass, Santiago
-  Ontañón, and Levi H.~S. Lelis.
+\bibitem[Summerville et~al.(2017)Summerville, Mari{\~n}o, Snodgrass,
+  Onta{\~n}{\'o}n, and Lelis]{summerville2017understanding}
+Adam Summerville, Jos{\'e} Rafael~Hern{\'a}ndez Mari{\~n}o, Sam Snodgrass,
+  Santiago Onta{\~n}{\'o}n, and Levi H.~S. Lelis.
 \newblock Understanding {Mario}: An evaluation of design metrics for
   platformers.
 \newblock In \emph{Proceedings of the 12th International Conference on the
   Foundations of Digital Games (FDG)}, 2017.
+\newblock \doi{10.1145/3102071.3102080}.
 
 \bibitem[Summerville et~al.(2018)Summerville, Snodgrass, Guzdial, Holmg{\aa}rd,
   Hoover, Isaksen, Nealen, and Togelius]{summerville2018pcgml}
@@ -211,6 +248,7 @@ Adam Summerville, Sam Snodgrass, Matthew Guzdial, Christoffer Holmg{\aa}rd,
 \newblock Procedural content generation via machine learning ({PCGML}).
 \newblock \emph{IEEE Transactions on Games}, 10\penalty0 (3):\penalty0
   257--270, 2018.
+\newblock \doi{10.1109/TG.2018.2846639}.
 
 \bibitem[Togelius et~al.(2011)Togelius, Yannakakis, Stanley, and
   Browne]{togelius2011search}
@@ -219,6 +257,7 @@ Julian Togelius, Georgios~N. Yannakakis, Kenneth~O. Stanley, and Cameron
 \newblock Search-based procedural content generation: {A} taxonomy and survey.
 \newblock \emph{IEEE Transactions on Computational Intelligence and AI in
   Games}, 3\penalty0 (3):\penalty0 172--186, 2011.
+\newblock \doi{10.1109/TCIAIG.2011.2148116}.
 
 \bibitem[Volz et~al.(2018)Volz, Schrum, Liu, Lucas, Smith, and
   Risi]{volz2018evolving}
@@ -227,7 +266,7 @@ Vanessa Volz, Jacob Schrum, Jialin Liu, Simon~M. Lucas, Adam Smith, and
 \newblock Evolving {Mario} levels in the latent space of a deep convolutional
   generative adversarial network.
 \newblock In \emph{Proceedings of the Genetic and Evolutionary Computation
-  Conference (GECCO)}, 2018.
+  Conference (GECCO)}, pages 221--228. ACM, 2018.
 \newblock \doi{10.1145/3205455.3205517}.
 
 \bibitem[Yannakakis and Togelius(2011)]{yannakakis2011experience}
@@ -235,6 +274,7 @@ Georgios~N. Yannakakis and Julian Togelius.
 \newblock Experience-driven procedural content generation.
 \newblock \emph{IEEE Transactions on Affective Computing}, 2\penalty0
   (3):\penalty0 147--161, 2011.
+\newblock \doi{10.1109/T-AFFC.2011.6}.
 
 \bibitem[Zheng et~al.(2023)Zheng, Chiang, Sheng, Zhuang, Wu, Zhuang, Lin, Li,
   Li, Xing, Zhang, Gonzalez, and Stoica]{zheng2023judging}
@@ -244,12 +284,15 @@ Lianmin Zheng, Wei-Lin Chiang, Ying Sheng, Siyuan Zhuang, Zhanghao Wu, Yonghao
 \newblock Judging {LLM-as-a-Judge} with {MT-Bench} and {Chatbot Arena}.
 \newblock In \emph{Advances in Neural Information Processing Systems
   (NeurIPS)}, 2023.
+\newblock URL \url{https://arxiv.org/abs/2306.05685}.
+\newblock arXiv:2306.05685.
 
 \bibitem[Ziegler et~al.(2019)Ziegler, Stiennon, Wu, Brown, Radford, Amodei,
   Christiano, and Irving]{ziegler2019fine}
 Daniel~M. Ziegler, Nisan Stiennon, Jeffrey Wu, Tom~B. Brown, Alec Radford,
   Dario Amodei, Paul Christiano, and Geoffrey Irving.
 \newblock Fine-tuning language models from human preferences.
-\newblock In \emph{arXiv preprint arXiv:1909.08593}, 2019.
+\newblock \emph{arXiv preprint arXiv:1909.08593}, 2019.
+\newblock URL \url{https://arxiv.org/abs/1909.08593}.
 
 \end{thebibliography}
