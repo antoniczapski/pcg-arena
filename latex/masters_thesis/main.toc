@@ -24,17 +24,17 @@
 \contentsline {subsection}{\numberline {2.3.1}The Mario AI Framework}{16}{subsection.2.3.1}%
 \contentsline {subsection}{\numberline {2.3.2}Mario Level Generators in the Literature}{17}{subsection.2.3.2}%
 \contentsline {section}{\numberline {2.4}Evaluation Methods for Procedural Content}{18}{section.2.4}%
-\contentsline {subsection}{\numberline {2.4.1}Automated Metrics}{18}{subsection.2.4.1}%
-\contentsline {subsection}{\numberline {2.4.2}Agent-Based Testing}{19}{subsection.2.4.2}%
-\contentsline {subsection}{\numberline {2.4.3}Human Evaluation Studies}{20}{subsection.2.4.3}%
-\contentsline {subsection}{\numberline {2.4.4}Comparison of Approaches and Their Limitations}{20}{subsection.2.4.4}%
-\contentsline {section}{\numberline {2.5}Rating Systems for Pairwise Comparisons}{22}{section.2.5}%
-\contentsline {subsection}{\numberline {2.5.1}The Elo Rating System}{22}{subsection.2.5.1}%
-\contentsline {subsection}{\numberline {2.5.2}The Glicko-2 Rating System}{22}{subsection.2.5.2}%
-\contentsline {subsection}{\numberline {2.5.3}Arena-Style Evaluation Platforms}{23}{subsection.2.5.3}%
-\contentsline {section}{\numberline {2.6}Preference Learning and Alignment}{23}{section.2.6}%
-\contentsline {subsection}{\numberline {2.6.1}Reinforcement Learning from Human Feedback}{24}{subsection.2.6.1}%
-\contentsline {subsection}{\numberline {2.6.2}Direct Preference Optimization}{24}{subsection.2.6.2}%
+\contentsline {subsection}{\numberline {2.4.1}Automated Metrics}{19}{subsection.2.4.1}%
+\contentsline {subsection}{\numberline {2.4.2}Agent-Based Testing}{20}{subsection.2.4.2}%
+\contentsline {subsection}{\numberline {2.4.3}Human Evaluation Studies}{21}{subsection.2.4.3}%
+\contentsline {subsection}{\numberline {2.4.4}Comparison of Approaches and Their Limitations}{22}{subsection.2.4.4}%
+\contentsline {section}{\numberline {2.5}Rating Systems for Pairwise Comparisons}{23}{section.2.5}%
+\contentsline {subsection}{\numberline {2.5.1}The Elo Rating System}{23}{subsection.2.5.1}%
+\contentsline {subsection}{\numberline {2.5.2}The Glicko-2 Rating System}{23}{subsection.2.5.2}%
+\contentsline {subsection}{\numberline {2.5.3}Arena-Style Evaluation Platforms}{24}{subsection.2.5.3}%
+\contentsline {section}{\numberline {2.6}Preference Learning and Alignment}{25}{section.2.6}%
+\contentsline {subsection}{\numberline {2.6.1}Reinforcement Learning from Human Feedback}{25}{subsection.2.6.1}%
+\contentsline {subsection}{\numberline {2.6.2}Direct Preference Optimization}{25}{subsection.2.6.2}%
 \contentsline {chapter}{\numberline {3}PCG Arena --- System Design}{27}{chapter.3}%
 \contentsline {section}{\numberline {3.1}Requirements and Design Goals}{27}{section.3.1}%
 \contentsline {section}{\numberline {3.2}System Architecture}{28}{section.3.2}%
@@ -62,9 +62,9 @@
 \contentsline {chapter}{\numberline {4}User Study and Exploratory Data Analysis}{43}{chapter.4}%
 \contentsline {section}{\numberline {4.1}Study Design and Data Collection}{43}{section.4.1}%
 \contentsline {section}{\numberline {4.2}Dataset Overview}{44}{section.4.2}%
-\contentsline {paragraph}{Player engagement.}{44}{section*.20}%
+\contentsline {paragraph}{Player engagement.}{44}{section*.21}%
 \contentsline {section}{\numberline {4.3}Generator Rankings}{45}{section.4.3}%
-\contentsline {paragraph}{Pairwise confusion matrix.}{46}{section*.24}%
+\contentsline {paragraph}{Pairwise confusion matrix.}{46}{section*.25}%
 \contentsline {section}{\numberline {4.4}RQ1: What Makes a Good Level?}{47}{section.4.4}%
 \contentsline {subsection}{\numberline {4.4.1}Difficulty and Win Rate (H1)}{47}{subsection.4.4.1}%
 \contentsline {subsection}{\numberline {4.4.2}Tag Correlations with Win Rate (H2)}{48}{subsection.4.4.2}%

@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex main"] 1775078192.75449 "main.aux" "main.bbl" "main" 1775078202.94395 2
+["bibtex main"] 1778404794.84554 "main.aux" "main.bbl" "main" 1778404803.91377 0
   "./bibliography.bib" 1775053458 18182 2dbf8c36128873dd57c1d905571183c8 ""
   "C:/Miktex/bibtex/bst/natbib/plainnat.bst" 1284455456 26816 ffe5423d2019860bad9f54bc402fac15 ""
-  "main.aux" 1775078201 42515 13a8c159480935335be3cda3bb9e929c "pdflatex"
+  "main.aux" 1778404802 43168 02235c660d609297f3773ba759fbec79 "pdflatex"
   (generated)
   "main.bbl"
   "main.blg"
   (rewritten before read)
-["pdflatex"] 1775078193.73763 "c:/Users/user/Studia/DataScience/Semestr_V/pcg-arena/latex/masters_thesis/main.tex" "main.pdf" "main" 1775078202.945 2
+["pdflatex"] 1778404795.1763 "c:/Users/user/Studia/DataScience/Semestr_V/pcg-arena/latex/masters_thesis/main.tex" "main.pdf" "main" 1778404803.91485 0
   "C:/Miktex/fonts/tfm/jknappen/ec/ecbx0500.tfm" 993061946 3212 70507fcf14da26e9fa78c7f84562ff74 ""
   "C:/Miktex/fonts/tfm/jknappen/ec/ecbx0700.tfm" 993061950 3220 25e4222ac92e5aa3866f7c5aaa811a4a ""
   "C:/Miktex/fonts/tfm/jknappen/ec/ecbx0900.tfm" 993061954 3200 f959f56c26f697d341ba38dba18fe1f8 ""
@@ -187,7 +187,7 @@
   "C:/Users/user/AppData/Local/MiKTeX/fonts/pk/ljfour/jknappen/ec/dpi600/tcrm1095.pk" 1623547966 12668 f7757e138d9299974c99683354d988aa ""
   "C:/Users/user/AppData/Local/MiKTeX/miktex/data/le/pdftex/pdflatex.fmt" 1616265443 9390940 fd84a0db3fa5a4cf7c8bafb35d07a306 ""
   "C:/Users/user/AppData/Local/MiKTeX/pdftex/config/pdftex.map" 1773831187 88358 4512e50f597a6929d01aebf4ef381669 ""
-  "c:/Users/user/Studia/DataScience/Semestr_V/pcg-arena/latex/masters_thesis/main.tex" 1775078072 109710 d185fa524e4f72b17e017fc832412f80 ""
+  "c:/Users/user/Studia/DataScience/Semestr_V/pcg-arena/latex/masters_thesis/main.tex" 1778404785 112617 d0da4a9e1c2d8a13a5222d8ffd649138 ""
   "iithesis.cls" 1773758073 9401 ba0037ec5d02e950e8d475fa08d855be ""
   "img//ascii-level-rendered.png" 1775074583 26633 a4f783ee81512f6d8efcfd9de9432c3a ""
   "img//builder_profile.png" 1773758073 107347 8489d4e4e70e58b53d7f36e66aef102b ""
@@ -204,17 +204,18 @@
   "img//eda_player_engagement.png" 1774259531 90899 8c15fecfee18fdfdcaddf38be8071238 ""
   "img//eda_tag_by_generator.png" 1774259529 133937 a0131c86d7c3465ca153c1f708d476d8 ""
   "img//eda_tag_distribution.png" 1774259529 39316 8bb7bb63c25da940689eb279a822e7a6 ""
+  "img//era-linearity-leniency.png" 1778404658 86496 ffae7f151e38f77881730c1374fef75f ""
   "img//generator_preview.png" 1773758073 127164 a538b268fc60a70a7c800c5c55d6d085 ""
   "img//leaderboard.png" 1773758073 95494 d02e3e8746e83ab2832d633545d9e734 ""
   "img//main_gameplay.png" 1773758073 68084 85f21c3d44ddb7d8e8620f508116ee70 ""
   "img//smb-retro.jpg" 1774813540 122063 c63c94da328449841acd8d327b131445 ""
   "img//tag_selection.png" 1775065797 139434 6c515170ec40e01ed31541f0778b7f14 ""
   "img//voting_panel.png" 1773758074 67532 5a777e24fa3586475dbed30f4f8c989e ""
-  "main.aux" 1775078201 42515 13a8c159480935335be3cda3bb9e929c "pdflatex"
-  "main.bbl" 1775078200 15841 97c2074b9ab6dbcffabae50511988499 "bibtex main"
-  "main.out" 1775078201 16429 c1c7b533749e2624fb9f5cbfe3abf785 "pdflatex"
-  "main.tex" 1775078072 109710 d185fa524e4f72b17e017fc832412f80 ""
-  "main.toc" 1775078201 8133 6c8c0c5b8bc8ec912aea45089c0bd37d "pdflatex"
+  "main.aux" 1778404802 43168 02235c660d609297f3773ba759fbec79 "pdflatex"
+  "main.bbl" 1778404795 15841 97c2074b9ab6dbcffabae50511988499 "bibtex main"
+  "main.out" 1778404802 16429 c1c7b533749e2624fb9f5cbfe3abf785 "pdflatex"
+  "main.tex" 1778404785 112617 d0da4a9e1c2d8a13a5222d8ffd649138 ""
+  "main.toc" 1778404802 8135 d100ba1c062d07b9822c39b21bd21e6d "pdflatex"
   (generated)
   "main.aux"
   "main.log"

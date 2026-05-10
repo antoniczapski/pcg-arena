@@ -71,7 +71,7 @@ Na podstawie zebranych danych przeprowadzono rozległą analizę eksploracyjną 
 \englishabstract {
 Evaluating procedural content generators (PCGs) for video games poses significant methodological challenges, as player enjoyment is inherently subjective and difficult to quantify through automated metrics alone. This thesis presents PCG Arena, a web-based platform designed for blind A/B testing of Super Mario Bros level generators through human preference data.
 \KOT{gdzieś - może tutaj - zdanie, że Mario has been an important benchmark for a variety of PCG methods, from 2009 until today, albo cos innego ale we wstępie od razu dającego do zroumienia, że to nie jest losowa gierka wzięta bo tak}
-\changed{Super Mario Bros has served as the \emph{de facto} benchmark for PCG level generation research since the first Mario AI Competition in 2009, making it an ideal domain for systematic generator comparison.} The platform enables players to play two procedurally generated levels side-by-side in their browser, vote for their preferred level, and optionally tag gameplay characteristics. Votes are aggregated using the Glicko-2 rating system, providing uncertainty-aware rankings with confidence intervals.
+\changed{Super Mario Bros has been used as a benchmark for PCG level generation research since the first Mario AI Competition in 2009, making it an ideal domain for systematic generator comparison.} The platform enables players to play two procedurally generated levels side-by-side in their browser, vote for their preferred level, and optionally tag gameplay characteristics. Votes are aggregated using the Glicko-2 rating system, providing uncertainty-aware rankings with confidence intervals.
 
 Building on the collected data, we conduct an extensive exploratory data analysis investigating what makes levels good, whether player preferences are consistent, and whether subjective tags correspond to measurable gameplay differences. These findings inform the development of a heuristic \changed{\emph{judge function}}\KOT{not sure about capitalizing here -- omit or make emph?} achieving $r = 0.736$ correlation with human preferences. Finally, we present MarioDPO, a level generator fine-tuned with Direct Preference Optimization that achieves the highest win rate (83.3\%) among all PCG methods tested, second only to hand-crafted original Nintendo levels.
 \KOT{poza tym abstract mi się podoba, jest OK}
@@ -103,8 +103,7 @@ since the mid-2000s, producing a rich landscape of generation techniques spannin
 constructive rules, evolutionary search, formal grammars, neural networks, and
 reinforcement learning.
 
-Among the many game domains studied, Super Mario Bros (SMB) has emerged as the
-\emph{de facto} benchmark for \changed{PCG level generation research}. Its 2D tile-grid format provides a
+Among the many game domains studied, Super Mario Bros (SMB) \changed{has accumulated the largest body of comparative work in} \changed{PCG level generation research}. Its 2D tile-grid format provides a
 rich yet tractable design space, its physics are well understood, and the
 open-source Mario AI Framework~\citep{karakovskiy2012marioai} offers a
 standardised environment for both automated and human evaluation.\KOT{w sumie mało obrazków - może screenik z Mario żeby ludzie widzieli jak nie wiedzą :P} Over 15 years
@@ -152,8 +151,7 @@ Critically,
 \changed{all existing studies were conducted as one-time events---often years
 apart---rather than as a persistent evaluation infrastructure, and the largest
 web-based studies predate the wave of ML-based generators (GANs, LLMs, diffusion
-models) that have since reshaped the field.} When participants know which algorithm produced a level, expectations
-contaminate their judgments. \KOT{I suppose how the original Mario PCG competition worked? exactly as your study - play two levels choose best?}
+models) that have since reshaped the field.} \changed{Many of these studies also reveal which algorithm produced each level to participants, even though, when players know the source generator, expectations contaminate their judgments.} \KOT{I suppose how the original Mario PCG competition worked? exactly as your study - play two levels choose best?}
 
 This persistent gap between scalable-but-inaccurate automated metrics and
 valid-but-expensive human studies motivates the work presented in this thesis.
@@ -163,7 +161,7 @@ valid-but-expensive human studies motivates the work presented in this thesis.
 
 This thesis addresses the PCG evaluation gap through the design, deployment, and
 analysis of \emph{PCG Arena}, a web-based platform for blind A/B testing of
-Mario level generators. We \KOT{primarely} primarily investigate three research questions:
+Mario level generators. We \KOT{primarely} \changed{primarily} investigate three research questions:
 
 \begin{description}[style=nextline]
     \item[RQ1: What makes a good level?] Do structural features of
@@ -179,8 +177,8 @@ Mario level generators. We \KOT{primarely} primarily investigate three research 
 \end{description}
 
 \KOT{probably noindent here to make it look better}
-\noindent
-The thesis makes four contributions:
+
+\noindent The thesis makes four contributions:
 
 \begin{enumerate}
     \item \textbf{PCG Arena}, a persistent, open-access web platform for blind
@@ -384,8 +382,8 @@ for training data entirely.
 \section{Super Mario Bros as a PCG Benchmark}
 \label{sec:bg-mario}
 
-Super Mario Bros has become the \emph{de facto} benchmark domain for PCG
-research. Its 2D tile-grid format provides a rich yet tractable design space, its
+\changed{Several practical factors explain why Super Mario Bros recurs throughout the
+PCG literature.} Its 2D tile-grid format provides a rich yet tractable design space, its
 physics introduce no new mechanics after the first level (isolating level design
 as the sole variable of interest), nearly all experimental subjects are familiar
 with the game's controls and goals, and the open-source Mario AI Framework
@@ -430,6 +428,15 @@ families, selected to benchmark a broad cross-section of established PCG
 approaches. Table~\ref{tab:generators} provides a comparative overview.
 
 \KOT{gdzieś bym jeszcze wspomniał, nie wiem jakie miejsce jest dobre, że nie wszyscy potrafią generować to samo i że wiele z zaprezentowanych podejśc upraszcza sobie życie generując tylko 1-2 rodzaje przeciwników, albo tylko kilka rodzajów bloków. Swoja droga pytanie czy to nie jest issue że o samej grze i co składa się na level dowiadujemy się tak późno w pracy...}
+
+\changed{An important caveat is that these generators do not all target the
+same design vocabulary. Several reduce the problem space substantially---for
+instance, restricting themselves to one or two enemy types (typically Goombas
+and Green Koopas) or omitting power-ups, pipes carrying Piranha Plants, or
+Bullet Bill cannons. This unevenness affects fair comparison: a generator
+producing only a subset of SMB's design elements may appear competitive on
+some metrics while being structurally less expressive than the original
+Nintendo levels.}
 
 \textbf{Human-authored baseline.} The 15 original SMB levels from Nintendo
 (1985), transcribed into the Mario AI Framework's format. These serve as the
@@ -513,14 +520,19 @@ The most widely used evaluation approach computes \emph{static structural
 metrics} directly from the tile grid, without simulating gameplay.
 
 \textbf{Linearity} measures how closely a level's vertical profile follows a
-straight line. \citet{smith2010analyzing} defined it via linear regression on
-platform midpoints; later works~\citep{horn2014comparative,
-summerville2017understanding} use $R^2$ \KOT{co to za wzorek, po co te literki i nazwy, to nic nie mowi, nic nie tłumaczy} \changed{(the coefficient of determination, measuring
-the proportion of variance in the data explained by the regression)} goodness-of-fit
-instead, inverting the scale. These incompatible definitions complicate cross-paper comparisons.
+straight line. \citet{smith2010analyzing} defined it as the \changed{mean
+absolute residual---the average vertical distance between platform midpoints
+and the best-fit regression line---so that lower values indicate a more linear
+level}. Later works~\citep{horn2014comparative,
+summerville2017understanding} instead use $R^2$ \KOT{co to za wzorek, po co te literki i nazwy, to nic nie mowi, nic nie tłumaczy} \changed{(the coefficient of determination, measuring
+the proportion of variance in the data explained by the regression),} \changed{which inverts the scale: higher $R^2$ means more linear. The two formulations are therefore not directly comparable, complicating cross-paper analyses.}
 
 \textbf{Leniency} approximates difficulty through weighted sums of game objects.
-At least three incompatible formulations exist in the literature, using different
+\changed{In its original form~\citep{smith2010analyzing}, it is computed as
+$L = (w_p \cdot n_p + w_g \cdot n_g + w_e \cdot n_e) / W$, where $n_p$ is the
+number of power-ups, $n_g$ the number of gaps, $n_e$ the number of enemies, $W$
+the level width in tiles, and the weights $w_p > 0$, $w_g, w_e < 0$ reward
+forgiving content and penalise hazards.} At least three incompatible formulations exist in the literature, using different
 tile weights and normalisation schemes~\citep{smith2010analyzing,
 shaker2012evolving, marino2015empirical}. Critically,
 \citet{marino2015empirical} showed that leniency only weakly correlates with
@@ -537,6 +549,23 @@ distribution as a 2D histogram, revealing a generator's output peaks, holes, and
 biases. ERA has been widely adopted~\citep{horn2014comparative,
 shaker2012evolving} but is purely descriptive---it characterises \emph{what} a
 generator produces, not whether players enjoy it.
+
+\changed{Figure~\ref{fig:era-grid} shows an ERA grid for the 13 PCG Arena
+generators, computed over 100 levels per generator (15 for the original SMB1
+baseline). Each panel is a 2D histogram of linearity (using the $R^2$
+formulation) against leniency. The plot reveals each generator's expressive
+range: e.g.\ Notch and its variants concentrate near high-linearity, low-hazard
+regions, while pattern-based and learned generators populate broader regions
+of the design space.}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{era-linearity-leniency.png}
+\caption{\changed{Expressive Range Analysis grid: 2D histogram of linearity
+($R^2$) versus leniency for each PCG Arena generator. Each panel uses the
+same axes; brighter cells indicate more levels at that combination.}}
+\label{fig:era-grid}
+\end{figure}
 
 \subsection{Agent-Based Testing}
 \label{subsec:bg-eval-agents}
@@ -556,7 +585,7 @@ inaccuracies~\citep{nam2024using}.
 
 Agent-based evaluation is fast, reproducible, and incurs no participant cost, but
 agent bias is a fundamental concern: superhuman agents can solve levels humans
-cannot, and difficulty estimates depend on the specific agent policy. \changed{Conversely,
+cannot, and difficulty estimates depend on the specific agent policy. \changed{The mismatch also goes the other way:
 many levels that human players can complete are unsolvable by standard A* agents,
 which lack the ability to backtrack, use special power-ups, or exploit advanced
 movement techniques. These bi-directional} limitations are rarely quantified in
@@ -579,7 +608,11 @@ scales \changed{(ordered response scales from ``strongly disagree'' to ``strongl
 for enjoyment, aesthetics, and difficulty \changed{with $n = 37$ participants}.\KOT{wtf is n?}
 \citet{summerville2017understanding} collected ratings across 85 design metrics
 and showed that inter-rater agreement imposes ceilings on achievable
-metric--human correlations.
+metric--human correlations. \changed{The practical consequence is a quantitative
+upper bound: an automated metric cannot correlate with human ratings any better
+than humans correlate with each other, so reporting an inter-rater agreement
+baseline is essential when interpreting metric--human correlations---a
+discipline rarely followed in the PCG literature.}
 \KOT{also - what is likert scale...}
 
 \textbf{Large-scale web studies.} \citet{pedersen2010modeling} recruited 181
@@ -618,22 +651,22 @@ key papers in the Mario PCG literature.
 \begin{table}[H]
 \centering
 \small
-\begin{tabular}{llccccc}
+\begin{tabular}{lllccccc}
 \toprule
-\textbf{Paper} & \textbf{Year} & \textbf{S} & \textbf{A} & \textbf{ERA} & \textbf{H} & \textbf{ML} \\
+\textbf{Paper} & \textbf{Year} & \changed{\textbf{PCG algorithm}} & \textbf{S} & \textbf{A} & \textbf{ERA} & \textbf{H} & \textbf{ML} \\
 \midrule
-Smith \& Whitehead          & 2010 & $\checkmark$ &              & $\checkmark$ &              &              \\
-Pedersen et al.             & 2010 & $\checkmark$ &              &              & $\checkmark$ & $\checkmark$ \\
-Shaker et al.\ (Champ.)     & 2011 & $\checkmark$ & $\checkmark$ &              & $\checkmark$ &              \\
-Shaker et al.\ (GE)         & 2012 & $\checkmark$ &              & $\checkmark$ &              &              \\
-Horn et al.                 & 2014 & $\checkmark$ &              & $\checkmark$ &              &              \\
-Marino et al.               & 2015 & $\checkmark$ &              &              & $\checkmark$ &              \\
-Summerville \& Mateas       & 2016 & $\checkmark$ & $\checkmark$ &              &              & $\checkmark$ \\
-Summerville et al.          & 2017 & $\checkmark$ & $\checkmark$ &              & $\checkmark$ & $\checkmark$ \\
-Volz et al.\ (MarioGAN)     & 2018 & $\checkmark$ & $\checkmark$ &              &              &              \\
-Nam et al.                  & 2024 & $\checkmark$ & $\checkmark$ &              & $\checkmark$ &              \\
+Smith \& Whitehead          & 2010 & \changed{Launchpad (rhythm-based)} & $\checkmark$ &              & $\checkmark$ &              &              \\
+Pedersen et al.             & 2010 & \changed{Notch (parameterised)}   & $\checkmark$ &              &              & $\checkmark$ & $\checkmark$ \\
+Shaker et al.\ (Champ.)     & 2011 & \changed{Comp.\ entries (mixed)}  & $\checkmark$ & $\checkmark$ &              & $\checkmark$ &              \\
+Shaker et al.\ (GE)         & 2012 & \changed{Grammatical Evolution}   & $\checkmark$ &              & $\checkmark$ &              &              \\
+Horn et al.                 & 2014 & \changed{Multiple (comparative)}  & $\checkmark$ &              & $\checkmark$ &              &              \\
+Marino et al.               & 2015 & \changed{GE + Notch (compared)}   & $\checkmark$ &              &              & $\checkmark$ &              \\
+Summerville \& Mateas       & 2016 & \changed{LSTM column generator}   & $\checkmark$ & $\checkmark$ &              &              & $\checkmark$ \\
+Summerville et al.          & 2017 & \changed{Multiple (8 generators)} & $\checkmark$ & $\checkmark$ &              & $\checkmark$ & $\checkmark$ \\
+Volz et al.\ (MarioGAN)     & 2018 & \changed{DCGAN + CMA-ES}          & $\checkmark$ & $\checkmark$ &              &              &              \\
+Nam et al.                  & 2024 & \changed{Stochastic ``human-like'' agents} & $\checkmark$ & $\checkmark$ &              & $\checkmark$ &              \\
 \midrule
-\textbf{PCG Arena (ours)}   & \textbf{2026} & $\checkmark$ & $\checkmark$ & & $\checkmark$ & $\checkmark$ \\
+\textbf{PCG Arena (ours)}   & \textbf{2026} & \changed{\textbf{15 generators (all paradigms)}} & $\checkmark$ & $\checkmark$ & & $\checkmark$ & $\checkmark$ \\
 \bottomrule
 \end{tabular}
 \caption{Evaluation methods used in Mario PCG research.
@@ -1232,10 +1265,10 @@ In addition to the preference vote, players may optionally tag each level in the
 with up to three descriptive labels drawn from a fixed vocabulary of seven tags.
 \changed{The tags were hand-crafted based on properties a PCG researcher would
 want a generator to be judged on: overall enjoyment, engagement, creativity,
-difficulty calibration, playability, and visual correctness. No prior tag
-taxonomy for PCG level evaluation exists in the literature; the set was designed
-to be small enough for rapid annotation yet expressive enough to capture the
-most salient quality dimensions.}
+difficulty calibration, playability, and visual correctness. We did not find
+a pre-existing tag taxonomy for PCG level evaluation in the literature; the
+set was designed to be small enough for rapid annotation yet expressive enough
+to capture the most salient quality dimensions.}
 
 \begin{table}[H]
 \centering
