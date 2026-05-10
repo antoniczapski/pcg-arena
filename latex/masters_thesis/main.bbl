@@ -1,4 +1,4 @@
-\begin{thebibliography}{33}
+\begin{thebibliography}{36}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -31,6 +31,13 @@ Paul~F. Christiano, Jan Leike, Tom~B. Brown, Miljan Martic, Shane Legg, and
   (NeurIPS)}, 2017.
 \newblock URL \url{https://arxiv.org/abs/1706.03741}.
 \newblock arXiv:1706.03741.
+
+\bibitem[Dahlskog and Togelius(2013)]{dahlskog2013patterns}
+Steve Dahlskog and Julian Togelius.
+\newblock Patterns as objectives for level generation.
+\newblock In \emph{Proceedings of the Second Workshop on Design Patterns in
+  Games}, 2013.
+\newblock URL \url{http://julian.togelius.com/Dahlskog2013Patterns.pdf}.
 
 \bibitem[Dahlskog and Togelius(2014)]{dahlskog2014procedural}
 Steve Dahlskog and Julian Togelius.
@@ -157,6 +164,15 @@ Jacob Schrum, Olivia Kilday, Emilio Salas, Bess Hagan, and Reid Williams.
 \newblock \doi{10.1609/aiide.v21i1.36815}.
 \newblock URL \url{https://ojs.aaai.org/index.php/AIIDE/article/view/36815}.
 
+\bibitem[Shaker et~al.(2010)Shaker, Yannakakis, and
+  Togelius]{shaker2010towards}
+Noor Shaker, Georgios~N. Yannakakis, and Julian Togelius.
+\newblock Towards automatic personalized content generation for platform games.
+\newblock In \emph{Proceedings of the AAAI Conference on Artificial
+  Intelligence and Interactive Digital Entertainment (AIIDE)}, pages 63--68,
+  2010.
+\newblock \doi{10.1609/aiide.v6i1.12399}.
+
 \bibitem[Shaker et~al.(2011{\natexlab{a}})Shaker, Togelius, Yannakakis, Weber,
   Shimizu, Hashiyama, Sorenson, Pasquier, Mawhorter, Takahashi, Smith, and
   Baumgarten]{shaker2011mario}
@@ -184,6 +200,14 @@ Noor Shaker, Miguel Nicolau, Georgios~N. Yannakakis, Julian Togelius, and
 \newblock In \emph{Proceedings of the IEEE Conference on Computational
   Intelligence and Games (CIG)}, pages 304--311, 2012.
 \newblock \doi{10.1109/CIG.2012.6374170}.
+
+\bibitem[Shaker et~al.(2016)Shaker, Togelius, and Nelson]{shaker2016pcgbook}
+Noor Shaker, Julian Togelius, and Mark~J. Nelson.
+\newblock \emph{Procedural Content Generation in Games: A Textbook and an
+  Overview of Current Research}.
+\newblock Springer, 2016.
+\newblock \doi{10.1007/978-3-319-42716-4}.
+\newblock URL \url{https://www.pcgbook.com}.
 
 \bibitem[Smith and Whitehead(2010)]{smith2010analyzing}
 Gillian Smith and Jim Whitehead.

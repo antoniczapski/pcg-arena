@@ -11,88 +11,88 @@
 \babel@toc {english}{}
 \contentsline {chapter}{\numberline {1}Introduction}{9}{chapter.1}%
 \contentsline {section}{\numberline {1.1}Procedural Content Generation in Video Games}{9}{section.1.1}%
-\contentsline {section}{\numberline {1.2}The Evaluation Problem}{9}{section.1.2}%
-\contentsline {section}{\numberline {1.3}Research Questions and Contributions}{10}{section.1.3}%
-\contentsline {section}{\numberline {1.4}Thesis Structure}{11}{section.1.4}%
+\contentsline {section}{\numberline {1.2}The Evaluation Problem}{10}{section.1.2}%
+\contentsline {section}{\numberline {1.3}Research Questions and Contributions}{11}{section.1.3}%
+\contentsline {section}{\numberline {1.4}Thesis Structure}{12}{section.1.4}%
 \contentsline {chapter}{\numberline {2}Background and Related Work}{13}{chapter.2}%
-\contentsline {section}{\numberline {2.1}Procedural Content Generation}{13}{section.2.1}%
-\contentsline {subsection}{\numberline {2.1.1}Search-Based Approaches}{14}{subsection.2.1.1}%
-\contentsline {subsection}{\numberline {2.1.2}Grammar-Based and Rule-Based Approaches}{14}{subsection.2.1.2}%
-\contentsline {subsection}{\numberline {2.1.3}Machine Learning-Based Generation (PCGML)}{15}{subsection.2.1.3}%
-\contentsline {section}{\numberline {2.2}Super Mario Bros as a PCG Benchmark}{15}{section.2.2}%
-\contentsline {subsection}{\numberline {2.2.1}The Mario AI Framework}{15}{subsection.2.2.1}%
-\contentsline {subsection}{\numberline {2.2.2}Mario Level Generators in the Literature}{16}{subsection.2.2.2}%
-\contentsline {section}{\numberline {2.3}Evaluation Methods for Procedural Content}{17}{section.2.3}%
-\contentsline {subsection}{\numberline {2.3.1}Automated Metrics}{17}{subsection.2.3.1}%
-\contentsline {subsection}{\numberline {2.3.2}Agent-Based Testing}{18}{subsection.2.3.2}%
-\contentsline {subsection}{\numberline {2.3.3}Human Evaluation Studies}{18}{subsection.2.3.3}%
-\contentsline {subsection}{\numberline {2.3.4}Comparison of Approaches and Their Limitations}{19}{subsection.2.3.4}%
-\contentsline {section}{\numberline {2.4}Rating Systems for Pairwise Comparisons}{20}{section.2.4}%
-\contentsline {subsection}{\numberline {2.4.1}The Elo Rating System}{20}{subsection.2.4.1}%
-\contentsline {subsection}{\numberline {2.4.2}The Glicko-2 Rating System}{20}{subsection.2.4.2}%
-\contentsline {subsection}{\numberline {2.4.3}Arena-Style Evaluation Platforms}{21}{subsection.2.4.3}%
-\contentsline {section}{\numberline {2.5}Preference Learning and Alignment}{22}{section.2.5}%
-\contentsline {subsection}{\numberline {2.5.1}Reinforcement Learning from Human Feedback}{22}{subsection.2.5.1}%
-\contentsline {subsection}{\numberline {2.5.2}Direct Preference Optimization}{22}{subsection.2.5.2}%
-\contentsline {chapter}{\numberline {3}PCG Arena --- System Design}{25}{chapter.3}%
-\contentsline {section}{\numberline {3.1}Requirements and Design Goals}{25}{section.3.1}%
-\contentsline {section}{\numberline {3.2}System Architecture}{26}{section.3.2}%
-\contentsline {subsection}{\numberline {3.2.1}Frontend}{26}{subsection.3.2.1}%
-\contentsline {subsection}{\numberline {3.2.2}Backend}{26}{subsection.3.2.2}%
-\contentsline {subsection}{\numberline {3.2.3}Database}{27}{subsection.3.2.3}%
-\contentsline {section}{\numberline {3.3}Game Engine}{27}{section.3.3}%
-\contentsline {subsection}{\numberline {3.3.1}TypeScript Port}{28}{subsection.3.3.1}%
-\contentsline {subsection}{\numberline {3.3.2}Level Format}{29}{subsection.3.3.2}%
-\contentsline {subsection}{\numberline {3.3.3}Level Validation}{30}{subsection.3.3.3}%
-\contentsline {section}{\numberline {3.4}Battle and Voting System}{30}{section.3.4}%
-\contentsline {subsection}{\numberline {3.4.1}Battle Flow}{31}{subsection.3.4.1}%
-\contentsline {subsection}{\numberline {3.4.2}Tagging System}{32}{subsection.3.4.2}%
-\contentsline {section}{\numberline {3.5}Matchmaking: AGIS Algorithm}{32}{section.3.5}%
-\contentsline {subsection}{\numberline {3.5.1}Problem Definition}{33}{subsection.3.5.1}%
-\contentsline {subsection}{\numberline {3.5.2}Stage 1: First Generator Selection}{33}{subsection.3.5.2}%
-\contentsline {subsection}{\numberline {3.5.3}Stage 2: Second Generator Selection}{33}{subsection.3.5.3}%
-\contentsline {subsection}{\numberline {3.5.4}Parameters}{34}{subsection.3.5.4}%
-\contentsline {section}{\numberline {3.6}Glicko-2 Rating System}{34}{section.3.6}%
-\contentsline {subsection}{\numberline {3.6.1}Expected Score}{35}{subsection.3.6.1}%
-\contentsline {subsection}{\numberline {3.6.2}Rating Update Procedure}{35}{subsection.3.6.2}%
-\contentsline {subsection}{\numberline {3.6.3}Configuration}{36}{subsection.3.6.3}%
-\contentsline {section}{\numberline {3.7}Builder Profile and Generator Submission}{37}{section.3.7}%
-\contentsline {section}{\numberline {3.8}Authentication}{38}{section.3.8}%
-\contentsline {section}{\numberline {3.9}Deployment and Infrastructure}{38}{section.3.9}%
-\contentsline {chapter}{\numberline {4}User Study and Exploratory Data Analysis}{41}{chapter.4}%
-\contentsline {section}{\numberline {4.1}Study Design and Data Collection}{41}{section.4.1}%
-\contentsline {section}{\numberline {4.2}Dataset Overview}{42}{section.4.2}%
-\contentsline {paragraph}{Player engagement.}{42}{section*.18}%
-\contentsline {section}{\numberline {4.3}Generator Rankings}{43}{section.4.3}%
-\contentsline {paragraph}{Pairwise confusion matrix.}{44}{section*.22}%
-\contentsline {section}{\numberline {4.4}RQ1: What Makes a Good Level?}{45}{section.4.4}%
-\contentsline {subsection}{\numberline {4.4.1}Difficulty and Win Rate (H1)}{45}{subsection.4.4.1}%
-\contentsline {subsection}{\numberline {4.4.2}Tag Correlations with Win Rate (H2)}{46}{subsection.4.4.2}%
-\contentsline {subsection}{\numberline {4.4.3}Telemetry Differences Between Winners and Losers (H3)}{47}{subsection.4.4.3}%
-\contentsline {subsection}{\numberline {4.4.4}Completion Rate and Win Rate}{48}{subsection.4.4.4}%
-\contentsline {section}{\numberline {4.5}RQ2: Player Engagement and Consistency}{49}{section.4.5}%
-\contentsline {section}{\numberline {4.6}RQ3: Tag Semantics and Validation}{49}{section.4.6}%
-\contentsline {subsection}{\numberline {4.6.1}Tag--Telemetry Correspondence (H6)}{50}{subsection.4.6.1}%
-\contentsline {subsection}{\numberline {4.6.2}Tag Distribution by Generator}{51}{subsection.4.6.2}%
-\contentsline {section}{\numberline {4.7}Level Feature Correlations}{52}{section.4.7}%
-\contentsline {section}{\numberline {4.8}Duration and Engagement Analysis}{53}{section.4.8}%
-\contentsline {section}{\numberline {4.9}Global Distributions}{54}{section.4.9}%
-\contentsline {section}{\numberline {4.10}Summary of Findings}{55}{section.4.10}%
-\contentsline {chapter}{\numberline {5}MarioDPO --- Preference-Aligned Level Generation}{57}{chapter.5}%
-\contentsline {section}{\numberline {5.1}Motivation and Approach}{57}{section.5.1}%
-\contentsline {section}{\numberline {5.2}Judge Function Development}{57}{section.5.2}%
-\contentsline {subsection}{\numberline {5.2.1}Verticality Reward (Experiment A)}{57}{subsection.5.2.1}%
-\contentsline {subsection}{\numberline {5.2.2}Hazard Hierarchy (Experiment B)}{57}{subsection.5.2.2}%
-\contentsline {subsection}{\numberline {5.2.3}Style Matching (Experiment D)}{57}{subsection.5.2.3}%
-\contentsline {subsection}{\numberline {5.2.4}Final Judge Function}{57}{subsection.5.2.4}%
-\contentsline {section}{\numberline {5.3}Training Pipeline}{58}{section.5.3}%
-\contentsline {subsection}{\numberline {5.3.1}Supervised Fine-Tuning (SFT)}{58}{subsection.5.3.1}%
-\contentsline {subsection}{\numberline {5.3.2}Preference Dataset Construction}{58}{subsection.5.3.2}%
-\contentsline {subsection}{\numberline {5.3.3}DPO Training}{58}{subsection.5.3.3}%
-\contentsline {section}{\numberline {5.4}Column-Major Tokenisation}{58}{section.5.4}%
-\contentsline {section}{\numberline {5.5}Results}{58}{section.5.5}%
-\contentsline {section}{\numberline {5.6}Analysis and Discussion}{58}{section.5.6}%
-\contentsline {chapter}{\numberline {6}Conclusions and Future Work}{59}{chapter.6}%
-\contentsline {section}{\numberline {6.1}Summary of Contributions}{59}{section.6.1}%
-\contentsline {section}{\numberline {6.2}Limitations}{59}{section.6.2}%
-\contentsline {section}{\numberline {6.3}Future Directions}{59}{section.6.3}%
+\contentsline {section}{\numberline {2.1}Super Mario Bros}{13}{section.2.1}%
+\contentsline {section}{\numberline {2.2}Procedural Content Generation}{14}{section.2.2}%
+\contentsline {subsection}{\numberline {2.2.1}Search-Based Approaches}{15}{subsection.2.2.1}%
+\contentsline {subsection}{\numberline {2.2.2}Grammar-Based and Rule-Based Approaches}{15}{subsection.2.2.2}%
+\contentsline {subsection}{\numberline {2.2.3}Machine Learning-Based Generation (PCGML)}{15}{subsection.2.2.3}%
+\contentsline {section}{\numberline {2.3}Super Mario Bros as a PCG Benchmark}{16}{section.2.3}%
+\contentsline {subsection}{\numberline {2.3.1}The Mario AI Framework}{16}{subsection.2.3.1}%
+\contentsline {subsection}{\numberline {2.3.2}Mario Level Generators in the Literature}{17}{subsection.2.3.2}%
+\contentsline {section}{\numberline {2.4}Evaluation Methods for Procedural Content}{18}{section.2.4}%
+\contentsline {subsection}{\numberline {2.4.1}Automated Metrics}{19}{subsection.2.4.1}%
+\contentsline {subsection}{\numberline {2.4.2}Agent-Based Testing}{20}{subsection.2.4.2}%
+\contentsline {subsection}{\numberline {2.4.3}Human Evaluation Studies}{21}{subsection.2.4.3}%
+\contentsline {subsection}{\numberline {2.4.4}Comparison of Approaches and Their Limitations}{22}{subsection.2.4.4}%
+\contentsline {section}{\numberline {2.5}Rating Systems for Pairwise Comparisons}{23}{section.2.5}%
+\contentsline {subsection}{\numberline {2.5.1}The Elo Rating System}{23}{subsection.2.5.1}%
+\contentsline {subsection}{\numberline {2.5.2}The Glicko-2 Rating System}{23}{subsection.2.5.2}%
+\contentsline {subsection}{\numberline {2.5.3}Arena-Style Evaluation Platforms}{24}{subsection.2.5.3}%
+\contentsline {section}{\numberline {2.6}Preference Learning and Alignment}{25}{section.2.6}%
+\contentsline {subsection}{\numberline {2.6.1}Reinforcement Learning from Human Feedback}{25}{subsection.2.6.1}%
+\contentsline {subsection}{\numberline {2.6.2}Direct Preference Optimization}{25}{subsection.2.6.2}%
+\contentsline {chapter}{\numberline {3}PCG Arena --- System Design}{27}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Requirements and Design Goals}{27}{section.3.1}%
+\contentsline {section}{\numberline {3.2}System Architecture}{28}{section.3.2}%
+\contentsline {subsection}{\numberline {3.2.1}Frontend}{28}{subsection.3.2.1}%
+\contentsline {subsection}{\numberline {3.2.2}Backend}{28}{subsection.3.2.2}%
+\contentsline {subsection}{\numberline {3.2.3}Database}{29}{subsection.3.2.3}%
+\contentsline {section}{\numberline {3.3}Game Engine}{29}{section.3.3}%
+\contentsline {subsection}{\numberline {3.3.1}TypeScript Port}{30}{subsection.3.3.1}%
+\contentsline {subsection}{\numberline {3.3.2}Level Format}{31}{subsection.3.3.2}%
+\contentsline {subsection}{\numberline {3.3.3}Level Validation}{32}{subsection.3.3.3}%
+\contentsline {section}{\numberline {3.4}Battle and Voting System}{33}{section.3.4}%
+\contentsline {subsection}{\numberline {3.4.1}Battle Flow}{33}{subsection.3.4.1}%
+\contentsline {subsection}{\numberline {3.4.2}Tagging System}{35}{subsection.3.4.2}%
+\contentsline {section}{\numberline {3.5}Matchmaking: AGIS Algorithm}{36}{section.3.5}%
+\contentsline {subsection}{\numberline {3.5.1}Problem Definition}{36}{subsection.3.5.1}%
+\contentsline {subsection}{\numberline {3.5.2}Stage 1: First Generator Selection}{36}{subsection.3.5.2}%
+\contentsline {subsection}{\numberline {3.5.3}Stage 2: Second Generator Selection}{37}{subsection.3.5.3}%
+\contentsline {subsection}{\numberline {3.5.4}Parameters}{37}{subsection.3.5.4}%
+\contentsline {section}{\numberline {3.6}Glicko-2 Rating System}{38}{section.3.6}%
+\contentsline {subsection}{\numberline {3.6.1}Rating Update Procedure}{38}{subsection.3.6.1}%
+\contentsline {subsection}{\numberline {3.6.2}Configuration}{39}{subsection.3.6.2}%
+\contentsline {section}{\numberline {3.7}Builder Profile and Generator Submission}{40}{section.3.7}%
+\contentsline {section}{\numberline {3.8}Authentication}{41}{section.3.8}%
+\contentsline {section}{\numberline {3.9}Deployment and Infrastructure}{42}{section.3.9}%
+\contentsline {chapter}{\numberline {4}User Study and Exploratory Data Analysis}{43}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Study Design and Data Collection}{43}{section.4.1}%
+\contentsline {section}{\numberline {4.2}Dataset Overview}{44}{section.4.2}%
+\contentsline {paragraph}{Player engagement.}{44}{section*.21}%
+\contentsline {section}{\numberline {4.3}Generator Rankings}{45}{section.4.3}%
+\contentsline {paragraph}{Pairwise confusion matrix.}{46}{section*.25}%
+\contentsline {section}{\numberline {4.4}RQ1: What Makes a Good Level?}{47}{section.4.4}%
+\contentsline {subsection}{\numberline {4.4.1}Difficulty and Win Rate (H1)}{47}{subsection.4.4.1}%
+\contentsline {subsection}{\numberline {4.4.2}Tag Correlations with Win Rate (H2)}{48}{subsection.4.4.2}%
+\contentsline {subsection}{\numberline {4.4.3}Telemetry Differences Between Winners and Losers (H3)}{49}{subsection.4.4.3}%
+\contentsline {subsection}{\numberline {4.4.4}Completion Rate and Win Rate}{50}{subsection.4.4.4}%
+\contentsline {section}{\numberline {4.5}RQ2: Player Engagement and Consistency}{51}{section.4.5}%
+\contentsline {section}{\numberline {4.6}RQ3: Tag Semantics and Validation}{51}{section.4.6}%
+\contentsline {subsection}{\numberline {4.6.1}Tag--Telemetry Correspondence (H6)}{52}{subsection.4.6.1}%
+\contentsline {subsection}{\numberline {4.6.2}Tag Distribution by Generator}{53}{subsection.4.6.2}%
+\contentsline {section}{\numberline {4.7}Level Feature Correlations}{54}{section.4.7}%
+\contentsline {section}{\numberline {4.8}Duration and Engagement Analysis}{55}{section.4.8}%
+\contentsline {section}{\numberline {4.9}Global Distributions}{56}{section.4.9}%
+\contentsline {section}{\numberline {4.10}Summary of Findings}{57}{section.4.10}%
+\contentsline {chapter}{\numberline {5}MarioDPO --- Preference-Aligned Level Generation}{59}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Motivation and Approach}{59}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Judge Function Development}{59}{section.5.2}%
+\contentsline {subsection}{\numberline {5.2.1}Verticality Reward (Experiment A)}{59}{subsection.5.2.1}%
+\contentsline {subsection}{\numberline {5.2.2}Hazard Hierarchy (Experiment B)}{59}{subsection.5.2.2}%
+\contentsline {subsection}{\numberline {5.2.3}Style Matching (Experiment D)}{59}{subsection.5.2.3}%
+\contentsline {subsection}{\numberline {5.2.4}Final Judge Function}{59}{subsection.5.2.4}%
+\contentsline {section}{\numberline {5.3}Training Pipeline}{60}{section.5.3}%
+\contentsline {subsection}{\numberline {5.3.1}Supervised Fine-Tuning (SFT)}{60}{subsection.5.3.1}%
+\contentsline {subsection}{\numberline {5.3.2}Preference Dataset Construction}{60}{subsection.5.3.2}%
+\contentsline {subsection}{\numberline {5.3.3}DPO Training}{60}{subsection.5.3.3}%
+\contentsline {section}{\numberline {5.4}Column-Major Tokenisation}{60}{section.5.4}%
+\contentsline {section}{\numberline {5.5}Results}{60}{section.5.5}%
+\contentsline {section}{\numberline {5.6}Analysis and Discussion}{60}{section.5.6}%
+\contentsline {chapter}{\numberline {6}Conclusions and Future Work}{61}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Summary of Contributions}{61}{section.6.1}%
+\contentsline {section}{\numberline {6.2}Limitations}{61}{section.6.2}%
+\contentsline {section}{\numberline {6.3}Future Directions}{61}{section.6.3}%

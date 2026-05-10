@@ -1,6 +1,6 @@
 # EDA and User Study Replanning
 
-Date: 2026-05-10  
+Date: 2026-05-10
 Input files reviewed:
 
 - `eda/data.md`

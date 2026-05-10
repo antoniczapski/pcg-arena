@@ -1,7 +1,7 @@
 # PCG Arena – Data Description
 
-**Export date:** 2026-05-10  
-**Source directory:** `eda/data_10_05_2026/`  
+**Export date:** 2026-05-10
+**Source directory:** `eda/data_10_05_2026/`
 **Protocol version:** `arena/v0`
 
 The dataset consists of four JSON files, all following the same envelope schema:
@@ -262,7 +262,7 @@ The standalone trajectory export is paginated/truncated. For the replanned EDA, 
 | `summary`         | object   | Aggregated summary (see below) |
 | `created_at_utc`  | datetime | When recorded |
 
-**Trajectory point schema:** `{tick: int, x: float, y: float, state: int}`  
+**Trajectory point schema:** `{tick: int, x: float, y: float, state: int}`
 Sampled every 8 game ticks (~8 frames).
 
 **Summary sub-schema**
