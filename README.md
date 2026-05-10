@@ -40,7 +40,7 @@ How do we know if a PCG algorithm produces "good" levels?
 ### 1.3 Research Questions
 
 1. **RQ1:** What structural and gameplay features make levels "good"?
-2. **RQ2:** Are player preferences consistent across individuals?
+2. **RQ2:** Are player preferences consistent across individuals? 
 3. **RQ3:** Can we build an automated reward model (Judge Function) for RLHF/DPO training?
 
 ---
