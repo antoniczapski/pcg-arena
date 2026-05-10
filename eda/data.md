@@ -24,17 +24,17 @@ The dataset consists of four JSON files, all following the same envelope schema:
 
 ### Summary
 
-| Field         | Value                      |
-|---------------|----------------------------|
-| Total players | **79**                     |
-| Linked users  | 0 (all anonymous)          |
-| Active period | 2026-01-01 – 2026-05-03    |
+| Field                       | Value                      |
+|-----------------------------|----------------------------|
+| Anonymous player profiles   | **79**                     |
+| Linked users                | 0 (all anonymous)          |
+| Active period               | 2026-01-01 – 2026-05-03    |
 
 ### Schema
 
 | Field                    | Type          | Description |
 |--------------------------|---------------|-------------|
-| `player_id`              | string        | Unique player identifier (`anon_<uuid>`) |
+| `player_id`              | string        | Browser-based anonymous player identifier (`anon_<uuid>`); not a verified unique human |
 | `first_seen_utc`         | datetime      | Timestamp of first session |
 | `last_seen_utc`          | datetime      | Timestamp of most recent session |
 | `total_battles`          | int           | Number of battles participated in |
@@ -51,9 +51,10 @@ The dataset consists of four JSON files, all following the same envelope schema:
 
 ### Basic EDA
 
-- **Total votes cast (across all players):** 1–306 per player; mean ≈ 15.1, median = 6
+- **Total votes cast (across all anonymous player IDs):** 1–306 per player ID; mean ≈ 15.1, median = 6
 - **Skill ratings:** All at default 1000 (rating system not yet converged / not exported post-update)
 - **`total_battles`:** All 0 — battles field appears unused in the current schema version
+- **Identity caveat:** Session continuity is based on browser/session identifiers. Clearing cookies or switching browser/device can create a new anonymous player ID.
 
 ---
 
@@ -102,11 +103,11 @@ The dataset consists of four JSON files, all following the same envelope schema:
 | `times_skipped`         | int   | Times the battle was skipped |
 | `times_play_skipped`    | int   | Times gameplay was skipped before voting |
 | `times_completed`       | int   | Times level was completed (reached the flag) |
-| `total_deaths`          | int   | Total death count across all plays |
+| `total_deaths`          | int   | Total one-attempt death/failure indicators across plays |
 | `total_play_time_seconds`| float | Cumulative play time |
 | `win_rate`              | float | `times_won / times_shown` |
 | `completion_rate`       | float | `times_completed / times_shown` |
-| `avg_deaths`            | float | Mean deaths per play |
+| `avg_deaths`            | float | Death/failure rate under the current one-attempt-per-side design |
 | `avg_duration_seconds`  | float | Mean play duration |
 | `difficulty_score`      | float | Derived difficulty estimate |
 | `updated_at_utc`        | datetime | Last update timestamp |
@@ -131,7 +132,7 @@ The dataset consists of four JSON files, all following the same envelope schema:
 
 - Win rates are broadly centred around 0.5 — consistent with balanced matchmaking.
 - Median completion rate is 0 — most levels are never fully completed.
-- Average deaths cap at 1.00 (capped by telemetry or death tracking logic).
+- `avg_deaths` should be interpreted as a one-attempt failure/death rate, not repeated deaths per level.
 
 ---
 
@@ -153,7 +154,7 @@ The dataset consists of four JSON files, all following the same envelope schema:
 | `vote_id`           | string        | Unique vote identifier (`v_<uuid>`) |
 | `battle_id`         | string        | Battle this vote belongs to (`btl_<uuid>`) |
 | `session_id`        | string        | Play session UUID |
-| `player_id`         | string        | Player who cast this vote |
+| `player_id`         | string        | Anonymous browser/player ID that cast this vote |
 | `created_at_utc`    | datetime      | When the vote was cast |
 | `result`            | string        | `LEFT`, `RIGHT`, `TIE`, or `SKIP` |
 | `left_generator_id` | string        | Generator of the left level |
@@ -173,8 +174,8 @@ The dataset consists of four JSON files, all following the same envelope schema:
 | `skipped`              | bool     | Whether gameplay was skipped |
 | `completed`            | bool     | Whether the player reached the flag |
 | `duration_seconds`     | float    | Seconds spent in this level |
-| `deaths`               | int      | Number of deaths |
-| `death_locations`      | object[] | `{cause, tick, x, y}` per death |
+| `deaths`               | int      | One-attempt death indicator/count (currently 0 or 1 per side) |
+| `death_locations`      | object[] | `{cause, tick, x, y}` per death/failure location |
 | `jumps`                | int      | Total jumps made |
 | `coins_collected`      | int      | Coins collected |
 | `lives_collected`      | int      | 1-UP mushrooms collected |
@@ -236,6 +237,8 @@ The dataset consists of four JSON files, all following the same envelope schema:
 
 > **Note:** The file contains 100 of **2,429** total trajectories (limit=100). Each vote generates up to 2 trajectories (one per side).
 
+The standalone trajectory export is paginated/truncated. For the replanned EDA, the primary trajectory source is the `telemetry.left.trajectory` and `telemetry.right.trajectory` arrays embedded in the vote export, which contain 1968 non-empty trajectories in the first 1000 vote records.
+
 ### Summary
 
 | Field              | Value                  |
@@ -268,7 +271,7 @@ Sampled every 8 game ticks (~8 frames).
 |-----------------|-------|-------------|
 | `duration_ticks`| int   | Total ticks until death/win/end |
 | `max_x_reached` | float | Furthest horizontal position reached |
-| `death_count`   | int   | Number of deaths |
+| `death_count`   | int   | One-attempt death/failure count |
 | `completed`     | bool  | Whether the level was completed |
 
 **Event types and counts** (from 100 sampled trajectories)
@@ -324,3 +327,15 @@ player_profiles  ──player_id──▶  votes  ──vote_id──▶  trajec
 - **Tile-level structural features** in `level_stats` are all `null` — not yet computed for this export.
 - **Skill ratings** are all at the Glicko default (1000, RD=350), meaning the rating system output for this batch has not been persisted yet.
 - `original` generator has only 14 levels (original SMB hand-crafted levels used as baseline).
+
+---
+
+## Analysis-ready derived tables
+
+The replanned EDA pipeline writes derived outputs to `eda/07_replanned_analysis/outputs/`:
+
+- `vote_table.csv` — one row per exported vote.
+- `side_level_table.csv` — one row per vote side, including generator IDs, side outcome, score (`win=1`, `tie=0.5`, `loss=0`, `skip=missing`), telemetry summaries, tag flags, and trajectory summaries.
+- `generator_ranking.csv` — generator score rates, bootstrap intervals, Bradley–Terry display ratings, completion rates, and one-attempt death/failure rates.
+- `level_static_metrics.csv` and `generator_static_metrics.csv` — static expressive metrics computed from ASCII level text files rather than null `level_stats` structural columns.
+- `generator_trajectory_metrics.csv` — trajectory occupancy, progress, verticality, path-diversity, and failure-location concentration summaries by generator.
