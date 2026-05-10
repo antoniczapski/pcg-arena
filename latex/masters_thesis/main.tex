@@ -65,7 +65,7 @@
 \KOT{todo -- przeczytać PL potem}
 Ewaluacja generatorów treści proceduralnych (PCG) dla gier wideo stanowi istotne wyzwanie metodologiczne, ponieważ przyjemność gracza jest z natury subiektywna i trudna do zmierzenia za pomocą automatycznych metryk. Niniejsza praca przedstawia PCG Arenę --- platformę internetową do ślepego testowania A/B generatorów poziomów do gry Super Mario Bros poprzez dane o preferencjach graczy. Platforma umożliwia graczom rozgrywanie dwóch proceduralnie generowanych poziomów obok siebie w przeglądarce, głosowanie na preferowany poziom oraz opcjonalne tagowanie cech rozgrywki. Głosy są agregowane za pomocą systemu ratingowego Glicko-2, który zapewnia rankingi z przedziałami ufności.
 
-Na podstawie zebranych danych przeprowadzono rozległą analizę eksploracyjną badającą, co czyni poziomy dobrymi, czy preferencje graczy są spójne oraz czy subiektywne tagi odpowiadają mierzalnym różnicom w rozgrywce. Wyniki te posłużyły do opracowania funkcji oceny (Judge Function), która koreluje z preferencjami ludzi na poziomie $r = 0.736$. Finalnie, praca przedstawia MarioDPO --- generator poziomów wytrenowany metodą Direct Preference Optimization, który osiąga najwyższy wskaźnik wygranych (83.3\%) spośród wszystkich metod PCG, ustępując jedynie oryginalnym poziomom Nintendo.
+Na podstawie zebranych danych przeprowadzono analizę eksploracyjną charakteryzującą ranking preferencji generatorów, statyczny zakres ekspresyjny poziomów, trajektorie rozgrywki, heterogeniczność anonimowych użytkowników oraz semantykę tagów. Wyniki pokazują, że platforma może służyć zarówno jako ranking generatorów, jak i narzędzie diagnostyczne ujawniające ich tryby porażki. Finalnie, praca przedstawia MarioDPO --- generator poziomów wytrenowany metodą Direct Preference Optimization, który osiąga wynik preferencji 0.832, zbliżony do oryginalnych poziomów Nintendo.
 }
 
 \englishabstract {
@@ -73,8 +73,7 @@ Evaluating procedural content generators (PCGs) for video games poses significan
 \KOT{gdzieś - może tutaj - zdanie, że Mario has been an important benchmark for a variety of PCG methods, from 2009 until today, albo cos innego ale we wstępie od razu dającego do zroumienia, że to nie jest losowa gierka wzięta bo tak}
 \changed{Super Mario Bros has been used as a benchmark for PCG level generation research since the first Mario AI Competition in 2009, making it an ideal domain for systematic generator comparison.} The platform enables players to play two procedurally generated levels side-by-side in their browser, vote for their preferred level, and optionally tag gameplay characteristics. Votes are aggregated using the Glicko-2 rating system, providing uncertainty-aware rankings with confidence intervals.
 
-Building on the collected data, we conduct an extensive exploratory data analysis investigating what makes levels good, whether player preferences are consistent, and whether subjective tags correspond to measurable gameplay differences. These findings inform the development of a heuristic \changed{\emph{judge function}}\KOT{not sure about capitalizing here -- omit or make emph?} achieving $r = 0.736$ correlation with human preferences. Finally, we present MarioDPO, a level generator fine-tuned with Direct Preference Optimization that achieves the highest win rate (83.3\%) among all PCG methods tested, second only to hand-crafted original Nintendo levels.
-\KOT{poza tym abstract mi się podoba, jest OK}
+Building on the collected data, we conduct an exploratory analysis that characterizes generator preference rankings, static expressive range, gameplay trajectory fingerprints, anonymous-user heterogeneity, and tag semantics. The analysis shows that PCG Arena functions not only as a leaderboard, but also as a diagnostic instrument for understanding why generators win or fail. Finally, we present MarioDPO, a level generator fine-tuned with Direct Preference Optimization that achieves a preference score of 0.832, approaching the hand-crafted original Nintendo baseline.
 }
 
 \author         {Antoni Czapski}
@@ -161,19 +160,19 @@ valid-but-expensive human studies motivates the work presented in this thesis.
 
 This thesis addresses the PCG evaluation gap through the design, deployment, and
 analysis of \emph{PCG Arena}, a web-based platform for blind A/B testing of
-Mario level generators. We \KOT{primarely} \changed{primarily} investigate three research questions:
+Mario level generators. We investigate five research questions:
 
 \begin{description}[style=nextline]
-    \item[RQ1: What makes a good level?] Do structural features of
-    levels---difficulty, variety, path freedom, hazard density---predict human
-    preferences? Do commonly used automated metrics align with player judgments?
-    \item[RQ2: Are player preferences consistent?] Do different players agree on
-    which levels are better, or do preferences fragment into identifiable
-    clusters?
-    \item[RQ3: Do subjective tags have measurable correlates?] Do qualitative
-    labels assigned by players (e.g., ``fun,'' ``too hard,'' ``creative'')
-    correspond to measurable differences in gameplay telemetry and level
-    structure?
+      \item[RQ1: Human preference ranking] Which generators are preferred by
+      players in blind pairwise comparisons?
+      \item[RQ2: Static expressive range] How do generators differ structurally,
+      and which static properties align with player preference?
+      \item[RQ3: Gameplay footprint] What behavioral signatures appear in player
+      trajectories for each generator?
+      \item[RQ4: User heterogeneity] Are anonymous player preferences and play
+      styles homogeneous, or do visible subgroups emerge?
+      \item[RQ5: Tag semantics] What do optional tags reveal about why levels win
+      or lose?
 \end{description}
 
 \KOT{probably noindent here to make it look better}
@@ -185,20 +184,17 @@ Mario level generators. We \KOT{primarely} \changed{primarily} investigate three
           A/B testing of Super Mario Bros level generators, featuring
           browser-based gameplay, Glicko-2 uncertainty-aware rankings, and a
           novel matchmaking algorithm (AGIS).
-    \item \textbf{A user study} collecting 571 pairwise preference votes from 27
-          players across 15 generators (748 levels), with gameplay trajectories
-          and subjective tags---one of the largest blind human evaluation
-          datasets in Mario PCG research.\KOT{OK, razi mnie ta liczba ---; to pokłosie generowania tekstu LLMem? Normalni ludzie tak nie piszą...}
-          % AC: Celowo precyzyjne dane liczbowe --- inne cytowane badania
-          % (np. Shaker et al. 15 sędziów, Marino et al. n=37) też podają
-          % dokładne liczby. Chcemy być równie precyzyjni.
-    \item \textbf{A Judge Function}, a heuristic preference predictor achieving
-          $r = 0.736$ correlation with human preferences, providing a scalable
-          proxy for human evaluation.
+    \item \textbf{A user study} analysing 1,000 exported pairwise votes from 77
+          anonymous browser/player IDs across 14 research generators, with 1,968
+          played side records, embedded gameplay trajectories, and subjective
+          tags.
+    \item \textbf{An exploratory analysis pipeline} connecting blind preference
+          votes to static expressive-range metrics, trajectory fingerprints,
+          anonymous-user preference maps, and qualitative tag-based failure-mode
+          diagnostics.
     \item \textbf{MarioDPO}, a level generator fine-tuned with Direct Preference
-          Optimisation on arena votes, achieving the highest win rate (83.3\%)
-          among all PCG methods tested, second only to hand-crafted Nintendo
-          originals.
+          Optimisation on arena votes, achieving a preference score of 0.832 and
+          approaching the hand-crafted Nintendo baseline.
 \end{enumerate}
 
 \section{Thesis Structure}
@@ -209,7 +205,7 @@ Chapter~\ref{ch:background} surveys background and related work on procedural
 content generation \KOT{(in the context of Maio level generation?)} \changed{in the context of Mario level generation,} evaluation methodology,
 rating systems, and preference learning. Chapter~\ref{ch:system-design} describes the design and implementation
 of the PCG Arena platform. Chapter~\ref{ch:eda} presents the user study and an
-extensive exploratory data analysis addressing the three research questions.
+exploratory data analysis addressing the five research questions.
 Chapter~\ref{ch:mariodpo} details the development of the Judge Function and the
 MarioDPO generator. Chapter~\ref{ch:conclusions} summarises contributions,
 discusses limitations, and outlines future directions.
@@ -1578,356 +1574,219 @@ are performed via a scheduled script that copies the SQLite file to a timestampe
 
 
 
+
 \chapter{User Study and Exploratory Data Analysis}
 \label{ch:eda}
 
-This chapter presents the user study conducted on the PCG Arena platform and the exploratory data analysis (EDA) of the collected data. We describe the study design and recruitment process, summarise the dataset, present the generator rankings produced by the Glicko-2 system, and then address each research question through a series of hypothesis tests. All statistical tests use two-tailed alternatives and are evaluated at $\alpha = 0.05$ unless stated otherwise.
+This chapter reframes the PCG Arena data as an exploratory user study and generator characterisation. Rather than testing a long sequence of isolated hypotheses, the analysis asks five broader research questions:
+
+\begin{enumerate}[nosep]
+    \item \textbf{RQ1}: Which generators are preferred by players in blind pairwise comparisons?
+    \item \textbf{RQ2}: How do generators differ in static expressive range, and which structural properties align with player preference?
+    \item \textbf{RQ3}: What behavioral fingerprints appear in player trajectories for each generator?
+    \item \textbf{RQ4}: Are anonymous player preferences and play styles homogeneous, or do visible subgroups emerge?
+    \item \textbf{RQ5}: What do optional tags reveal about why levels win or lose?
+\end{enumerate}
+
+The emphasis is descriptive and visual. The goal is to show what PCG Arena can measure---preference, structure, gameplay behavior, user heterogeneity, and qualitative failure modes---without over-claiming universal design laws from a sparse exploratory dataset.
 
 % ===================================================================
-\section{Study Design and Data Collection}
+\section{Study Protocol and Dataset}
 \label{sec:eda-study-design}
 
-The study followed a within-subjects, blind A/B testing protocol. Participants were recruited through university social media channels, a dedicated university-hosted event, and word of mouth among game-development and computer-science communities. Participation was voluntary and anonymous; no demographic information was collected beyond an optional account link used solely to track session continuity.
+Participants were recruited through university social-media channels, word of mouth among game-development and computer-science communities, and a small promoted Reddit campaign targeting game-development and procedural-generation communities. Participation was anonymous. The platform assigned browser-based anonymous player identifiers and session identifiers, persisted through cookies or local browser storage. Consequently, ``players'' in this analysis should be interpreted as anonymous browser/player IDs rather than verified unique humans; clearing cookies or changing device/browser could create a new ID.
 
-Each session consisted of a series of \emph{battles}. In every battle the AGIS matchmaking algorithm (Section~\ref{sec:sd-matchmaking}) selected two generators, the backend sampled one level from each, and both levels were presented side-by-side in the browser-based game engine. The participant played each level and then voted for the preferred one, or declared a tie. Optionally, the participant could tag each level with descriptive labels such as \emph{fun}, \emph{boring}, \emph{too hard}, \emph{too easy}, \emph{creative}, \emph{good flow}, \emph{unfair}, or \emph{confusing}. After each vote the Glicko-2 rating system updated generator ratings accordingly.
+Each battle used a blind A/B protocol. A player saw two levels from different generators, played one attempt on each side, and then selected the preferred side, a tie, or skip. Optional tags could be attached to either side. The one-attempt design is important for interpretation: the death variable is a binary failure indicator for a side-level attempt, not a repeated-death count from multiple retries.
 
-Telemetry was recorded automatically for every play: duration in seconds, whether the player completed the level, number of deaths, death locations and causes, coins collected, enemies defeated (by category), and jump count. Trajectory data---per-tick $(x, y, \text{state})$ samples---was also stored for a subset of plays. The platform was publicly deployed on a Google Cloud virtual machine from January 2026 onward.
-
-% ===================================================================
-\section{Dataset Overview}
-\label{sec:eda-dataset}
-
-The analysis in this chapter is based on the data snapshot exported on 23 March 2026. Table~\ref{tab:eda-dataset} summarises the dataset. The platform had been collecting data for approximately two months at the time of export.
+The May 2026 analysis export contains the data summarized in Table~\ref{tab:eda-dataset}. The research plots exclude the diagnostic \texttt{test-gen} generator and therefore compare 14 substantive generator IDs. Skip votes are included in engagement summaries but excluded from preference rankings. Ties are treated as 0.5 points for each side.
 
 \begin{table}[H]
 \centering
-\caption{Dataset summary (March 23, 2026 snapshot).}
+\caption{Dataset summary for the exploratory analysis. Player counts refer to anonymous browser/player IDs, not verified unique humans.}
 \label{tab:eda-dataset}
-\begin{tabular}{lrr}
+\begin{tabular}{lr}
 \toprule
-\textbf{Entity} & \textbf{Count} & \textbf{Notes} \\
+\textbf{Quantity} & \textbf{Count} \\
 \midrule
-Levels evaluated     & 1\,074 & across 14 generators \\
-Votes cast           & 1\,109 & pairwise comparisons \\
-Registered players   & 71     & anonymous accounts \\
-Telemetry records    & 2\,000 & 2 per vote (left and right) \\
+Vote rows analyzed & 1,000 \\
+Anonymous player profiles & 79 \\
+Anonymous player IDs in vote table & 77 \\
+Session IDs in vote table & 213 \\
+Level-stat records exported & 1,104 \\
+Generator IDs in research plots & 14 \\
+Per-side telemetry records & 2,000 \\
+Played side records & 1,968 \\
+Embedded trajectory records & 1,968 \\
+Tag assignments & 329 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Fourteen generators participated in the arena. These span several paradigmatic classes: the \emph{original} Nintendo levels serve as a human-authored baseline; \emph{Notch} and its parametric variants (\emph{notchParam}, \emph{notchParamRand}) represent constructive approaches; \emph{MarioGAN} and \emph{MarioDiffusion} represent latent-variable generative models; \emph{MarioGPT} is an autoregressive language model; \emph{ore} and \emph{hopper} are search-based generators; the three \emph{pattern*} generators use tile-pattern counting heuristics; \emph{genetic} uses a genetic algorithm; and \emph{MarioDPO} is the preference-aligned generator developed in this thesis (Chapter~\ref{ch:mariodpo}).
-
-\paragraph{Player engagement.}
-The 71 registered players contributed a median of 6 votes each (mean 15.6). Activity was concentrated: the most active player cast 290 votes, and just 21 players (30\%) contributed 80\% of all votes. This long-tail distribution is typical of voluntary online studies and is accounted for in the Glicko-2 framework through its uncertainty parameter~$\mathit{RD}$, which remains high for generators with few observations.
+The vote outcomes are balanced between the two screen sides (418 left wins and 398 right wins), with 165 ties and 19 skips. The median play duration is 8.0 seconds, but a small number of inactive-tab outliers are present; duration-dependent plots therefore use clipping or robust summaries. Figure~\ref{fig:eda-study-overview} summarizes the analysis links among anonymous players, votes, side-level telemetry, tags, trajectories, and static level text.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.95\textwidth]{eda_player_engagement.png}
-\caption{Player engagement distributions: votes per player (left), sessions per player (centre), and cumulative vote concentration (right).}
-\label{fig:eda-player-engagement}
+\includegraphics[width=0.95\textwidth]{eda_study_overview.png}
+\caption{Analysis data model for the revised EDA. Pairwise votes connect anonymous player/session IDs to side-level telemetry, optional tags, embedded trajectories, and generator/level identifiers.}
+\label{fig:eda-study-overview}
 \end{figure}
 
 % ===================================================================
-\section{Generator Rankings}
+\section{RQ1: Generator Preference Ranking}
 \label{sec:eda-rankings}
 
-The Glicko-2 ratings after processing all 1\,109 votes are shown in Figure~\ref{fig:eda-leaderboard}. Table~\ref{tab:eda-rankings} presents the full ranking with win rates, game counts, and auxiliary statistics computed from the level-stats aggregate.
+The core purpose of PCG Arena is to measure human preference between generators. For each non-skip battle, the selected side receives score 1, the rejected side receives score 0, and ties give 0.5 to both sides. Figure~\ref{fig:eda-generator-ranking} shows the resulting generator leaderboard with bootstrap uncertainty intervals over votes.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{eda_leaderboard.png}
-\caption{PCG Arena leaderboard showing Glicko-2 ratings with confidence intervals. The \emph{original} Nintendo levels rank first (1389), followed by MarioDPO (1366) and MarioGPT (1287).}
-\label{fig:eda-leaderboard}
+\includegraphics[width=0.95\textwidth]{eda_generator_ranking.png}
+\caption{Generator ranking from blind pairwise votes. Bars show mean preference score, where win = 1, tie = 0.5, and loss = 0; horizontal intervals show bootstrap uncertainty. The text at the end of each bar gives the win-loss-tie record.}
+\label{fig:eda-generator-ranking}
 \end{figure}
 
-\begin{table}[H]
-\centering
-\caption{Generator rankings by Glicko-2 rating and pairwise win rate. Generators are listed in descending order of rating. Completion rate and average deaths are computed from the level-stats aggregate.}
-\label{tab:eda-rankings}
-\small
-\begin{tabular}{clrrrrr}
-\toprule
-\textbf{Rank} & \textbf{Generator} & \textbf{Rating} & \textbf{Games} & \textbf{Win\%} & \textbf{Compl.\%} & \textbf{Avg Deaths} \\
-\midrule
-1  & original          & 1389 & 164 & 79.3 & 22.0 & 0.78 \\
-2  & MarioDPO          & 1366 & 110 & 72.7 & 25.0 & 0.74 \\
-3  & MarioGPT          & 1287 & 159 & 59.1 & 27.3 & 0.67 \\
-4  & ORE               & 1186 & 161 & 57.8 & 16.1 & 0.84 \\
-5  & MarioGAN          & 1069 & 164 & 45.7 & 23.7 & 0.75 \\
-6  & Notch             & 1052 & 144 & 47.9 & 21.5 & 0.78 \\
-7  & Genetic           & 1023 & 158 & 41.8 & 33.4 & 0.67 \\
-8  & MarioDiffusion    & 1018 & 167 & 36.5 &  6.6 & 0.93 \\
-9  & Hopper            &  985 & 159 & 44.0 & 20.3 & 0.80 \\
-10 & PatternWeightCnt  &  894 & 173 & 27.2 &  6.0 & 0.91 \\
-11 & NotchParamRand    &  870 & 160 & 28.7 & 35.9 & 0.64 \\
-12 & PatternOccur      &  856 & 155 & 21.9 &  4.9 & 0.88 \\
-13 & PatternCount      &  827 & 147 & 14.3 &  4.7 & 0.92 \\
-14 & NotchParam        &  820 & 150 & 19.3 & 12.5 & 0.87 \\
-\bottomrule
-\end{tabular}
-\end{table}
+The strongest result is that the human-authored \texttt{original} baseline and \texttt{mariodpo} are nearly tied at the top. \texttt{original} scores 0.833, while \texttt{mariodpo} scores 0.832. Both are well above the neutral 0.5 line. The next tier consists of \texttt{ore} (0.655) and \texttt{mariogpt} (0.643), followed by mid-table constructive and neural generators. The pattern-based generators occupy the bottom of the ranking: \texttt{patternWeightCount} scores 0.385, \texttt{patternOccur} scores 0.284, and \texttt{patternCount} scores 0.262.
 
-Several observations stand out. First, the \emph{original} Nintendo levels and \emph{MarioDPO} form a clear top tier with win rates exceeding 70\%, separated from the next group by roughly 80 rating points. Second, machine-learning-based generators (\emph{MarioGPT}, \emph{MarioGAN}, \emph{MarioDPO}) generally outperform rule-based and search-based generators, with the notable exception of \emph{ORE}, whose constraint-satisfaction approach produces competitive results. Third, the three pattern-based generators (\emph{patternCount}, \emph{patternOccur}, \emph{patternWeightCount}) occupy the bottom of the ranking with win rates below 28\%, suggesting that simple tile-frequency heuristics do not capture what players value.
+This ordering is meaningful for two reasons. First, the human-authored baseline remains a strong benchmark, which is expected if the vote data captures level quality. Second, \texttt{mariodpo} approaches the human baseline and clearly outperforms the other procedural generators in this export, suggesting that preference-aligned generation is a promising direction for the platform.
 
-\paragraph{Pairwise confusion matrix.}
-Figure~\ref{fig:eda-confusion} shows the head-to-head win rates between all generator pairs. The AGIS matchmaking algorithm achieved 101.1\% coverage of the 91 unique generator pairs (some pairs were matched more than the minimum required), with 69 pairs having ten or more battles. MarioDPO dominates most matchups, achieving 88\% against MarioGAN and 100\% against notchParam.
+Figure~\ref{fig:eda-pairwise-confusion} gives the corresponding head-to-head matrix. Rows and columns are ordered by the ranking above. The matrix reveals that the top generators are not merely benefiting from weak opponents: \texttt{original} and \texttt{mariodpo} perform well across many pairings, whereas pattern generators lose consistently across opponents.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{eda_confusion_matrix.png}
-\caption{Pairwise confusion matrix showing head-to-head win percentages between generator pairs. Darker green indicates higher win rates for the row generator.}
-\label{fig:eda-confusion}
+\includegraphics[width=0.95\textwidth]{eda_pairwise_confusion.png}
+\caption{Pairwise generator preference matrix ordered by overall ranking. Each cell is the score rate for the row generator against the column generator, with ties counted as 0.5. Lighter green indicates a higher score rate for the row generator.}
+\label{fig:eda-pairwise-confusion}
 \end{figure}
 
 % ===================================================================
-\section{RQ1: What Makes a Good Level?}
-\label{sec:eda-rq1}
+\section{RQ2: Static Expressive Range}
+\label{sec:eda-static-expressive-range}
 
-The first research question asks what properties of a generated level predict players preferring it in a pairwise comparison. We examine difficulty, tag correlations, and telemetry differences between winning and losing plays.
+The exported aggregate \texttt{level\_stats} table does not yet contain populated structural columns, so structural metrics were computed directly from the ASCII level text files. This separates generator characterization from gameplay outcomes. The static corpus is larger than the live vote export for some generators, especially \texttt{mariodpo}, and should be interpreted as a generator-level design-space sample rather than a count of voted levels.
 
-\subsection{Difficulty and Win Rate (H1)}
-\label{subsec:eda-h1}
+The metrics are operational definitions chosen for consistency across generators. Linearity is the $R^2$ of a least-squares line fit to the detected playable surface profile. Density metrics count solid, enemy, reward, and gap structure per tile or per level column. Leniency combines gap density, enemy density, maximum gap width, rewards, and blocks into a single descriptive score; because leniency definitions vary in the PCG literature, it is used here as an operational descriptor rather than a universal measure of difficulty. Diversity is estimated with tile/column entropy, unique-column ratio, compression ratio, and gzip normalized compression distance (NCD).
 
-\textbf{Hypothesis H1}: \emph{Levels with moderate difficulty (as measured by average deaths per play) are preferred over very easy or very hard levels, consistent with Csikszentmihalyi's flow channel theory.}
-
-We computed Spearman's rank correlation between average deaths per play and win rate across all levels shown at least three times ($n = 265$). The result is a significant negative correlation: $r_s = -0.194$, $p = 0.0015$. Figure~\ref{fig:eda-h1} shows the scatter plot with a quadratic fit and boxplots by difficulty bin.
+Figure~\ref{fig:eda-static-metrics-table} summarizes the main static metrics by generator. Figure~\ref{fig:eda-expressive-range} then shows each generator's expressive range in the plane of linearity and operational leniency.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.95\textwidth]{eda_h1_difficulty_vs_winrate.png}
-\caption{Win rate versus difficulty (average deaths per play). Left: scatter plot with quadratic regression. Right: boxplot by difficulty bin. The relationship is monotonically negative, not inverted-U.}
-\label{fig:eda-h1}
+\includegraphics[width=0.95\textwidth]{eda_static_metrics_table.png}
+\caption{Static expressive metrics computed from level text files. Metrics include fitted-surface linearity, operational leniency, gap density, enemy density, and within-generator compression distance.}
+\label{fig:eda-static-metrics-table}
 \end{figure}
 
-The monotonically negative relationship indicates that \textbf{H1 is not supported}: players consistently prefer easier levels. There is no evidence for an inverted-U ``flow channel'' pattern where moderate difficulty is optimal. This finding is consistent across difficulty bins: the median win rate drops from approximately 55\% for levels with fewer than 0.5 deaths per play to below 40\% for levels with more than 3 deaths per play. This does not rule out flow channel effects in general gameplay, but in the context of short pairwise evaluations (median 21 seconds per play), difficulty appears to be purely penalised.
-
-\subsection{Tag Correlations with Win Rate (H2)}
-\label{subsec:eda-h2}
-
-We computed Spearman correlations between the rate at which each tag is assigned (tag count divided by times shown) and win rate across levels shown at least three times. Figure~\ref{fig:eda-h2} visualises the results.
-
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{eda_h2_tags_vs_winrate.png}
-\caption{Spearman correlations between tag rates and win rate. Green bars indicate significant correlations ($p < 0.05$). Positive tags (\emph{fun}, \emph{creative}) are associated with higher win rates; negative tags (\emph{too hard}, \emph{boring}, \emph{unfair}) with lower.}
-\label{fig:eda-h2}
+\includegraphics[width=\textwidth]{eda_expressive_range.png}
+\caption{Expressive-range view of static level structure. Each subplot shows levels from one generator in the linearity--leniency plane, ordered by preference ranking.}
+\label{fig:eda-expressive-range}
 \end{figure}
 
-Five of eight tags show significant correlations:
-\begin{itemize}[nosep]
-  \item \emph{fun} ($r_s = 0.237$, $p = 0.0001$) and \emph{creative} ($r_s = 0.185$, $p = 0.003$) predict higher win rates.
-  \item \emph{too hard} ($r_s = -0.179$, $p = 0.003$), \emph{boring} ($r_s = -0.147$, $p = 0.017$), and \emph{unfair} ($r_s = -0.139$, $p = 0.024$) predict lower win rates.
-  \item \emph{confusing} ($p = 0.066$), \emph{good flow} ($p = 0.138$), and \emph{too easy} ($p = 0.466$) are not significant.
-\end{itemize}
+The static analysis shows that generators occupy distinct regions of design space. Pattern generators have zero reward density in the parsed corpus and comparatively high enemy density, which helps explain why they are interpretable as harsh or unrewarding despite sometimes receiving high operational leniency scores from non-gap structure alone. \texttt{mariogpt} and \texttt{original} have the highest reward densities among the compared generators. \texttt{ore} has the highest unique-column ratio and high within-generator NCD, suggesting broader structural diversity.
 
-The non-significance of \emph{too easy} is notable: while excessive difficulty hurts win rate, excessive ease does not appear to help---or hurt---it. This asymmetry suggests that player preferences are driven more by the presence of engaging features (\emph{fun}, \emph{creative}) than by the absence of challenge.
-
-\subsection{Telemetry Differences Between Winners and Losers (H3)}
-\label{subsec:eda-h3}
-
-To understand what distinguishes a winning level from a losing one at the telemetry level, we split all 2\,000 telemetry records into plays where the level won ($n_w$) versus plays where it lost ($n_l$) and applied Mann-Whitney U tests.
+Figure~\ref{fig:eda-static-vs-rating} relates selected structural summaries to preference score. With only 14 generators, these plots are best read as effect-size and direction summaries rather than formal hypothesis tests. Reward density and unique-column ratio show strong positive rank associations with preference score in this export, while distance from the \texttt{original} corpus by NCD is negatively associated with preference. Enemy density alone is not sufficient to explain rankings, reinforcing that generator quality is multi-dimensional.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.95\textwidth]{eda_h3_telemetry_won_vs_lost.png}
-\caption{Telemetry distributions for won versus lost plays. All five metrics show significant differences ($p < 0.001$).}
-\label{fig:eda-h3}
-\end{figure}
-
-All five telemetry metrics differ significantly between won and lost plays (Table~\ref{tab:eda-h3}). Winning levels have nearly double the play duration (21.4\,s vs 10.8\,s), 73\% higher completion rates, four times more coins collected, and nearly double the jump count. Death counts, while statistically significant, differ modestly (0.74 vs 0.82). Taken together, these results suggest that players prefer levels that are \emph{playable and engaging}---levels that sustain enough play time for meaningful interaction.
-
-\begin{table}[H]
-\centering
-\caption{Telemetry comparison between won and lost plays (Mann-Whitney U test).}
-\label{tab:eda-h3}
-\small
-\begin{tabular}{lrrl}
-\toprule
-\textbf{Metric} & \textbf{Won Mean} & \textbf{Lost Mean} & \textbf{$p$-value} \\
-\midrule
-Duration (seconds)  & 21.4  & 10.8  & $< 0.0001$ \\
-Deaths              &  0.74 &  0.82 & $0.0002$ \\
-Completed           &  0.25 &  0.14 & $< 0.0001$ \\
-Coins collected     &  1.86 &  0.47 & $< 0.0001$ \\
-Jumps               & 16.2  &  8.5  & $< 0.0001$ \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\subsection{Completion Rate and Win Rate}
-\label{subsec:eda-completion}
-
-The completion rate (proportion of plays where the player reached the goal) shows a significant positive correlation with win rate: $r_s = 0.227$, $p = 0.0002$ (Figure~\ref{fig:eda-completion}). Levels that are completable---but not necessarily easy---tend to win pairwise comparisons. This complements the H1 finding: while lower death counts help, having a completable level is an even stronger predictor of success.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.85\textwidth]{eda_completion_vs_winrate.png}
-\caption{Completion rate versus win rate, coloured by generator. The significant positive correlation ($r_s = 0.227$) indicates that playable levels are preferred.}
-\label{fig:eda-completion}
+\includegraphics[width=\textwidth]{eda_static_metrics_vs_rating.png}
+\caption{Generator preference score against selected static metrics. The fitted lines are descriptive trend guides, not causal claims.}
+\label{fig:eda-static-vs-rating}
 \end{figure}
 
 % ===================================================================
-\section{RQ2: Player Engagement and Consistency}
-\label{sec:eda-rq2}
+\section{RQ3: Gameplay Trajectory Fingerprints}
+\label{sec:eda-trajectory-fingerprints}
 
-The second research question asks whether player preferences are consistent across participants and whether individual characteristics predict voting behaviour. With 71 players and a median of 6 votes per player, the dataset is sufficient for aggregate analysis but too sparse for robust per-player preference clustering at this stage. We report the engagement analysis and note that future data collection should target a minimum of 30 votes per participant for meaningful within-subject analysis.
-
-Figure~\ref{fig:eda-player-engagement} (shown in Section~\ref{sec:eda-dataset}) illustrates the long-tail distribution of player engagement. The 80/20 pattern (21 players contributing 80\% of votes) is typical of voluntary web-based studies. Despite this skew, the Glicko-2 system's confidence intervals correctly reflect the heterogeneous data density across generator pairs: generators with fewer observations maintain wider confidence bands in the leaderboard (Figure~\ref{fig:eda-leaderboard}).
-
-% ===================================================================
-\section{RQ3: Tag Semantics and Validation}
-\label{sec:eda-rq3}
-
-The third research question asks whether the subjective tags that players assign (\emph{fun}, \emph{boring}, \emph{too hard}, etc.) correspond to measurable differences in objective telemetry. If tags are semantically valid, they become useful signals for building automatic judge functions (Chapter~\ref{ch:mariodpo}).
-
-\subsection{Tag--Telemetry Correspondence (H6)}
-\label{subsec:eda-h6}
-
-For each tag, we identified a natural telemetry correlate and compared the distributions between tagged and non-tagged plays using Mann-Whitney U tests. Table~\ref{tab:eda-h6} and Figure~\ref{fig:eda-h6} present the results.
+Trajectory recording was available in embedded vote telemetry for nearly all played side records in this export. For each generator, Figure~\ref{fig:eda-trajectory-stacks} overlays all recorded Mario paths as thin red traces. This plot is intentionally simple: it shows where players actually moved in levels from each generator under the one-attempt battle protocol.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.95\textwidth]{eda_h6_tag_validation.png}
-\caption{Tag validation: comparing the telemetry metric between plays tagged (right box) and not tagged (left box) with each label. All five tested associations are statistically significant.}
-\label{fig:eda-h6}
+\includegraphics[width=\textwidth]{eda_trajectory_stacks.png}
+\caption{Stacked gameplay trajectories by generator. Each subplot overlays all recorded trajectories for one generator as thin red traces on a white background, ordered by preference score. The vertical axis is inverted to match screen coordinates.}
+\label{fig:eda-trajectory-stacks}
 \end{figure}
 
-\begin{table}[H]
-\centering
-\caption{Tag--telemetry validation. For each tag we test whether the expected objective metric differs significantly between tagged and non-tagged plays.}
-\label{tab:eda-h6}
-\small
-\begin{tabular}{llrrrr}
-\toprule
-\textbf{Tag} & \textbf{Metric} & \textbf{Tagged} & \textbf{Not Tagged} & \textbf{$n_{\text{tagged}}$} & \textbf{$p$-value} \\
-\midrule
-fun       & completion rate & 0.500 & 0.177 & 50 & $< 0.0001$ \\
-too\_hard  & deaths         & 0.929 & 0.792 & 56 & $0.013$ \\
-too\_easy  & completion rate & 0.789 & 0.180 & 19 & $< 0.0001$ \\
-creative  & win rate       & 0.925 & 0.398 & 40 & $< 0.0001$ \\
-boring    & duration (s)   & 20.7  & 21.4  & 51 & $0.002$ \\
-\bottomrule
-\end{tabular}
-\end{table}
+The trajectory stacks make generator differences visually apparent. Stronger generators such as \texttt{original} and \texttt{mariodpo} show paths that often progress substantially through the level and occupy a broad portion of the play space. Several low-ranked pattern generators show many traces terminating early or concentrating in narrow regions, consistent with the high early-failure rates computed from death locations.
 
-All five tag--telemetry associations are significant:
-\begin{itemize}[nosep]
-  \item Levels tagged \emph{fun} have a 50\% completion rate versus 17.7\% for non-tagged plays.
-  \item Levels tagged \emph{too hard} have 17\% more deaths than the baseline.
-  \item Levels tagged \emph{too easy} are completed 78.9\% of the time.
-  \item Levels tagged \emph{creative} win 92.5\% of their pairwise comparisons.
-  \item Levels tagged \emph{boring} have slightly shorter play durations, consistent with disengagement.
-\end{itemize}
-
-These results confirm that \textbf{H6 is supported}: player tags carry genuine semantic content that aligns with objective telemetry. This validation justifies using tag-based features in the judge function design (Section~\ref{sec:dpo-judge}).
-
-\subsection{Tag Distribution by Generator}
-\label{subsec:eda-tag-distribution}
-
-Figure~\ref{fig:eda-tag-generator} shows the tag rate heatmap across generators, ordered by overall win rate. The top-ranked generators (\emph{original}, \emph{MarioDPO}) receive the most \emph{fun} and \emph{creative} tags, while bottom-ranked generators receive disproportionately more \emph{too hard} and \emph{boring} tags. This generator-level pattern further validates the tag semantics.
+Figure~\ref{fig:eda-trajectory-metrics} reduces these visual patterns to generator-level summaries. Occupancy entropy measures how broadly trajectories cover a fixed spatial grid. Median maximum $x$ measures progress through the level. Verticality is the mean within-trajectory standard deviation of $y$. Death concentration is the largest share of death locations falling into a single horizontal bin. These are behavioral descriptors of a one-attempt protocol: death-location metrics indicate where failures happen, not how often players retry the same level.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{eda_tag_by_generator.png}
-\caption{Tag rates by generator, sorted by descending win rate. Higher-ranked generators receive more positive tags (\emph{fun}, \emph{creative}) and fewer negative tags (\emph{boring}, \emph{too hard}).}
-\label{fig:eda-tag-generator}
+\includegraphics[width=0.95\textwidth]{eda_trajectory_metrics_vs_rating.png}
+\caption{Trajectory-derived behavioral summaries versus generator preference score. Higher occupancy entropy and lower death concentration are associated with stronger generators in this export.}
+\label{fig:eda-trajectory-metrics}
 \end{figure}
 
-Figure~\ref{fig:eda-tag-distribution} shows the overall tag frequency distribution. The most frequently applied tags are \emph{too hard} (56 uses), \emph{boring} (51), and \emph{fun} (50). Notably, the tags \emph{good flow}, \emph{unfair}, and \emph{confusing} were never used in the telemetry-level data (though they appear in the level-stats aggregate, they are rare enough to not appear in the 1\,000-vote sample). The low usage of nuanced tags like \emph{good flow} suggests that either the concept is too subtle for brief play sessions or that the tag was not sufficiently salient in the UI.
+The strongest trajectory-level patterns are occupancy entropy and death concentration. Generator-level occupancy entropy has a positive rank association with preference score, while concentrated death locations have a negative association. The weakest pattern generator, \texttt{patternCount}, has median maximum progress of only 174.5 pixels and a max death-bin share of 0.63, meaning failures are highly concentrated early in the level. In contrast, \texttt{original} and \texttt{mariodpo} have median progress around 1126.5 and 988.0 pixels respectively, with lower death concentration.
+
+The deployed analytics UI also supports level-level inspection beyond aggregate plots. Figure~\ref{fig:eda-detailed-level-stats} shows the Detailed Level Statistics page, which combines the level view, player traces, death locations, and tag counts. This is important as a platform contribution: PCG Arena is not only a leaderboard, but also an instrument for diagnosing why a generator wins or loses.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{eda_tag_distribution.png}
-\caption{Tag frequency distribution across all plays. Negative tags (\emph{too hard}, \emph{boring}) are used slightly more frequently than positive tags (\emph{fun}, \emph{creative}).}
-\label{fig:eda-tag-distribution}
+\includegraphics[width=0.95\textwidth]{detailed_level_statistics_page.png}
+\caption{Detailed Level Statistics page from PCG Arena. The interface supports qualitative inspection of individual levels through trajectory overlays, death locations, tag counts, and level visualization.}
+\label{fig:eda-detailed-level-stats}
 \end{figure}
 
 % ===================================================================
-\section{Level Feature Correlations}
-\label{sec:eda-correlations}
+\section{RQ4: User Preference Heterogeneity}
+\label{sec:eda-user-heterogeneity}
 
-Figure~\ref{fig:eda-correlation-matrix} shows the Spearman correlation matrix between all numeric level features (computed from the level-stats aggregate for levels shown at least three times). Several patterns emerge:
+The anonymous-player data are sparse and should not be treated as demographic information, but they are still useful for understanding engagement and possible preference heterogeneity. Figure~\ref{fig:eda-engagement} shows votes over time, votes per anonymous player ID, and cumulative vote contribution.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{eda_correlation_matrix.png}
-\caption{Spearman correlation matrix of level features. Win rate correlates positively with completion rate and fun-tag rate, and negatively with average deaths and too-hard-tag rate.}
-\label{fig:eda-correlation-matrix}
+\includegraphics[width=\textwidth]{eda_engagement.png}
+\caption{Engagement concentration in the anonymous player-ID data. The analysis uses browser/player IDs, so these counts should not be interpreted as verified unique humans.}
+\label{fig:eda-engagement}
 \end{figure}
 
-\begin{itemize}[nosep]
-  \item Win rate correlates positively with completion rate and fun-tag rate, and negatively with average deaths, difficulty score, and too-hard-tag rate.
-  \item Average deaths and difficulty score are highly correlated, as expected since difficulty score is partly derived from death counts.
-  \item The fun-tag rate and creative-tag rate are positively correlated ($r_s \approx 0.4$), suggesting that players use these tags to describe a related underlying quality.
-  \item Average duration shows a weak positive correlation with win rate, reinforcing the finding that longer (i.e., more engaging) levels tend to win.
-\end{itemize}
+The vote distribution is highly concentrated. Among the 77 anonymous player IDs appearing in the vote table, the median player ID contributes 6 votes, while the most active ID contributes 217 votes. The top 5 IDs account for 54\% of the analyzed votes, and the top 10 account for 63.5\%. This concentration is typical for voluntary web studies, but it matters for interpretation: aggregate generator scores reflect both broad participation and the preferences of a small number of highly engaged player IDs.
+
+Figure~\ref{fig:eda-user-heatmap} examines the player-by-generator preference matrix for anonymous player IDs with at least five votes. Each cell is the mean score assigned by a player ID when that generator appeared. Missing player-generator combinations are filled with the neutral value 0.5 only for visualization and clustering.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{eda_user_generator_heatmap.png}
+\caption{Anonymous player ID by generator preference heatmap for player IDs with at least five votes. Rows are hierarchically clustered and columns follow the global generator ranking. The plot is exploratory because many player-generator combinations are sparse.}
+\label{fig:eda-user-heatmap}
+\end{figure}
+
+The heatmap suggests that the player population should not be assumed homogeneous. Many player IDs follow the global ordering by favoring \texttt{original}, \texttt{mariodpo}, or other high-ranked generators, but some rows show more tolerant or idiosyncratic preferences for mid-table generators. Because IDs are anonymous and sparse, this is best interpreted as exploratory evidence for preference diversity rather than a definitive taxonomy of player types.
 
 % ===================================================================
-\section{Duration and Engagement Analysis}
-\label{sec:eda-duration}
+\section{RQ5: Tag Semantics and Failure Modes}
+\label{sec:eda-tag-semantics}
 
-Play duration provides a proxy for player engagement that is independent of self-reported tags. Figure~\ref{fig:eda-duration} shows duration distributions by generator and by outcome.
+Tags provide a lightweight qualitative layer over the binary vote. They are optional, sparse, and subjective, so they should not be treated as ground-truth labels. Their value is diagnostic: they help distinguish why a level wins or loses.
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.95\textwidth]{eda_duration_analysis.png}
-\caption{Play duration by generator (left) and by outcome (right). Winning levels sustain approximately twice the play duration of losing levels.}
-\label{fig:eda-duration}
-\end{figure}
-
-The \emph{genetic} generator is a notable outlier with a median duration of approximately 88 seconds---far exceeding all other generators. This is explained by the generator's tendency to produce long, sprawling levels that require extended play time regardless of quality. Excluding this outlier, the median duration ranges from approximately 10 seconds (pattern-based generators) to 23 seconds (MarioGPT, MarioDPO).
-
-The right panel confirms that winning levels sustain significantly longer play ($p < 0.0001$), with won plays averaging 21.4 seconds versus 10.8 seconds for lost plays. This duration difference is the single strongest telemetry predictor of pairwise preference.
-
-% ===================================================================
-\section{Global Distributions}
-\label{sec:eda-distributions}
-
-Figure~\ref{fig:eda-global} provides an overview of the global data distributions: the level win rate distribution, the death rate distribution, games per generator, and completion rate by generator.
+Figure~\ref{fig:eda-tag-semantics} summarizes tag frequency, tag rate by generator, tag co-occurrence, and outcome distribution when each tag is present. The most common tags are \texttt{impossible} (87 assignments), \texttt{fun} (56), \texttt{too\_hard} (55), \texttt{boring} (49), \texttt{creative} (39), \texttt{broken\_graphics} (22), and \texttt{too\_easy} (21). Several available tags were unused in this export.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.95\textwidth]{eda_global_distributions.png}
-\caption{Global data distributions. Top-left: level win rate distribution centred around 0.5. Top-right: death rate distribution. Bottom: games and completion rates by generator.}
-\label{fig:eda-global}
+\includegraphics[width=\textwidth]{eda_tag_semantics.png}
+\caption{Tag semantics summary. The panels show tag frequency, tag rate by generator, tag co-occurrence, and the outcome distribution for tagged sides.}
+\label{fig:eda-tag-semantics}
 \end{figure}
 
-The win rate distribution is roughly symmetric around 0.5 (as expected for pairwise comparisons), though with visible tails corresponding to consistently strong and weak levels. Games per generator are approximately balanced (147--173), reflecting the AGIS matchmaking algorithm's coverage objective.
+Positive tags are strongly aligned with preference outcomes. Sides tagged \texttt{creative} win 87\% of the time and sides tagged \texttt{fun} win 71\% of the time. Negative tags behave differently: \texttt{impossible}, \texttt{too\_hard}, and \texttt{boring} are much more common on losing sides than winning sides. The tag-by-generator heatmap also makes generator failure modes interpretable: some generators lose because they are marked as impossible or too hard, while others are rejected as boring or visually broken.
 
 % ===================================================================
 \section{Summary of Findings}
 \label{sec:eda-summary}
 
-Table~\ref{tab:eda-summary} summarises the hypothesis tests conducted in this chapter.
+The revised analysis supports a stronger story than a sequence of hypothesis tests. PCG Arena provides a live human-preference measurement instrument for procedural level generators. It ranks generators through blind pairwise comparison, shows stable head-to-head patterns, connects rankings to static expressive range, reveals behavioral differences through trajectories, exposes engagement concentration and possible preference diversity, and uses tags to explain qualitative failure modes.
 
-\begin{table}[H]
-\centering
-\caption{Summary of hypothesis tests from the exploratory data analysis.}
-\label{tab:eda-summary}
-\small
-\begin{tabular}{llll}
-\toprule
-\textbf{ID} & \textbf{Hypothesis} & \textbf{Statistic} & \textbf{Verdict} \\
-\midrule
-H1 & Flow channel (moderate difficulty preferred) & $r_s = -0.194$, $p = 0.002$ & Not supported \\
-H2 & Fun/creative tags predict wins & $r_s = 0.237$, $p < 0.001$ & Supported \\
-H3 & Telemetry differs: won vs lost & all $p < 0.001$ & Supported \\
-H6 & Tags match objective telemetry & all $p < 0.05$ & Supported \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-The key findings are:
+The main empirical findings are:
 \begin{enumerate}[nosep]
-  \item \textbf{Easier is better, in short sessions.} The flow channel hypothesis does not hold for brief pairwise evaluations. Players consistently prefer less difficult levels in this context.
-  \item \textbf{Engagement predicts preference.} Play duration is the strongest single predictor of a level winning its pairwise comparison (21.4\,s vs 10.8\,s, $p < 0.0001$).
-  \item \textbf{ML-based generators dominate.} The top four generators by Glicko-2 rating are the original Nintendo levels and three ML-based approaches (MarioDPO, MarioGPT, ORE).
-  \item \textbf{Tags are semantically valid.} All five tested tag--telemetry associations are significant, justifying the use of tags as supervision signals for the judge function.
-  \item \textbf{MarioDPO achieves near-human quality.} With a win rate of 72.7\% and a Glicko-2 rating of 1366 (vs 1389 for original), MarioDPO is the highest-rated PCG method.
+    \item \textbf{Preference ranking}: \texttt{original} and \texttt{mariodpo} are the top generators in the analyzed export, with nearly identical preference scores around 0.83.
+    \item \textbf{Generator families}: Pattern-based generators are consistently weak, while neural and constructive generators occupy the middle tiers.
+    \item \textbf{Static structure}: Generators occupy visibly distinct expressive ranges. Reward density, unique-column ratio, and distance to the original corpus are more informative than any single difficulty proxy.
+    \item \textbf{Gameplay behavior}: Trajectories reveal navigability and failure modes. Stronger generators tend to support broader movement footprints and less concentrated failure locations.
+    \item \textbf{Users}: Vote contribution is concentrated among a small number of highly active anonymous player IDs, and the user-generator heatmap suggests exploratory preference heterogeneity.
+    \item \textbf{Tags}: Optional tags add semantic explanations to votes, distinguishing positive qualities such as \texttt{fun} and \texttt{creative} from failure modes such as \texttt{impossible}, \texttt{too\_hard}, and \texttt{boring}.
 \end{enumerate}
 
-These findings directly inform the design of the judge function and the DPO training pipeline described in the following chapter.
-
+These findings directly inform the design of the preference-aligned generation pipeline described in the following chapter.
 
 
 \chapter{MarioDPO --- Preference-Aligned Level Generation}
@@ -2442,9 +2301,9 @@ losses caused by missing spawn or termination markers.
 
 MarioDPO is evaluated in two complementary ways. First, the January 2026
 MarioDPO experimental snapshot measures judge-function validity and compares the
-new generator with established baselines. Second, the March 2026 full PCG Arena
-snapshot in Chapter~\ref{ch:eda} evaluates MarioDPO under the same public
-Glicko-2 ranking process as all other generators.
+new generator with established baselines. Second, the May 2026 PCG Arena export
+analysed in Chapter~\ref{ch:eda} evaluates MarioDPO under the same blind
+pairwise-preference protocol as all other generators.
 
 \subsection*{Controlled MarioDPO snapshot}
 
@@ -2493,12 +2352,12 @@ closest procedural competitor to the original levels.}
 
 \subsection*{Full arena snapshot}
 
-In the later March 2026 PCG Arena snapshot, MarioDPO remains the strongest
-procedural generator. It obtains a Glicko-2 rating of 1366 and a 72.7\% win rate,
-ranking second overall behind the original Nintendo levels (rating 1389,
-79.3\% win rate) and ahead of MarioGPT (rating 1287, 59.1\% win rate). The
-head-to-head matrix in Chapter~\ref{ch:eda} further shows that MarioDPO wins most
-direct matchups, including 88\% against MarioGAN and 100\% against NotchParam.
+In the later May 2026 PCG Arena export, MarioDPO remains the strongest
+procedural generator. It obtains a preference score of 0.832, essentially tied
+with the original Nintendo levels at 0.833 and ahead of ORE (0.655) and MarioGPT
+(0.643). The pairwise matrix in Chapter~\ref{ch:eda} further shows that MarioDPO
+performs consistently across many direct matchups rather than benefiting only
+from weak opponents.
 
 \begin{figure}[H]
 \centering
@@ -2509,8 +2368,9 @@ method and the closest competitor to the original human-authored levels.}
 \label{fig:dpo-better-than-other-pcg}
 \end{figure}
 
-The reduction from 83.3\% in the controlled snapshot to 72.7\% in the full arena
-snapshot is expected: the later dataset contains more votes, more opponents, and
+The change from an 83.3\% win rate in the controlled snapshot to a 0.832
+preference score in the full arena export reflects the different aggregation
+methods: the later analysis counts ties as 0.5 and compares more opponents under
 broader player behaviour. The important qualitative conclusion is stable across
 both evaluations: preference alignment substantially improves generator quality,
 placing MarioDPO in the same top tier as the original SMB1 levels and above all
