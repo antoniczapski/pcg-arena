@@ -11,11 +11,3 @@
 /workspaces/pcg-arena/latex/img/eda_user_generator_heatmap.png
 /workspaces/pcg-arena/latex/img/eda_user_embedding.png
 /workspaces/pcg-arena/latex/img/eda_tag_semantics.png
-
------------------------------------------------
-
-1. /workspaces/pcg-arena/latex/img/eda_user_embedding.png this plot looks very random
-2. This one looks nice /workspaces/pcg-arena/latex/img/eda_trajectory_stacks.png; Idk what this plot is supposed to present - seems identical but in lower resolution: /workspaces/pcg-arena/latex/img/eda_trajectory_occupancy.png
-
-
-All other plots look fine - we can use them

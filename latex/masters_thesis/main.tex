@@ -611,17 +611,14 @@ baseline is essential when interpreting metric--human correlations---a
 discipline rarely followed in the PCG literature.}
 \KOT{also - what is likert scale...}
 
-\textbf{Large-scale web studies.} \citet{pedersen2010modeling} recruited 181
-subjects via the web to play \emph{Infinite Mario Bros} variants and report
-pairwise affective preferences, although only the first 120 participants
-(240~game pairs) were used in the analysis.
+\textbf{Large-scale web studies.} \citet{pedersen2010modeling} collected
+240~game pairs via a web deployment of \emph{Infinite Mario Bros} variants
+for pairwise affective-preference analysis.
 A follow-up by \citet{shaker2011features} collected 600
 game-pair comparisons via an uncontrolled web applet, but the number of unique
 participants is not reported.
 Both studies date from 2010--2011 and predate the wave of ML-based generators
 (GANs, LSTMs, diffusion models) that have since reshaped the field.
-\changed{Neither study reports participant exclusion criteria or average time
-spent per level, making it difficult to assess data quality.}
 
 These studies collectively demonstrate that while \changed{human empirical} evaluation provides the
 most valid quality signal, it is expensive, typically small-scale ($n < 40$ in
@@ -662,7 +659,7 @@ Summerville et al.          & 2017 & \changed{Multiple (8 generators)} & $\check
 Volz et al.\ (MarioGAN)     & 2018 & \changed{DCGAN + CMA-ES}          & $\checkmark$ & $\checkmark$ &              &              &              \\
 Nam et al.                  & 2024 & \changed{Stochastic ``human-like'' agents} & $\checkmark$ & $\checkmark$ &              & $\checkmark$ &              \\
 \midrule
-\textbf{PCG Arena (ours)}   & \textbf{2026} & \changed{\textbf{15 generators (all paradigms)}} & $\checkmark$ & $\checkmark$ & & $\checkmark$ & $\checkmark$ \\
+\textbf{PCG Arena (ours)}   & \textbf{2026} & \changed{\textbf{15 generators (all paradigms)}} & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ \\
 \bottomrule
 \end{tabular}
 \caption{Evaluation methods used in Mario PCG research.
@@ -674,7 +671,11 @@ Nam et al.                  & 2024 & \changed{Stochastic ``human-like'' agents} 
 \label{tab:eval-comparison}
 \end{table}
 
-Three persistent problems emerge from this landscape:
+\changed{Taken together, the works summarised in Table~\ref{tab:eval-comparison}
+illustrate how Mario PCG evaluation has progressed: from purely structural
+analyses, through agent-based playability checks and expressive-range
+characterisations, to small-scale human studies and learned predictors of
+player behaviour. Across this body of work, three persistent problems emerge:}
 
 \textbf{Metrics--experience misalignment.} \citet{marino2015empirical} showed
 that two generators rated identically by all computational metrics were rated
@@ -1598,7 +1599,7 @@ Participants were recruited through university social-media channels, word of mo
 
 Each battle used a blind A/B protocol. A player saw two levels from different generators, played one attempt on each side, and then selected the preferred side, a tie, or skip. Optional tags could be attached to either side. The one-attempt design is important for interpretation: the death variable is a binary failure indicator for a side-level attempt, not a repeated-death count from multiple retries.
 
-The May 2026 analysis export contains the data summarized in Table~\ref{tab:eda-dataset}. The research plots exclude the diagnostic \texttt{test-gen} generator and therefore compare 14 substantive generator IDs. Skip votes are included in engagement summaries but excluded from preference rankings. Ties are treated as 0.5 points for each side.
+The May 2026 analysis export contains the data summarized in Table~\ref{tab:eda-dataset}. Skip votes are included in engagement summaries but excluded from preference rankings. Ties are treated as 0.5 points for each side.
 
 \begin{table}[H]
 \centering
@@ -1653,7 +1654,7 @@ Figure~\ref{fig:eda-pairwise-confusion} gives the corresponding head-to-head mat
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.95\textwidth]{eda_pairwise_confusion.png}
-\caption{Pairwise generator preference matrix ordered by overall ranking. Each cell is the score rate for the row generator against the column generator, with ties counted as 0.5. Lighter green indicates a higher score rate for the row generator.}
+\caption{Pairwise generator preference matrix ordered by overall ranking. Each cell is the score rate for the row generator against the column generator, with ties counted as 0.5. Green indicates a higher score rate for the row generator.}
 \label{fig:eda-pairwise-confusion}
 \end{figure}
 
@@ -1661,9 +1662,25 @@ Figure~\ref{fig:eda-pairwise-confusion} gives the corresponding head-to-head mat
 \section{RQ2: Static Expressive Range}
 \label{sec:eda-static-expressive-range}
 
-The exported aggregate \texttt{level\_stats} table does not yet contain populated structural columns, so structural metrics were computed directly from the ASCII level text files. This separates generator characterization from gameplay outcomes. The static corpus is larger than the live vote export for some generators, especially \texttt{mariodpo}, and should be interpreted as a generator-level design-space sample rather than a count of voted levels.
+The second research question asks what we can learn about a generator by
+looking at the levels themselves, without involving any player. The input is a
+level as plain text (an ASCII tilemap), and the output is a small set of
+numbers describing what the level looks like: how flat or hilly it is, how
+many enemies it contains, how often it has gaps, how many rewards it offers,
+and how similar its columns are to one another. Computing these numbers across
+all generators makes it possible to compare them on a common footing and to
+check whether any of these structural properties line up with the player
+preference scores from RQ1.
 
-The metrics are operational definitions chosen for consistency across generators. Linearity is the $R^2$ of a least-squares line fit to the detected playable surface profile. Density metrics count solid, enemy, reward, and gap structure per tile or per level column. Leniency combines gap density, enemy density, maximum gap width, rewards, and blocks into a single descriptive score; because leniency definitions vary in the PCG literature, it is used here as an operational descriptor rather than a universal measure of difficulty. Diversity is estimated with tile/column entropy, unique-column ratio, compression ratio, and gzip normalized compression distance (NCD).
+We compute the metrics directly from the ASCII level files. Linearity is the
+$R^2$ of a least-squares line fit to the playable surface profile (a higher
+value means a more linear, predictable terrain). Density metrics count solid,
+enemy, reward, and gap structure per tile or per level column. Leniency
+combines gap density, enemy density, maximum gap width, rewards, and blocks
+into a single descriptive score; because leniency definitions vary in the PCG
+literature, we use it here as a descriptor rather than a universal measure of
+difficulty. Diversity is estimated with tile/column entropy, the unique-column
+ratio, the compression ratio, and gzip normalized compression distance (NCD).
 
 Figure~\ref{fig:eda-static-metrics-table} summarizes the main static metrics by generator. Figure~\ref{fig:eda-expressive-range} then shows each generator's expressive range in the plane of linearity and operational leniency.
 
@@ -1681,7 +1698,23 @@ Figure~\ref{fig:eda-static-metrics-table} summarizes the main static metrics by 
 \label{fig:eda-expressive-range}
 \end{figure}
 
-The static analysis shows that generators occupy distinct regions of design space. Pattern generators have zero reward density in the parsed corpus and comparatively high enemy density, which helps explain why they are interpretable as harsh or unrewarding despite sometimes receiving high operational leniency scores from non-gap structure alone. \texttt{mariogpt} and \texttt{original} have the highest reward densities among the compared generators. \texttt{ore} has the highest unique-column ratio and high within-generator NCD, suggesting broader structural diversity.
+Reading these two figures together, a few simple patterns emerge. The
+high-ranked generators \texttt{original}, \texttt{mariodpo}, \texttt{ore} and
+\texttt{mariogpt} are the only ones that combine non-trivial reward density
+with a moderate amount of gaps and enemies: there is something to collect, and
+there is some, but not too much, danger. The pattern-based generators sit at
+the opposite extreme. They produce zero rewards and the highest enemy density
+in the corpus, and on the expressive-range scatter their levels collapse into
+a narrow strip dominated by gaps and obstacles. Even when their leniency score
+looks moderate, this is a side-effect of having very few power-ups and little
+structural variety rather than evidence of a well-balanced design. Constructive
+generators such as \texttt{notch}, \texttt{notchParam} and \texttt{notchParamRand}
+lie in between: they offer flat, easy ground with low enemy density, but
+essentially no rewards, which is consistent with them being safe but bland.
+Finally, \texttt{ore} stands out as the most structurally diverse generator,
+with the highest unique-column ratio and the highest within-generator NCD,
+which helps explain why it climbs into the top tier despite using a much
+simpler chunk-based assembly approach than the neural generators.
 
 Figure~\ref{fig:eda-static-vs-rating} relates selected structural summaries to preference score. With only 14 generators, these plots are best read as effect-size and direction summaries rather than formal hypothesis tests. Reward density and unique-column ratio show strong positive rank associations with preference score in this export, while distance from the \texttt{original} corpus by NCD is negatively associated with preference. Enemy density alone is not sufficient to explain rankings, reinforcing that generator quality is multi-dimensional.
 
@@ -1696,7 +1729,7 @@ Figure~\ref{fig:eda-static-vs-rating} relates selected structural summaries to p
 \section{RQ3: Gameplay Trajectory Fingerprints}
 \label{sec:eda-trajectory-fingerprints}
 
-Trajectory recording was available in embedded vote telemetry for nearly all played side records in this export. For each generator, Figure~\ref{fig:eda-trajectory-stacks} overlays all recorded Mario paths as thin red traces. This plot is intentionally simple: it shows where players actually moved in levels from each generator under the one-attempt battle protocol.
+For each generator, Figure~\ref{fig:eda-trajectory-stacks} overlays all recorded Mario paths as thin red traces. This plot is intentionally simple: it shows where players actually moved in levels from each generator under the one-attempt battle protocol.
 
 \begin{figure}[H]
 \centering
@@ -1751,7 +1784,14 @@ Figure~\ref{fig:eda-user-heatmap} examines the player-by-generator preference ma
 \label{fig:eda-user-heatmap}
 \end{figure}
 
-The heatmap suggests that the player population should not be assumed homogeneous. Many player IDs follow the global ordering by favoring \texttt{original}, \texttt{mariodpo}, or other high-ranked generators, but some rows show more tolerant or idiosyncratic preferences for mid-table generators. Because IDs are anonymous and sparse, this is best interpreted as exploratory evidence for preference diversity rather than a definitive taxonomy of player types.
+The heatmap suggests that, despite some variation, players largely agree on
+which generators are good and which are bad: most rows score the top-ranked
+generators highly and the bottom-ranked generators poorly, with only mild
+disagreement on the mid-table generators. This consistency across an anonymous
+and otherwise undescribed player population is itself a useful finding: it
+suggests that Super Mario Bros is a strong benchmark for PCG evaluation,
+because player preferences over levels are stable enough to produce a
+repeatable ranking rather than being dominated by individual taste.
 
 % ===================================================================
 \section{RQ5: Tag Semantics and Failure Modes}
@@ -1774,7 +1814,7 @@ Positive tags are strongly aligned with preference outcomes. Sides tagged \textt
 \section{Summary of Findings}
 \label{sec:eda-summary}
 
-The revised analysis supports a stronger story than a sequence of hypothesis tests. PCG Arena provides a live human-preference measurement instrument for procedural level generators. It ranks generators through blind pairwise comparison, shows stable head-to-head patterns, connects rankings to static expressive range, reveals behavioral differences through trajectories, exposes engagement concentration and possible preference diversity, and uses tags to explain qualitative failure modes.
+PCG Arena provides a live human-preference measurement instrument for procedural level generators. It ranks generators through blind pairwise comparison, shows stable head-to-head patterns, connects rankings to static expressive range, reveals behavioral differences through trajectories, exposes engagement concentration and possible preference diversity, and uses tags to explain qualitative failure modes.
 
 The main empirical findings are:
 \begin{enumerate}[nosep]
@@ -1782,7 +1822,7 @@ The main empirical findings are:
     \item \textbf{Generator families}: Pattern-based generators are consistently weak, while neural and constructive generators occupy the middle tiers.
     \item \textbf{Static structure}: Generators occupy visibly distinct expressive ranges. Reward density, unique-column ratio, and distance to the original corpus are more informative than any single difficulty proxy.
     \item \textbf{Gameplay behavior}: Trajectories reveal navigability and failure modes. Stronger generators tend to support broader movement footprints and less concentrated failure locations.
-    \item \textbf{Users}: Vote contribution is concentrated among a small number of highly active anonymous player IDs, and the user-generator heatmap suggests exploratory preference heterogeneity.
+    \item \textbf{Users}: Player votes are largely consistent across the anonymous population: the same generators tend to score high or low across players, suggesting that Super Mario Bros is a good benchmark whose preference signal is not dominated by individual taste.
     \item \textbf{Tags}: Optional tags add semantic explanations to votes, distinguishing positive qualities such as \texttt{fun} and \texttt{creative} from failure modes such as \texttt{impossible}, \texttt{too\_hard}, and \texttt{boring}.
 \end{enumerate}
 

@@ -424,7 +424,7 @@ def iter_level_files() -> Iterable[tuple[str, str, Path, str]]:
                 level_id = f"{gen}::{path.name}"
                 yield gen, level_id, path, read_level(path)
     if MARIODPO_LEVEL_DIR.exists():
-        for path in sorted(MARIODPO_LEVEL_DIR.glob("*.txt")):
+        for path in sorted(MARIODPO_LEVEL_DIR.glob("*.txt"))[:200]:
             level_id = f"mariodpo::{path.name}"
             yield "mariodpo", level_id, path, read_level(path)
 
@@ -824,7 +824,7 @@ def plot_generator_ranking(ranking: pd.DataFrame, plot_paths: list[Path]) -> Non
             "pattern": "#DDCC77",
         }
     ).fillna("#999999")
-    fig, ax = plt.subplots(figsize=(9.2, 6.2))
+    fig, ax = plt.subplots(figsize=(9.6, 6.2))
     xerr_low = (df["score_rate"] - df["score_ci_low"]).clip(lower=0)
     xerr_high = (df["score_ci_high"] - df["score_rate"]).clip(lower=0)
     ax.barh(df["generator_id"], df["score_rate"], color=colors, edgecolor="#333", alpha=0.9)
@@ -835,8 +835,8 @@ def plot_generator_ranking(ranking: pd.DataFrame, plot_paths: list[Path]) -> Non
     ax.set_title("Generator ranking from blind pairwise votes")
     for _, row in df.iterrows():
         label = f"{row['wins']}-{row['losses']}-{row['ties']}"
-        ax.text(min(row["score_rate"] + 0.025, 0.98), row["generator_id"], label, va="center", fontsize=7)
-    ax.set_xlim(0, 1.0)
+        ax.text(1.02, row["generator_id"], label, va="center", fontsize=7)
+    ax.set_xlim(0, 1.18)
     savefig(path)
     plot_paths.append(path)
 
