@@ -1,0 +1,28 @@
+# ── MarioDPO_v2 ignores ───────────────────────────────────────────────────
+# Secrets — never commit real tokens.
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+.pytest_cache/
+
+# Virtual envs
+.venv/
+venv/
+
+# Experiment tracking
+wandb/
+
+# Heavy / regenerable artifacts
+models/
+outputs/
+data/synthetic/
+# Keep the raw export and processed tables tracked so the judge is reproducible,
+# but ignore large intermediate caches.
+data/processed/*.cache
+*.ckpt
+*.safetensors
+*.bin
