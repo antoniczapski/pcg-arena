@@ -61,31 +61,31 @@
 \contentsline {section}{\numberline {3.9}Deployment and Infrastructure}{42}{section.3.9}%
 \contentsline {chapter}{\numberline {4}User Study and Exploratory Data Analysis}{43}{chapter.4}%
 \contentsline {section}{\numberline {4.1}Study Protocol and Dataset}{43}{section.4.1}%
-\contentsline {section}{\numberline {4.2}RQ1: Generator Preference Ranking}{45}{section.4.2}%
-\contentsline {section}{\numberline {4.3}RQ2: Static Expressive Range}{47}{section.4.3}%
-\contentsline {section}{\numberline {4.4}RQ3: Gameplay Trajectory Fingerprints}{50}{section.4.4}%
-\contentsline {section}{\numberline {4.5}RQ4: User Preference Heterogeneity}{53}{section.4.5}%
-\contentsline {section}{\numberline {4.6}RQ5: Tag Semantics and Failure Modes}{56}{section.4.6}%
-\contentsline {section}{\numberline {4.7}Summary of Findings}{57}{section.4.7}%
-\contentsline {chapter}{\numberline {5}MarioDPO --- Preference-Aligned Level Generation}{59}{chapter.5}%
-\contentsline {section}{\numberline {5.1}Motivation and Approach}{59}{section.5.1}%
-\contentsline {section}{\numberline {5.2}Column-Major Tokenisation}{60}{section.5.2}%
-\contentsline {section}{\numberline {5.3}Judge Function Development}{61}{section.5.3}%
-\contentsline {subsection}{\numberline {5.3.1}Verticality Reward (Experiment A)}{62}{subsection.5.3.1}%
-\contentsline {subsection}{\numberline {5.3.2}Hazard Hierarchy (Experiment B)}{63}{subsection.5.3.2}%
-\contentsline {subsection}{\numberline {5.3.3}Style Matching (Experiment D)}{64}{subsection.5.3.3}%
-\contentsline {subsection}{\numberline {5.3.4}Final Judge Function}{65}{subsection.5.3.4}%
-\contentsline {section}{\numberline {5.4}Training Pipeline}{67}{section.5.4}%
-\contentsline {subsection}{\numberline {5.4.1}Supervised Fine-Tuning (SFT)}{67}{subsection.5.4.1}%
-\contentsline {subsection}{\numberline {5.4.2}Preference Dataset Construction}{68}{subsection.5.4.2}%
-\contentsline {paragraph}{Human pairs.}{68}{section*.40}%
-\contentsline {paragraph}{Synthetic pairs.}{68}{section*.41}%
-\contentsline {subsection}{\numberline {5.4.3}DPO Training}{69}{subsection.5.4.3}%
-\contentsline {paragraph}{Inference-time filtering.}{69}{section*.44}%
-\contentsline {section}{\numberline {5.5}Implementation Details}{70}{section.5.5}%
-\contentsline {section}{\numberline {5.6}Results}{70}{section.5.6}%
-\contentsline {section}{\numberline {5.7}Analysis and Discussion}{73}{section.5.7}%
-\contentsline {chapter}{\numberline {6}Conclusions and Future Work}{75}{chapter.6}%
-\contentsline {section}{\numberline {6.1}Summary of Contributions}{75}{section.6.1}%
-\contentsline {section}{\numberline {6.2}Limitations}{75}{section.6.2}%
-\contentsline {section}{\numberline {6.3}Future Directions}{75}{section.6.3}%
+\contentsline {section}{\numberline {4.2}RQ1: Generator Preference Ranking}{44}{section.4.2}%
+\contentsline {section}{\numberline {4.3}RQ2: Static Expressive Range}{46}{section.4.3}%
+\contentsline {section}{\numberline {4.4}RQ3: Gameplay Trajectory Fingerprints}{49}{section.4.4}%
+\contentsline {section}{\numberline {4.5}RQ4: User Preference Heterogeneity}{52}{section.4.5}%
+\contentsline {section}{\numberline {4.6}RQ5: Tag Semantics and Failure Modes}{55}{section.4.6}%
+\contentsline {section}{\numberline {4.7}Summary of Findings}{55}{section.4.7}%
+\contentsline {chapter}{\numberline {5}MarioDPO --- Preference-Aligned Level Generation}{57}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Motivation and Approach}{57}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Column-Major Tokenisation}{58}{section.5.2}%
+\contentsline {section}{\numberline {5.3}Judge Function Development}{59}{section.5.3}%
+\contentsline {subsection}{\numberline {5.3.1}Verticality Reward (Experiment A)}{60}{subsection.5.3.1}%
+\contentsline {subsection}{\numberline {5.3.2}Hazard Hierarchy (Experiment B)}{61}{subsection.5.3.2}%
+\contentsline {subsection}{\numberline {5.3.3}Style Matching (Experiment D)}{62}{subsection.5.3.3}%
+\contentsline {subsection}{\numberline {5.3.4}Final Judge Function}{63}{subsection.5.3.4}%
+\contentsline {section}{\numberline {5.4}Training Pipeline}{65}{section.5.4}%
+\contentsline {subsection}{\numberline {5.4.1}Supervised Fine-Tuning (SFT)}{65}{subsection.5.4.1}%
+\contentsline {subsection}{\numberline {5.4.2}Preference Dataset Construction}{66}{subsection.5.4.2}%
+\contentsline {paragraph}{Human pairs.}{66}{section*.39}%
+\contentsline {paragraph}{Synthetic pairs.}{66}{section*.40}%
+\contentsline {subsection}{\numberline {5.4.3}DPO Training}{67}{subsection.5.4.3}%
+\contentsline {paragraph}{Inference-time filtering.}{67}{section*.43}%
+\contentsline {section}{\numberline {5.5}Implementation Details}{68}{section.5.5}%
+\contentsline {section}{\numberline {5.6}Results}{68}{section.5.6}%
+\contentsline {section}{\numberline {5.7}Analysis and Discussion}{71}{section.5.7}%
+\contentsline {chapter}{\numberline {6}Conclusions and Future Work}{73}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Summary of Contributions}{73}{section.6.1}%
+\contentsline {section}{\numberline {6.2}Limitations}{73}{section.6.2}%
+\contentsline {section}{\numberline {6.3}Future Directions}{73}{section.6.3}%

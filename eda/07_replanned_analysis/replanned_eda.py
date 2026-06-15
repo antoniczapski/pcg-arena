@@ -37,7 +37,12 @@ from scipy.spatial.distance import pdist, squareform
 ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = ROOT / "eda" / "data_10_05_2026"
 OUT_DIR = ROOT / "eda" / "07_replanned_analysis" / "outputs"
-IMG_DIR = ROOT / "latex" / "img"
+# The thesis (latex/masters_thesis/main.tex) uses \graphicspath{{img/}}, so it
+# loads figures from latex/masters_thesis/img. Write there directly. latex/img
+# is a legacy, git-tracked copy that no document reads from; we keep it in sync
+# (see sync_legacy_images) so the two tracked locations never diverge.
+IMG_DIR = ROOT / "latex" / "masters_thesis" / "img"
+LEGACY_IMG_DIR = ROOT / "latex" / "img"
 VERIFIER_FILE = ROOT / "verifier_agent.md"
 SEED_LEVEL_DIR = ROOT / "db" / "seed" / "levels"
 MARIODPO_LEVEL_DIR = ROOT / "MarioDPO" / "generated_levels_2026_02_01"
@@ -48,16 +53,15 @@ np.random.seed(RANDOM_SEED)
 
 EXCLUDE_GENERATORS = {"test-gen"}
 
+# Active tag vocabulary (7 tags). The deprecated tags good_flow, unfair,
+# confusing, and not_mario_like were removed from the platform; they are
+# excluded here so leftover traces in the database are never plotted.
 TAG_NAMES = [
     "fun",
     "boring",
     "too_hard",
     "too_easy",
     "creative",
-    "good_flow",
-    "unfair",
-    "confusing",
-    "not_mario_like",
     "impossible",
     "broken_graphics",
 ]
@@ -117,6 +121,18 @@ def safe_datetime(value: str | None) -> pd.Timestamp | pd.NaT:
 def ensure_dirs() -> None:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     IMG_DIR.mkdir(parents=True, exist_ok=True)
+    LEGACY_IMG_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def sync_legacy_images(plot_paths: list[Path]) -> None:
+    """Mirror generated figures into the legacy latex/img directory so the two
+    git-tracked image locations stay identical."""
+    import shutil
+
+    for src in plot_paths:
+        dst = LEGACY_IMG_DIR / src.name
+        if src.resolve() != dst.resolve():
+            shutil.copy2(src, dst)
 
 
 @dataclass
@@ -829,14 +845,32 @@ def plot_generator_ranking(ranking: pd.DataFrame, plot_paths: list[Path]) -> Non
     xerr_high = (df["score_ci_high"] - df["score_rate"]).clip(lower=0)
     ax.barh(df["generator_id"], df["score_rate"], color=colors, edgecolor="#333", alpha=0.9)
     ax.errorbar(df["score_rate"], df["generator_id"], xerr=[xerr_low, xerr_high], fmt="none", ecolor="#222", capsize=3, lw=1)
-    ax.axvline(0.5, color="#666", lw=1, ls="--", label="neutral score")
+    ax.axvline(0.5, color="#666", lw=1, ls="--")
     ax.set_xlabel("Pairwise preference score (win=1, tie=0.5, loss=0)")
     ax.set_ylabel("Generator")
     ax.set_title("Generator ranking from blind pairwise votes")
-    for _, row in df.iterrows():
-        label = f"{row['wins']}-{row['losses']}-{row['ties']}"
-        ax.text(1.02, row["generator_id"], label, va="center", fontsize=7)
-    ax.set_xlim(0, 1.18)
+    ax.set_xlim(0, 1.0)
+
+    from matplotlib.lines import Line2D
+    from matplotlib.patches import Patch
+
+    legend_handles = [
+        Patch(facecolor="#222222", edgecolor="#333", label="Human-authored"),
+        Patch(facecolor="#CC6677", edgecolor="#333", label="Preference-trained (MarioDPO)"),
+        Patch(facecolor="#4477AA", edgecolor="#333", label="Neural (GAN / LLM / diffusion)"),
+        Patch(facecolor="#66AA55", edgecolor="#333", label="Constructive / search"),
+        Patch(facecolor="#DDCC77", edgecolor="#333", label="Pattern-based"),
+        Line2D([0], [0], color="#666", lw=1, ls="--", label="Neutral score (0.5)"),
+    ]
+    ax.legend(
+        handles=legend_handles,
+        title="Generator family",
+        loc="upper left",
+        bbox_to_anchor=(1.005, 1.0),
+        fontsize=8,
+        title_fontsize=8,
+        framealpha=0.95,
+    )
     savefig(path)
     plot_paths.append(path)
 
@@ -948,19 +982,48 @@ def plot_static_metrics_table(static_gen: pd.DataFrame, ranking: pd.DataFrame, p
             "NCD": df["within_ncd"].map(lambda x: f"{x:.2f}"),
         }
     )
-    fig, ax = plt.subplots(figsize=(11.5, 0.42 * len(display) + 1.2))
+    # Raw values used to shade the five metric columns from red (low) to green
+    # (high) within each column, as a per-column reading aid.
+    metric_values = {
+        "Linearity": df["linearity_r2_mean"].to_numpy(dtype=float),
+        "Leniency": df["leniency_mean"].to_numpy(dtype=float),
+        "Gap dens.": df["gap_density_mean"].to_numpy(dtype=float),
+        "Enemy dens.": df["enemy_density_mean"].to_numpy(dtype=float),
+        "NCD": df["within_ncd"].to_numpy(dtype=float),
+    }
+    metric_ranges = {name: (np.nanmin(v), np.nanmax(v)) for name, v in metric_values.items()}
+    shade_cmap = plt.get_cmap("RdYlGn")
+    col_widths = [0.20, 0.10, 0.10, 0.12, 0.12, 0.12, 0.13, 0.11]
+
+    fig, ax = plt.subplots(figsize=(12.5, 0.5 * len(display) + 1.0))
     ax.axis("off")
-    table = ax.table(cellText=display.values, colLabels=display.columns, loc="center", cellLoc="center")
+    table = ax.table(
+        cellText=display.values,
+        colLabels=display.columns,
+        colWidths=col_widths,
+        loc="center",
+        cellLoc="center",
+    )
     table.auto_set_font_size(False)
     table.set_fontsize(8)
-    table.scale(1, 1.35)
+    table.scale(1, 1.45)
+    columns = list(display.columns)
     for (row, col), cell in table.get_celld().items():
         if row == 0:
             cell.set_text_props(weight="bold", color="white")
             cell.set_facecolor("#333333")
+            continue
+        col_name = columns[col]
+        if col_name in metric_values:
+            vmin, vmax = metric_ranges[col_name]
+            value = metric_values[col_name][row - 1]
+            if np.isnan(value) or vmax <= vmin:
+                t = 0.5
+            else:
+                t = (value - vmin) / (vmax - vmin)
+            cell.set_facecolor(shade_cmap(0.15 + 0.70 * t))
         elif row % 2 == 0:
             cell.set_facecolor("#f2f2f2")
-    ax.set_title("Static expressive metrics by generator", pad=16, fontsize=12, weight="bold")
     savefig(path)
     plot_paths.append(path)
 
@@ -1136,9 +1199,10 @@ def plot_tag_semantics(side_df: pd.DataFrame, ranking: pd.DataFrame, plot_paths:
     tagged = side_df[side_df["tag_count"] > 0]
     co = pd.DataFrame(0, index=TAG_NAMES, columns=TAG_NAMES, dtype=float)
     for tags in tagged["tags"]:
-        for a, b in itertools.product(tags, tags):
-            if a in TAG_NAMES and b in TAG_NAMES:
-                co.loc[a, b] += 1
+        unique_tags = [t for t in set(tags) if t in TAG_NAMES]
+        for a, b in itertools.combinations(unique_tags, 2):
+            co.loc[a, b] += 1
+            co.loc[b, a] += 1
     sns.heatmap(co, ax=axes[2], cmap="Blues", cbar_kws={"label": "Co-occurrence count"})
     axes[2].set_title("Tag co-occurrence")
     axes[2].set_xlabel("Tag")
@@ -1262,6 +1326,7 @@ def main() -> None:
 
     audit = write_outputs(data, side_df, vote_df, ranking, level_metrics, static_gen, traj_metrics, plot_paths)
     write_verifier_paths(plot_paths)
+    sync_legacy_images(plot_paths)
     print(json.dumps({"plots": [str(p) for p in plot_paths], "audit": audit}, indent=2))
 
 

@@ -1579,17 +1579,17 @@ are performed via a scheduled script that copies the SQLite file to a timestampe
 \chapter{User Study and Exploratory Data Analysis}
 \label{ch:eda}
 
-This chapter reframes the PCG Arena data as an exploratory user study and generator characterisation. Rather than testing a long sequence of isolated hypotheses, the analysis asks five broader research questions:
+This chapter presents the PCG Arena data as an exploratory user study and generator characterisation, organised around five research questions:
 
 \begin{enumerate}[nosep]
     \item \textbf{RQ1}: Which generators are preferred by players in blind pairwise comparisons?
     \item \textbf{RQ2}: How do generators differ in static expressive range, and which structural properties align with player preference?
-    \item \textbf{RQ3}: What behavioral fingerprints appear in player trajectories for each generator?
-    \item \textbf{RQ4}: Are anonymous player preferences and play styles homogeneous, or do visible subgroups emerge?
-    \item \textbf{RQ5}: What do optional tags reveal about why levels win or lose?
+    \item \textbf{RQ3}: What patterns of player movement appear in the recorded trajectories for each generator?
+    \item \textbf{RQ4}: Are player preferences and play styles homogeneous, or do visible subgroups emerge?
+    \item \textbf{RQ5}: What do tags reveal about why levels win or lose?
 \end{enumerate}
 
-The emphasis is descriptive and visual. The goal is to show what PCG Arena can measure---preference, structure, gameplay behavior, user heterogeneity, and qualitative failure modes---without over-claiming universal design laws from a sparse exploratory dataset.
+The analysis is exploratory: its conclusions rely on patterns observed in the data and its visualisations rather than on formal hypothesis testing. The aim is to demonstrate what PCG Arena can measure---preference, structure, gameplay behaviour, user heterogeneity, and qualitative failure modes---while acknowledging that the current dataset is still too small to support claims of universal design laws.
 
 % ===================================================================
 \section{Study Protocol and Dataset}
@@ -1597,7 +1597,7 @@ The emphasis is descriptive and visual. The goal is to show what PCG Arena can m
 
 Participants were recruited through university social-media channels, word of mouth among game-development and computer-science communities, and a small promoted Reddit campaign targeting game-development and procedural-generation communities. Participation was anonymous. The platform assigned browser-based anonymous player identifiers and session identifiers, persisted through cookies or local browser storage. Consequently, ``players'' in this analysis should be interpreted as anonymous browser/player IDs rather than verified unique humans; clearing cookies or changing device/browser could create a new ID.
 
-Each battle used a blind A/B protocol. A player saw two levels from different generators, played one attempt on each side, and then selected the preferred side, a tie, or skip. Optional tags could be attached to either side. The one-attempt design is important for interpretation: the death variable is a binary failure indicator for a side-level attempt, not a repeated-death count from multiple retries.
+Each battle used a blind A/B protocol. A player saw two levels from different generators, played one attempt on each side, and then selected the preferred side, a tie, or skip. Optional tags could be attached to either side. Restricting each side to a single attempt was a deliberate system-design decision. A protocol allowing multiple attempts per level was also implemented and tested, but limiting play to one attempt per side collects substantially more pairwise comparisons per unit of player time, directly serving the platform's main goal of building a leaderboard from a large number of A/B comparisons. For interpretation, this means the death variable is a binary failure indicator for a single side-level attempt rather than a repeated-death count.
 
 The May 2026 analysis export contains the data summarized in Table~\ref{tab:eda-dataset}. Skip votes are included in engagement summaries but excluded from preference rankings. Ties are treated as 0.5 points for each side.
 
@@ -1623,14 +1623,7 @@ Tag assignments & 329 \\
 \end{tabular}
 \end{table}
 
-The vote outcomes are balanced between the two screen sides (418 left wins and 398 right wins), with 165 ties and 19 skips. The median play duration is 8.0 seconds, but a small number of inactive-tab outliers are present; duration-dependent plots therefore use clipping or robust summaries. Figure~\ref{fig:eda-study-overview} summarizes the analysis links among anonymous players, votes, side-level telemetry, tags, trajectories, and static level text.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.95\textwidth]{eda_study_overview.png}
-\caption{Analysis data model for the revised EDA. Pairwise votes connect anonymous player/session IDs to side-level telemetry, optional tags, embedded trajectories, and generator/level identifiers.}
-\label{fig:eda-study-overview}
-\end{figure}
+The vote outcomes are balanced between the two screen sides (418 left wins and 398 right wins), with 165 ties and 19 skips, indicating no systematic side bias; moreover, the assignment of levels to the left or right side was randomised, further reducing the risk of positional bias. The median play duration is 8.0 seconds, but a small number of inactive-tab outliers are present; duration-dependent plots therefore use clipping or robust summaries.
 
 % ===================================================================
 \section{RQ1: Generator Preference Ranking}
@@ -1641,7 +1634,7 @@ The core purpose of PCG Arena is to measure human preference between generators.
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.95\textwidth]{eda_generator_ranking.png}
-\caption{Generator ranking from blind pairwise votes. Bars show mean preference score, where win = 1, tie = 0.5, and loss = 0; horizontal intervals show bootstrap uncertainty. The text at the end of each bar gives the win-loss-tie record.}
+\caption{Generator ranking from blind pairwise votes. Bars show mean preference score, where win = 1, tie = 0.5, and loss = 0; horizontal intervals show bootstrap uncertainty. Bar colour encodes the generator family (human-authored, preference-trained, neural, constructive/search, and pattern-based), as shown in the in-plot legend.}
 \label{fig:eda-generator-ranking}
 \end{figure}
 
@@ -1649,7 +1642,7 @@ The strongest result is that the human-authored \texttt{original} baseline and \
 
 This ordering is meaningful for two reasons. First, the human-authored baseline remains a strong benchmark, which is expected if the vote data captures level quality. Second, \texttt{mariodpo} approaches the human baseline and clearly outperforms the other procedural generators in this export, suggesting that preference-aligned generation is a promising direction for the platform.
 
-Figure~\ref{fig:eda-pairwise-confusion} gives the corresponding head-to-head matrix. Rows and columns are ordered by the ranking above. The matrix reveals that the top generators are not merely benefiting from weak opponents: \texttt{original} and \texttt{mariodpo} perform well across many pairings, whereas pattern generators lose consistently across opponents.
+Figure~\ref{fig:eda-pairwise-confusion} gives the corresponding head-to-head matrix. Rows and columns are ordered by the ranking above. The matrix reveals that the top generators are not benefiting only from weak opponents: \texttt{original} and \texttt{mariodpo} perform well across many pairings, whereas pattern generators lose consistently across opponents.
 
 \begin{figure}[H]
 \centering
@@ -1673,13 +1666,17 @@ check whether any of these structural properties line up with the player
 preference scores from RQ1.
 
 We compute the metrics directly from the ASCII level files. Linearity is the
-$R^2$ of a least-squares line fit to the playable surface profile (a higher
-value means a more linear, predictable terrain). Density metrics count solid,
+coefficient of determination ($R^2$) of a least-squares line fitted to the
+playable surface profile; it measures how well a straight line explains the
+surface, so a higher $R^2$ corresponds to flatter, more linear and more
+predictable terrain, while a lower value indicates a bumpier, more irregular
+profile. Density metrics count solid,
 enemy, reward, and gap structure per tile or per level column. Leniency
 combines gap density, enemy density, maximum gap width, rewards, and blocks
-into a single descriptive score; because leniency definitions vary in the PCG
-literature, we use it here as a descriptor rather than a universal measure of
-difficulty. Diversity is estimated with tile/column entropy, the unique-column
+into a single descriptive score; because the various leniency definitions in
+the PCG literature are not mutually comparable, we use our formulation only to
+compare generators within this study, not as an absolute, cross-paper measure
+of difficulty. Diversity is estimated with tile/column entropy, the unique-column
 ratio, the compression ratio, and gzip normalized compression distance (NCD).
 
 Figure~\ref{fig:eda-static-metrics-table} summarizes the main static metrics by generator. Figure~\ref{fig:eda-expressive-range} then shows each generator's expressive range in the plane of linearity and operational leniency.
@@ -1687,7 +1684,7 @@ Figure~\ref{fig:eda-static-metrics-table} summarizes the main static metrics by 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.95\textwidth]{eda_static_metrics_table.png}
-\caption{Static expressive metrics computed from level text files. Metrics include fitted-surface linearity, operational leniency, gap density, enemy density, and within-generator compression distance.}
+\caption{Static expressive metrics computed from level text files. Metrics include fitted-surface linearity, operational leniency, gap density, enemy density, and within-generator compression distance. Each of the five metric columns is shaded within the column from red (low) to green (high) as a visual reading aid.}
 \label{fig:eda-static-metrics-table}
 \end{figure}
 
@@ -1698,7 +1695,7 @@ Figure~\ref{fig:eda-static-metrics-table} summarizes the main static metrics by 
 \label{fig:eda-expressive-range}
 \end{figure}
 
-Reading these two figures together, a few simple patterns emerge. The
+Taken together, the two figures show several consistent patterns. The
 high-ranked generators \texttt{original}, \texttt{mariodpo}, \texttt{ore} and
 \texttt{mariogpt} are the only ones that combine non-trivial reward density
 with a moderate amount of gaps and enemies: there is something to collect, and
@@ -1716,7 +1713,7 @@ with the highest unique-column ratio and the highest within-generator NCD,
 which helps explain why it climbs into the top tier despite using a much
 simpler chunk-based assembly approach than the neural generators.
 
-Figure~\ref{fig:eda-static-vs-rating} relates selected structural summaries to preference score. With only 14 generators, these plots are best read as effect-size and direction summaries rather than formal hypothesis tests. Reward density and unique-column ratio show strong positive rank associations with preference score in this export, while distance from the \texttt{original} corpus by NCD is negatively associated with preference. Enemy density alone is not sufficient to explain rankings, reinforcing that generator quality is multi-dimensional.
+Figure~\ref{fig:eda-static-vs-rating} relates selected structural summaries to preference score. With only 14 generators, these plots should be read as showing the direction and rough strength of each association, not as formal statistical tests. Reward density and unique-column ratio show the clearest positive association with preference score in this export, while distance from the \texttt{original} corpus by NCD is negatively associated with preference. Crucially, however, no single metric explains the ranking on its own: the better predictors still have visible exceptions, and difficulty proxies such as enemy density show no consistent relationship with preference at all. This is precisely the difficulty that motivates PCG Arena---player preference is a multi-dimensional signal that no individual static metric captures, which is why direct human comparison, rather than any automated proxy, is needed to rank generators reliably.
 
 \begin{figure}[H]
 \centering
@@ -1764,7 +1761,7 @@ The deployed analytics UI also supports level-level inspection beyond aggregate 
 \section{RQ4: User Preference Heterogeneity}
 \label{sec:eda-user-heterogeneity}
 
-The anonymous-player data are sparse and should not be treated as demographic information, but they are still useful for understanding engagement and possible preference heterogeneity. Figure~\ref{fig:eda-engagement} shows votes over time, votes per anonymous player ID, and cumulative vote contribution.
+The anonymous-player data are sparse, and because players are identified only by browser/player IDs we know nothing about who they are---their age, background, or gaming experience are all unknown. The data are nonetheless useful for understanding engagement and possible preference heterogeneity. Figure~\ref{fig:eda-engagement} shows votes over time, votes per anonymous player ID, and cumulative vote contribution.
 
 \begin{figure}[H]
 \centering
@@ -1780,7 +1777,7 @@ Figure~\ref{fig:eda-user-heatmap} examines the player-by-generator preference ma
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{eda_user_generator_heatmap.png}
-\caption{Anonymous player ID by generator preference heatmap for player IDs with at least five votes. Rows are hierarchically clustered and columns follow the global generator ranking. The plot is exploratory because many player-generator combinations are sparse.}
+\caption{Anonymous player ID by generator preference heatmap for player IDs with at least five votes. Rows are grouped by hierarchical clustering - Ward's method on Euclidean distances between players' generator-score vectors. Columns follow the global generator ranking. The plot is exploratory because many player-generator combinations are sparse.}
 \label{fig:eda-user-heatmap}
 \end{figure}
 
@@ -1799,7 +1796,7 @@ repeatable ranking rather than being dominated by individual taste.
 
 Tags provide a lightweight qualitative layer over the binary vote. They are optional, sparse, and subjective, so they should not be treated as ground-truth labels. Their value is diagnostic: they help distinguish why a level wins or loses.
 
-Figure~\ref{fig:eda-tag-semantics} summarizes tag frequency, tag rate by generator, tag co-occurrence, and outcome distribution when each tag is present. The most common tags are \texttt{impossible} (87 assignments), \texttt{fun} (56), \texttt{too\_hard} (55), \texttt{boring} (49), \texttt{creative} (39), \texttt{broken\_graphics} (22), and \texttt{too\_easy} (21). Several available tags were unused in this export.
+Figure~\ref{fig:eda-tag-semantics} summarizes tag frequency, tag rate by generator, tag co-occurrence, and outcome distribution when each tag is present. The most common tags are \texttt{impossible} (87 assignments), \texttt{fun} (56), \texttt{too\_hard} (55), \texttt{boring} (49), \texttt{creative} (39), \texttt{broken\_graphics} (22), and \texttt{too\_easy} (21).
 
 \begin{figure}[H]
 \centering
