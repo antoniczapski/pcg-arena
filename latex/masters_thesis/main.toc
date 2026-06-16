@@ -68,24 +68,15 @@
 \contentsline {section}{\numberline {4.6}RQ5: Tag Semantics and Failure Modes}{55}{section.4.6}%
 \contentsline {section}{\numberline {4.7}Summary of Findings}{55}{section.4.7}%
 \contentsline {chapter}{\numberline {5}MarioDPO --- Preference-Aligned Level Generation}{57}{chapter.5}%
-\contentsline {section}{\numberline {5.1}Motivation and Approach}{57}{section.5.1}%
-\contentsline {section}{\numberline {5.2}Column-Major Tokenisation}{58}{section.5.2}%
-\contentsline {section}{\numberline {5.3}Judge Function Development}{59}{section.5.3}%
-\contentsline {subsection}{\numberline {5.3.1}Verticality Reward (Experiment A)}{60}{subsection.5.3.1}%
-\contentsline {subsection}{\numberline {5.3.2}Hazard Hierarchy (Experiment B)}{61}{subsection.5.3.2}%
-\contentsline {subsection}{\numberline {5.3.3}Style Matching (Experiment D)}{62}{subsection.5.3.3}%
-\contentsline {subsection}{\numberline {5.3.4}Final Judge Function}{63}{subsection.5.3.4}%
-\contentsline {section}{\numberline {5.4}Training Pipeline}{65}{section.5.4}%
-\contentsline {subsection}{\numberline {5.4.1}Supervised Fine-Tuning (SFT)}{65}{subsection.5.4.1}%
-\contentsline {subsection}{\numberline {5.4.2}Preference Dataset Construction}{66}{subsection.5.4.2}%
-\contentsline {paragraph}{Human pairs.}{66}{section*.39}%
-\contentsline {paragraph}{Synthetic pairs.}{66}{section*.40}%
-\contentsline {subsection}{\numberline {5.4.3}DPO Training}{67}{subsection.5.4.3}%
-\contentsline {paragraph}{Inference-time filtering.}{67}{section*.43}%
-\contentsline {section}{\numberline {5.5}Implementation Details}{68}{section.5.5}%
-\contentsline {section}{\numberline {5.6}Results}{68}{section.5.6}%
-\contentsline {section}{\numberline {5.7}Analysis and Discussion}{71}{section.5.7}%
-\contentsline {chapter}{\numberline {6}Conclusions and Future Work}{73}{chapter.6}%
-\contentsline {section}{\numberline {6.1}Summary of Contributions}{73}{section.6.1}%
-\contentsline {section}{\numberline {6.2}Limitations}{73}{section.6.2}%
-\contentsline {section}{\numberline {6.3}Future Directions}{73}{section.6.3}%
+\contentsline {section}{\numberline {5.1}Motivation and Overview}{57}{section.5.1}%
+\contentsline {section}{\numberline {5.2}The Judge Function}{58}{section.5.2}%
+\contentsline {section}{\numberline {5.3}Generator Training}{59}{section.5.3}%
+\contentsline {subsection}{\numberline {5.3.1}Continue-pretraining the base model}{59}{subsection.5.3.1}%
+\contentsline {subsection}{\numberline {5.3.2}Preference dataset}{60}{subsection.5.3.2}%
+\contentsline {subsection}{\numberline {5.3.3}DPO alignment}{60}{subsection.5.3.3}%
+\contentsline {section}{\numberline {5.4}Results}{61}{section.5.4}%
+\contentsline {section}{\numberline {5.5}Discussion}{62}{section.5.5}%
+\contentsline {chapter}{\numberline {6}Conclusions and Future Work}{65}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Summary of Contributions}{65}{section.6.1}%
+\contentsline {section}{\numberline {6.2}Limitations}{65}{section.6.2}%
+\contentsline {section}{\numberline {6.3}Future Directions}{65}{section.6.3}%

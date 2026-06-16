@@ -297,81 +297,51 @@
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
 \newlabel{ch:mariodpo}{{5}{57}{MarioDPO --- Preference-Aligned Level Generation}{chapter.5}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {5.1}Motivation and Approach}{57}{section.5.1}\protected@file@percent }
-\newlabel{sec:dpo-motivation}{{5.1}{57}{Motivation and Approach}{section.5.1}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {5.1}{\ignorespaces MarioDPO training data pipeline. Human PCG Arena votes are retained as high-weight preference pairs, while the judge function supplies additional synthetic pairs with lower weight. The combined dataset is used for DPO fine-tuning.}}{58}{figure.caption.32}\protected@file@percent }
-\newlabel{fig:dpo-pipeline}{{5.1}{58}{MarioDPO training data pipeline. Human PCG Arena votes are retained as high-weight preference pairs, while the judge function supplies additional synthetic pairs with lower weight. The combined dataset is used for DPO fine-tuning}{figure.caption.32}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {5.2}Column-Major Tokenisation}{58}{section.5.2}\protected@file@percent }
-\newlabel{sec:dpo-tokenisation}{{5.2}{58}{Column-Major Tokenisation}{section.5.2}{}}
-\newlabel{eq:dpo-columns}{{5.1}{59}{Column-Major Tokenisation}{equation.5.2.1}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {5.1}{\ignorespaces MarioDPO level representation and tokenisation choices.}}{59}{table.caption.33}\protected@file@percent }
-\newlabel{tab:dpo-representation}{{5.1}{59}{MarioDPO level representation and tokenisation choices}{table.caption.33}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {5.3}Judge Function Development}{59}{section.5.3}\protected@file@percent }
-\newlabel{sec:dpo-judge}{{5.3}{59}{Judge Function Development}{section.5.3}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.3.1}Verticality Reward (Experiment A)}{60}{subsection.5.3.1}\protected@file@percent }
-\newlabel{subsec:dpo-judge-vert}{{5.3.1}{60}{Verticality Reward (Experiment A)}{subsection.5.3.1}{}}
-\newlabel{eq:dpo-ysigma}{{5.2}{60}{Verticality Reward (Experiment A)}{equation.5.3.2}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {5.2}{\ignorespaces Experiment A: trajectory verticality and path entropy are positively associated with human win rate. MarioDPO uses $\sigma _y$ as a reward term in the judge function.}}{61}{figure.caption.34}\protected@file@percent }
-\newlabel{fig:dpo-exp-a}{{5.2}{61}{Experiment A: trajectory verticality and path entropy are positively associated with human win rate. MarioDPO uses $\sigma _y$ as a reward term in the judge function}{figure.caption.34}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.3.2}Hazard Hierarchy (Experiment B)}{61}{subsection.5.3.2}\protected@file@percent }
-\newlabel{subsec:dpo-judge-hazard}{{5.3.2}{61}{Hazard Hierarchy (Experiment B)}{subsection.5.3.2}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {5.3}{\ignorespaces Experiment B: pattern-based generators form a low-performing cluster, supporting a strong gap/frustration penalty in the judge function.}}{62}{figure.caption.35}\protected@file@percent }
-\newlabel{fig:dpo-exp-b}{{5.3}{62}{Experiment B: pattern-based generators form a low-performing cluster, supporting a strong gap/frustration penalty in the judge function}{figure.caption.35}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.3.3}Style Matching (Experiment D)}{62}{subsection.5.3.3}\protected@file@percent }
-\newlabel{subsec:dpo-judge-style}{{5.3.3}{62}{Style Matching (Experiment D)}{subsection.5.3.3}{}}
-\newlabel{eq:dpo-mahalanobis}{{5.3}{62}{Style Matching (Experiment D)}{equation.5.3.3}{}}
-\newlabel{eq:dpo-style-reward}{{5.4}{63}{Style Matching (Experiment D)}{equation.5.3.4}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {5.4}{\ignorespaces Experiment D: levels closer to the original-level centroid in feature space achieve higher win rates. MarioDPO uses this relationship as a style reward rather than as a hard constraint.}}{63}{figure.caption.36}\protected@file@percent }
-\newlabel{fig:dpo-exp-d}{{5.4}{63}{Experiment D: levels closer to the original-level centroid in feature space achieve higher win rates. MarioDPO uses this relationship as a style reward rather than as a hard constraint}{figure.caption.36}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.3.4}Final Judge Function}{63}{subsection.5.3.4}\protected@file@percent }
-\newlabel{subsec:dpo-judge-final}{{5.3.4}{63}{Final Judge Function}{subsection.5.3.4}{}}
-\newlabel{eq:dpo-j-static}{{5.5}{63}{Final Judge Function}{equation.5.3.5}{}}
-\newlabel{eq:dpo-j-final}{{5.6}{64}{Final Judge Function}{equation.5.3.6}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {5.2}{\ignorespaces Weights used by the MarioDPO judge function.}}{64}{table.caption.37}\protected@file@percent }
-\newlabel{tab:dpo-judge-weights}{{5.2}{64}{Weights used by the MarioDPO judge function}{table.caption.37}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5.1}Motivation and Overview}{57}{section.5.1}\protected@file@percent }
+\newlabel{sec:dpo-motivation}{{5.1}{57}{Motivation and Overview}{section.5.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5.2}The Judge Function}{58}{section.5.2}\protected@file@percent }
+\newlabel{sec:dpo-judge}{{5.2}{58}{The Judge Function}{section.5.2}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {5.1}{\ignorespaces Judge candidates on a held-out $10\%$ split of votes (split by vote). The linear Bradley--Terry model is selected for its best held-out AUC and its interpretability. ``Gen.\ Spearman'' correlates each candidate's per-generator mean score with the empirical arena win rate.}}{58}{table.caption.32}\protected@file@percent }
+\newlabel{tab:dpo-judge-candidates}{{5.1}{58}{Judge candidates on a held-out $10\%$ split of votes (split by vote). The linear Bradley--Terry model is selected for its best held-out AUC and its interpretability. ``Gen.\ Spearman'' correlates each candidate's per-generator mean score with the empirical arena win rate}{table.caption.32}{}}
 \citation{sudhakaran2023mariogpt}
-\@writefile{lof}{\contentsline {figure}{\numberline {5.5}{\ignorespaces Judge-function component analysis. The final score combines style reward, trajectory verticality, hesitation, completion, and gap penalties. The resulting generator-level score correlates strongly with human win rate.}}{65}{figure.caption.38}\protected@file@percent }
-\newlabel{fig:dpo-judge-analysis}{{5.5}{65}{Judge-function component analysis. The final score combines style reward, trajectory verticality, hesitation, completion, and gap penalties. The resulting generator-level score correlates strongly with human win rate}{figure.caption.38}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {5.4}Training Pipeline}{65}{section.5.4}\protected@file@percent }
-\newlabel{sec:dpo-training}{{5.4}{65}{Training Pipeline}{section.5.4}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.4.1}Supervised Fine-Tuning (SFT)}{65}{subsection.5.4.1}\protected@file@percent }
-\newlabel{subsec:dpo-sft}{{5.4.1}{65}{Supervised Fine-Tuning (SFT)}{subsection.5.4.1}{}}
-\newlabel{eq:dpo-sft-loss}{{5.7}{66}{Supervised Fine-Tuning (SFT)}{equation.5.4.7}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.4.2}Preference Dataset Construction}{66}{subsection.5.4.2}\protected@file@percent }
-\newlabel{subsec:dpo-dataset}{{5.4.2}{66}{Preference Dataset Construction}{subsection.5.4.2}{}}
-\@writefile{toc}{\contentsline {paragraph}{Human pairs.}{66}{section*.39}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Synthetic pairs.}{66}{section*.40}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {5.3}{\ignorespaces Preference dataset used for MarioDPO fine-tuning.}}{66}{table.caption.41}\protected@file@percent }
-\newlabel{tab:dpo-dataset}{{5.3}{66}{Preference dataset used for MarioDPO fine-tuning}{table.caption.41}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.4.3}DPO Training}{67}{subsection.5.4.3}\protected@file@percent }
-\newlabel{subsec:dpo-training-details}{{5.4.3}{67}{DPO Training}{subsection.5.4.3}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {5.4}{\ignorespaces MarioDPO fine-tuning configuration.}}{67}{table.caption.42}\protected@file@percent }
-\newlabel{tab:dpo-training-config}{{5.4}{67}{MarioDPO fine-tuning configuration}{table.caption.42}{}}
-\@writefile{toc}{\contentsline {paragraph}{Inference-time filtering.}{67}{section*.43}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5.5}Implementation Details}{68}{section.5.5}\protected@file@percent }
-\newlabel{sec:dpo-implementation}{{5.5}{68}{Implementation Details}{section.5.5}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {5.6}Results}{68}{section.5.6}\protected@file@percent }
-\newlabel{sec:dpo-results}{{5.6}{68}{Results}{section.5.6}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {5.5}{\ignorespaces Controlled MarioDPO experimental snapshot. Win rate is computed from PCG Arena pairwise outcomes in the January 2026 export.}}{69}{table.caption.45}\protected@file@percent }
-\newlabel{tab:dpo-controlled-results}{{5.5}{69}{Controlled MarioDPO experimental snapshot. Win rate is computed from PCG Arena pairwise outcomes in the January 2026 export}{table.caption.45}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {5.6}{\ignorespaces Generator-level analysis from the MarioDPO experiment snapshot. The judge score correlates strongly with human win rate, and MarioDPO forms the closest procedural competitor to the original levels.}}{70}{figure.caption.46}\protected@file@percent }
-\newlabel{fig:dpo-generator-analysis}{{5.6}{70}{Generator-level analysis from the MarioDPO experiment snapshot. The judge score correlates strongly with human win rate, and MarioDPO forms the closest procedural competitor to the original levels}{figure.caption.46}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {5.7}{\ignorespaces MarioDPO compared with other procedural generators. Across both the controlled experiment and the full arena snapshot, MarioDPO is the strongest PCG method and the closest competitor to the original human-authored levels.}}{71}{figure.caption.48}\protected@file@percent }
-\newlabel{fig:dpo-better-than-other-pcg}{{5.7}{71}{MarioDPO compared with other procedural generators. Across both the controlled experiment and the full arena snapshot, MarioDPO is the strongest PCG method and the closest competitor to the original human-authored levels}{figure.caption.48}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {5.7}Analysis and Discussion}{71}{section.5.7}\protected@file@percent }
-\newlabel{sec:dpo-discussion}{{5.7}{71}{Analysis and Discussion}{section.5.7}{}}
+\newlabel{fig:dpo-judge-weights}{{5.1a}{59}{Learned feature weights}{figure.caption.33}{}}
+\newlabel{sub@fig:dpo-judge-weights}{{a}{59}{Learned feature weights}{figure.caption.33}{}}
+\newlabel{fig:dpo-judge-winrate}{{5.1b}{59}{Judge score vs.\ arena win rate}{figure.caption.33}{}}
+\newlabel{sub@fig:dpo-judge-winrate}{{b}{59}{Judge score vs.\ arena win rate}{figure.caption.33}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5.1}{\ignorespaces Judge-function validation. (a)~The linear Bradley--Terry judge penalises gaps and excess width while rewarding structural variety and reward content. (b)~Aggregated per generator, the judge score tracks the empirical human win rate ($r_s = 0.965$), recovering almost the entire arena leaderboard from static features alone.}}{59}{figure.caption.33}\protected@file@percent }
+\newlabel{fig:dpo-judge-validation}{{5.1}{59}{Judge-function validation. (a)~The linear Bradley--Terry judge penalises gaps and excess width while rewarding structural variety and reward content. (b)~Aggregated per generator, the judge score tracks the empirical human win rate ($r_s = 0.965$), recovering almost the entire arena leaderboard from static features alone}{figure.caption.33}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5.3}Generator Training}{59}{section.5.3}\protected@file@percent }
+\newlabel{sec:dpo-training}{{5.3}{59}{Generator Training}{section.5.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3.1}Continue-pretraining the base model}{59}{subsection.5.3.1}\protected@file@percent }
+\newlabel{subsec:dpo-sft}{{5.3.1}{59}{Continue-pretraining the base model}{subsection.5.3.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3.2}Preference dataset}{60}{subsection.5.3.2}\protected@file@percent }
+\newlabel{subsec:dpo-dataset}{{5.3.2}{60}{Preference dataset}{subsection.5.3.2}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {5.2}{\ignorespaces Preference dataset for DPO fine-tuning. Human votes are oversampled ten-fold relative to the judge-labelled synthetic pairs.}}{60}{table.caption.34}\protected@file@percent }
+\newlabel{tab:dpo-dataset}{{5.2}{60}{Preference dataset for DPO fine-tuning. Human votes are oversampled ten-fold relative to the judge-labelled synthetic pairs}{table.caption.34}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3.3}DPO alignment}{60}{subsection.5.3.3}\protected@file@percent }
+\newlabel{subsec:dpo-align}{{5.3.3}{60}{DPO alignment}{subsection.5.3.3}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {5.3}{\ignorespaces MarioDPO training configuration. Both stages run in fp16 on a single $6$\,GB GPU.}}{60}{table.caption.35}\protected@file@percent }
+\newlabel{tab:dpo-config}{{5.3}{60}{MarioDPO training configuration. Both stages run in fp16 on a single $6$\,GB GPU}{table.caption.35}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5.4}Results}{61}{section.5.4}\protected@file@percent }
+\newlabel{sec:dpo-results}{{5.4}{61}{Results}{section.5.4}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5.2}{\ignorespaces Static judge scores of MarioDPO-generated levels against the baseline generators (green triangles mark means). The generated levels sit at the top of the distribution, matching the hand-authored original corpus and clearly exceeding the other procedural generators.}}{61}{figure.caption.36}\protected@file@percent }
+\newlabel{fig:dpo-judge-distributions}{{5.2}{61}{Static judge scores of MarioDPO-generated levels against the baseline generators (green triangles mark means). The generated levels sit at the top of the distribution, matching the hand-authored original corpus and clearly exceeding the other procedural generators}{figure.caption.36}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5.3}{\ignorespaces Held-out preference accuracy: how often each policy assigns higher likelihood to the human-preferred level. DPO improves over its SFT reference; the dashed line marks chance. Absolute values are modest because length-normalised sequence likelihood over a short window is a strict proxy on a small split.}}{62}{figure.caption.37}\protected@file@percent }
+\newlabel{fig:dpo-pref-accuracy}{{5.3}{62}{Held-out preference accuracy: how often each policy assigns higher likelihood to the human-preferred level. DPO improves over its SFT reference; the dashed line marks chance. Absolute values are modest because length-normalised sequence likelihood over a short window is a strict proxy on a small split}{figure.caption.37}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5.5}Discussion}{62}{section.5.5}\protected@file@percent }
+\newlabel{sec:dpo-discussion}{{5.5}{62}{Discussion}{section.5.5}{}}
 \bibstyle{plainnat}
 \bibdata{bibliography}
-\@writefile{toc}{\contentsline {chapter}{\numberline {6}Conclusions and Future Work}{73}{chapter.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{\numberline {6}Conclusions and Future Work}{65}{chapter.6}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
-\newlabel{ch:conclusions}{{6}{73}{Conclusions and Future Work}{chapter.6}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {6.1}Summary of Contributions}{73}{section.6.1}\protected@file@percent }
-\newlabel{sec:conc-contributions}{{6.1}{73}{Summary of Contributions}{section.6.1}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {6.2}Limitations}{73}{section.6.2}\protected@file@percent }
-\newlabel{sec:conc-limitations}{{6.2}{73}{Limitations}{section.6.2}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {6.3}Future Directions}{73}{section.6.3}\protected@file@percent }
-\newlabel{sec:conc-future}{{6.3}{73}{Future Directions}{section.6.3}{}}
+\newlabel{ch:conclusions}{{6}{65}{Conclusions and Future Work}{chapter.6}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6.1}Summary of Contributions}{65}{section.6.1}\protected@file@percent }
+\newlabel{sec:conc-contributions}{{6.1}{65}{Summary of Contributions}{section.6.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6.2}Limitations}{65}{section.6.2}\protected@file@percent }
+\newlabel{sec:conc-limitations}{{6.2}{65}{Limitations}{section.6.2}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6.3}Future Directions}{65}{section.6.3}\protected@file@percent }
+\newlabel{sec:conc-future}{{6.3}{65}{Future Directions}{section.6.3}{}}
 \bibcite{bradley1952rank}{{1}{1952}{{Bradley and Terry}}{{}}}
 \bibcite{chiang2024chatbot}{{2}{2024}{{Chiang et~al.}}{{Chiang, Zheng, Sheng, Angelopoulos, Li, Li, Zhang, Zhu, Jordan, Gonzalez, and Stoica}}}
 \bibcite{christiano2017deep}{{3}{2017}{{Christiano et~al.}}{{Christiano, Leike, Brown, Martic, Legg, and Amodei}}}
@@ -408,4 +378,4 @@
 \bibcite{yannakakis2011experience}{{34}{2011}{{Yannakakis and Togelius}}{{}}}
 \bibcite{zheng2023judging}{{35}{2023}{{Zheng et~al.}}{{Zheng, Chiang, Sheng, Zhuang, Wu, Zhuang, Lin, Li, Li, Xing, Zhang, Gonzalez, and Stoica}}}
 \bibcite{ziegler2019fine}{{36}{2019}{{Ziegler et~al.}}{{Ziegler, Stiennon, Wu, Brown, Radford, Amodei, Christiano, and Irving}}}
-\gdef \@abspage@last{79}
+\gdef \@abspage@last{71}
