@@ -103,10 +103,13 @@ def main() -> None:
     pairs = _held_out_pairs(args.seed, args.test_frac, limit)
     log.info("Held-out human pairs for preference accuracy: %d", len(pairs))
 
+    from mariodpo_v2.modeling import has_cuda
     for tag, path in [("ref", args.ref), ("dpo", args.dpo)]:
         mdir = PROJECT_DIR / path
         tok = load_tokenizer(str(mdir))
         model = load_model(checkpoint=str(mdir))
+        if has_cuda() and not args.dummy:
+            model = model.cuda()
         model.eval()
         acc = _preference_accuracy(model, tok, pairs)
         report[f"pref_acc_{tag}"] = acc

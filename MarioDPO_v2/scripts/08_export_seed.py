@@ -69,6 +69,9 @@ def main() -> None:
     model_dir = PROJECT_DIR / args.model
     tokenizer = load_tokenizer(str(model_dir))
     model = load_model(checkpoint=str(model_dir))
+    from mariodpo_v2.modeling import has_cuda
+    if has_cuda() and not args.dummy:
+        model = model.cuda()
     model.eval()
 
     judge = _load_judge()

@@ -164,11 +164,13 @@ def main() -> None:
 
 def _onpolicy_scored(sft_model, judge, ncd_refs, n, seed):
     from mariodpo_v2.generate import generate_level_columns
-    from mariodpo_v2.modeling import load_model, load_tokenizer
+    from mariodpo_v2.modeling import has_cuda, load_model, load_tokenizer
     from mariodpo_v2.pairs import score_levels
 
     tok = load_tokenizer(sft_model)
     model = load_model(checkpoint=sft_model)
+    if has_cuda():
+        model = model.cuda()
     model.eval()
     levels = [
         generate_level_columns(model, tok, target_cols=180, seed=seed + i)
