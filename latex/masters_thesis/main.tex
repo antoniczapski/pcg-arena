@@ -1588,18 +1588,22 @@ are performed via a scheduled script that copies the SQLite file to a timestampe
 
 
 
-\chapter{User Study and Exploratory Data Analysis}
+\chapter[User Study: Measuring and Modelling Player Preference]{\changed{User Study: Measuring and Modelling Player Preference}}
 \label{ch:eda}
 
-This chapter presents the PCG Arena data as an exploratory user study and generator characterisation, organised around five research questions:
-
-\begin{enumerate}[nosep]
-    \item \textbf{RQ1}: Which generators are preferred by players in blind pairwise comparisons?
-    \item \textbf{RQ2}: How do generators differ in static expressive range, and which structural properties align with player preference?
-    \item \textbf{RQ3}: What patterns of player movement appear in the recorded trajectories for each generator?
-    \item \textbf{RQ4}: Are player preferences and play styles homogeneous, or do visible subgroups emerge?
-    \item \textbf{RQ5}: What do tags reveal about why levels win or lose?
-\end{enumerate}
+\changed{This chapter presents the PCG Arena data as a user study of player
+preference. Section~\ref{sec:eda-study-design} describes the study protocol,
+the dataset, and the data-collection timeline. The chapter then addresses the
+measurement question (RQ1): Section~\ref{sec:eda-rankings} derives a
+preference ranking of generators from blind pairwise votes, and
+Section~\ref{sec:eda-user-heterogeneity} examines whether the anonymous player
+population is consistent enough for this aggregation to be meaningful. The
+remaining sections address the explanation question (RQ2):
+Sections~\ref{sec:eda-static-expressive-range}--\ref{sec:eda-tag-semantics}
+relate preference to static level structure, gameplay trajectories, and
+subjective tags, and Section~\ref{sec:dpo-judge} distils these findings into a
+computational judge of level preference that Chapter~\ref{ch:mariodpo} uses as
+a training signal.}
 
 The analysis is exploratory: its conclusions rely on patterns observed in the data and its visualisations rather than on formal hypothesis testing. The aim is to demonstrate what PCG Arena can measure---preference, structure, gameplay behaviour, user heterogeneity, and qualitative failure modes---while acknowledging that the current dataset is still too small to support claims of universal design laws.
 
@@ -1637,8 +1641,42 @@ Tag assignments & 329 \\
 
 The vote outcomes are balanced between the two screen sides (418 left wins and 398 right wins), with 165 ties and 19 skips, indicating no systematic side bias; moreover, the assignment of levels to the left or right side was randomised, further reducing the risk of positional bias. The median play duration is 8.0 seconds, but a small number of inactive-tab outliers are present; duration-dependent plots therefore use clipping or robust summaries.
 
+\changed{The May 2026 export analysed in this chapter is the endpoint of a
+longer collection process, summarised in Table~\ref{tab:eda-timeline}.}
+
+\begin{table}[H]
+\centering
+\color{red}
+\footnotesize
+\begin{tabular}{@{} l l p{3.1cm} p{4.6cm} @{}}
+\toprule
+\textbf{Phase} & \textbf{Period} & \textbf{Data} & \textbf{Role in this thesis} \\
+\midrule
+Baseline collection & launch $\to$ Jan.\ 2026 & votes over the 13 baseline generators & --- \\
+Training snapshot & Jan.\ 2026 & 473 usable non-tie votes & judge calibration (\S\ref{sec:dpo-judge}); DPO training pairs (\S\ref{subsec:dpo-dataset}) \\
+MarioDPO deployment & Jan.\ 2026 & --- & model frozen; never retrained \\
+Post-deployment snapshot & Jan.\ 2026 \TODO{author: exact date} & new battles incl.\ MarioDPO & formative evaluation (\S\ref{sec:dpo-results}) \\
+Full export & May 2026 & 1,000 votes, 14 generators & definitive analysis (this chapter); summative evaluation (\S\ref{sec:dpo-results}) \\
+\bottomrule
+\end{tabular}
+\caption{\changed{Timeline of PCG Arena data snapshots and their roles.
+MarioDPO was trained once on the January 2026 training snapshot and deployed
+unchanged; all later snapshots evaluate the same frozen model.}}
+\label{tab:eda-timeline}
+\end{table}
+
+\changed{Two clarifications are important for interpreting the analyses that
+follow. First, MarioDPO (Chapter~\ref{ch:mariodpo}) was trained once, on the
+January training snapshot, and deployed unchanged thereafter; every MarioDPO
+result reported in this thesis therefore measures the same model. Second, the
+analyses in this chapter use the May export rather than the training snapshot
+because it is strictly larger and therefore yields tighter uncertainty
+estimates; since neither the platform nor the deployed MarioDPO changed
+between the two snapshots, they measure the same systems at different sample
+sizes.}
+
 % ===================================================================
-\section{RQ1: Generator Preference Ranking}
+\section{Generator Preference Ranking}
 \label{sec:eda-rankings}
 
 The core purpose of PCG Arena is to measure human preference between generators. For each non-skip battle, the selected side receives score 1, the rejected side receives score 0, and ties give 0.5 to both sides. Figure~\ref{fig:eda-generator-ranking} shows the resulting generator leaderboard with bootstrap uncertainty intervals over votes.
@@ -1664,10 +1702,44 @@ Figure~\ref{fig:eda-pairwise-confusion} gives the corresponding head-to-head mat
 \end{figure}
 
 % ===================================================================
-\section{RQ2: Static Expressive Range}
+% MOVED(agent): from old §4.5 (M2), verbatim except where wrapped in \changed{}
+\section[Player Engagement and Preference Consistency]{\changed{Player Engagement and Preference Consistency}}
+\label{sec:eda-user-heterogeneity}
+
+The anonymous-player data are sparse, and because players are identified only by browser/player IDs we know nothing about who they are---their age, background, or gaming experience are all unknown. The data are nonetheless useful for understanding engagement and possible preference heterogeneity. Figure~\ref{fig:eda-engagement} shows votes over time, votes per anonymous player ID, and cumulative vote contribution.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{eda_engagement.png}
+\caption{Engagement concentration in the anonymous player-ID data. The analysis uses browser/player IDs, so these counts should not be interpreted as verified unique humans.}
+\label{fig:eda-engagement}
+\end{figure}
+
+The vote distribution is highly concentrated. Among the 77 anonymous player IDs appearing in the vote table, the median player ID contributes 6 votes, while the most active ID contributes 217 votes. The top 5 IDs account for 54\% of the analyzed votes, and the top 10 account for 63.5\%. This concentration is typical for voluntary web studies, but it matters for interpretation: aggregate generator scores reflect both broad participation and the preferences of a small number of highly engaged player IDs.
+
+Figure~\ref{fig:eda-user-heatmap} examines the player-by-generator preference matrix for anonymous player IDs with at least five votes. Each cell is the mean score assigned by a player ID when that generator appeared. Missing player-generator combinations are filled with the neutral value 0.5 only for visualization and clustering.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{eda_user_generator_heatmap.png}
+\caption{Anonymous player ID by generator preference heatmap for player IDs with at least five votes. Rows are grouped by hierarchical clustering - Ward's method on Euclidean distances between players' generator-score vectors. Columns follow the global generator ranking. The plot is exploratory because many player-generator combinations are sparse.}
+\label{fig:eda-user-heatmap}
+\end{figure}
+
+The heatmap suggests that, despite some variation, players largely agree on
+which generators are good and which are bad: most rows score the top-ranked
+generators highly and the bottom-ranked generators poorly, with only mild
+disagreement on the mid-table generators. This consistency across an anonymous
+and otherwise undescribed player population is itself a useful finding: it
+suggests that Super Mario Bros is a strong benchmark for PCG evaluation,
+because player preferences over levels are stable enough to produce a
+repeatable ranking rather than being dominated by individual taste.
+
+% ===================================================================
+\section{Static Expressive Range}
 \label{sec:eda-static-expressive-range}
 
-The second research question asks what we can learn about a generator by
+\changed{This section asks} what we can learn about a generator by
 looking at the levels themselves, without involving any player. The input is a
 level as plain text (an ASCII tilemap), and the output is a small set of
 numbers describing what the level looks like: how flat or hilly it is, how
@@ -1675,7 +1747,7 @@ many enemies it contains, how often it has gaps, how many rewards it offers,
 and how similar its columns are to one another. Computing these numbers across
 all generators makes it possible to compare them on a common footing and to
 check whether any of these structural properties line up with the player
-preference scores from RQ1.
+preference scores from \changed{Section~\ref{sec:eda-rankings}}.
 
 We compute the metrics directly from the ASCII level files. Linearity is the
 coefficient of determination ($R^2$) of a least-squares line fitted to the
@@ -1735,7 +1807,7 @@ Figure~\ref{fig:eda-static-vs-rating} relates selected structural summaries to p
 \end{figure}
 
 % ===================================================================
-\section{RQ3: Gameplay Trajectory Fingerprints}
+\section{Gameplay Trajectory Fingerprints}
 \label{sec:eda-trajectory-fingerprints}
 
 For each generator, Figure~\ref{fig:eda-trajectory-stacks} overlays all recorded Mario paths as thin red traces. This plot is intentionally simple: it shows where players actually moved in levels from each generator under the one-attempt battle protocol.
@@ -1770,40 +1842,7 @@ The deployed analytics UI also supports level-level inspection beyond aggregate 
 \end{figure}
 
 % ===================================================================
-\section{RQ4: User Preference Heterogeneity}
-\label{sec:eda-user-heterogeneity}
-
-The anonymous-player data are sparse, and because players are identified only by browser/player IDs we know nothing about who they are---their age, background, or gaming experience are all unknown. The data are nonetheless useful for understanding engagement and possible preference heterogeneity. Figure~\ref{fig:eda-engagement} shows votes over time, votes per anonymous player ID, and cumulative vote contribution.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{eda_engagement.png}
-\caption{Engagement concentration in the anonymous player-ID data. The analysis uses browser/player IDs, so these counts should not be interpreted as verified unique humans.}
-\label{fig:eda-engagement}
-\end{figure}
-
-The vote distribution is highly concentrated. Among the 77 anonymous player IDs appearing in the vote table, the median player ID contributes 6 votes, while the most active ID contributes 217 votes. The top 5 IDs account for 54\% of the analyzed votes, and the top 10 account for 63.5\%. This concentration is typical for voluntary web studies, but it matters for interpretation: aggregate generator scores reflect both broad participation and the preferences of a small number of highly engaged player IDs.
-
-Figure~\ref{fig:eda-user-heatmap} examines the player-by-generator preference matrix for anonymous player IDs with at least five votes. Each cell is the mean score assigned by a player ID when that generator appeared. Missing player-generator combinations are filled with the neutral value 0.5 only for visualization and clustering.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{eda_user_generator_heatmap.png}
-\caption{Anonymous player ID by generator preference heatmap for player IDs with at least five votes. Rows are grouped by hierarchical clustering - Ward's method on Euclidean distances between players' generator-score vectors. Columns follow the global generator ranking. The plot is exploratory because many player-generator combinations are sparse.}
-\label{fig:eda-user-heatmap}
-\end{figure}
-
-The heatmap suggests that, despite some variation, players largely agree on
-which generators are good and which are bad: most rows score the top-ranked
-generators highly and the bottom-ranked generators poorly, with only mild
-disagreement on the mid-table generators. This consistency across an anonymous
-and otherwise undescribed player population is itself a useful finding: it
-suggests that Super Mario Bros is a strong benchmark for PCG evaluation,
-because player preferences over levels are stable enough to produce a
-repeatable ranking rather than being dominated by individual taste.
-
-% ===================================================================
-\section{RQ5: Tag Semantics and Failure Modes}
+\section{Tag Semantics and Failure Modes}
 \label{sec:eda-tag-semantics}
 
 Tags provide a lightweight qualitative layer over the binary vote. They are optional, sparse, and subjective, so they should not be treated as ground-truth labels. Their value is diagnostic: they help distinguish why a level wins or loses.

@@ -1,7 +1,7 @@
 # Restructure Progress — Plan A
 
-Status: M1 done
-Last verified: 2026-07-19 grep suite (baseline) | compile: pass (79 pages, 0 undefined refs)
+Status: M2 done
+Last verified: 2026-07-19 grep suite | compile: pass (81 pages, 0 undefined refs after 2 passes)
 
 ## M0 Discovery            [x] done
    - [x] read entire main.tex end to end (2529 lines)
@@ -15,7 +15,13 @@ Last verified: 2026-07-19 grep suite (baseline) | compile: pass (79 pages, 0 und
    - [x] EN abstract: judge clause (r_s = 0.736) inserted before MarioDPO sentence
    - [x] PL abstract: mirrored PL judge clause (\changed); existing \KOT{przeczytać PL} untouched
    - DoD: grep RQ[1-5] in Ch1 → only new RQ1–RQ3; \item count in contributions = 5
-## M2 Ch4 re-scaffold      [ ] not started
+## M2 Ch4 re-scaffold      [x] done
+   - [x] chapter retitled "User Study: Measuring and Modelling Player Preference" (label ch:eda kept; TOC via optional arg)
+   - [x] opening 5-RQ enumerate → roadmap paragraph (new RQ1/RQ2 scheme); "exploratory" caveat kept verbatim
+   - [x] sec:eda-user-heterogeneity + both figures MOVED after sec:eda-rankings; retitled "Player Engagement and Preference Consistency"; % MOVED(agent) marker in place
+   - [x] RQn: prefixes dropped from remaining section titles; stale "second research question"/"RQ1" prose fixed
+   - [x] tab:eda-timeline written (booktabs, red = new content) + clarification sentences (a)+(b) at end of §4.1
+   - DoD: section order matches §5; only new-scheme RQ hits in Ch4 (roadmap); tab:eda-timeline \ref'd; compile clean
 ## M3 Judge relocation     [ ] not started
 ## M4 Ch4 prose pass       [ ] not started
 ## M5 Ch5 rebuild          [ ] not started
