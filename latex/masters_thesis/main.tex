@@ -1688,9 +1688,9 @@ The core purpose of PCG Arena is to measure human preference between generators.
 \label{fig:eda-generator-ranking}
 \end{figure}
 
-The strongest result is that the human-authored \texttt{original} baseline and \texttt{mariodpo} are nearly tied at the top. \texttt{original} scores 0.833, while \texttt{mariodpo} scores 0.832. Both are well above the neutral 0.5 line. The next tier consists of \texttt{ore} (0.655) and \texttt{mariogpt} (0.643), followed by mid-table constructive and neural generators. The pattern-based generators occupy the bottom of the ranking: \texttt{patternWeightCount} scores 0.385, \texttt{patternOccur} scores 0.284, and \texttt{patternCount} scores 0.262.
+\changed{At the top of the ranking, the human-authored \texttt{original} baseline and \texttt{mariodpo} are nearly tied:} \texttt{original} scores 0.833, while \texttt{mariodpo} scores 0.832. Both are well above the neutral 0.5 line. The next tier consists of \texttt{ore} (0.655) and \texttt{mariogpt} (0.643), followed by mid-table constructive and neural generators. The pattern-based generators occupy the bottom of the ranking: \texttt{patternWeightCount} scores 0.385, \texttt{patternOccur} scores 0.284, and \texttt{patternCount} scores 0.262.
 
-This ordering is meaningful for two reasons. First, the human-authored baseline remains a strong benchmark, which is expected if the vote data captures level quality. Second, \texttt{mariodpo} approaches the human baseline and clearly outperforms the other procedural generators in this export, suggesting that preference-aligned generation is a promising direction for the platform.
+\changed{This ordering is meaningful as a first sanity check:} the human-authored baseline remains a strong benchmark, which is expected if the vote data captures level quality. \changed{The export also contains MarioDPO, the preference-aligned generator developed in Chapter~\ref{ch:mariodpo}; we defer discussion of its performance to Section~\ref{sec:dpo-results}.}
 
 Figure~\ref{fig:eda-pairwise-confusion} gives the corresponding head-to-head matrix. Rows and columns are ordered by the ranking above. The matrix reveals that the top generators are not benefiting only from weak opponents: \texttt{original} and \texttt{mariodpo} perform well across many pairings, whereas pattern generators lose consistently across opponents.
 
@@ -1706,7 +1706,10 @@ Figure~\ref{fig:eda-pairwise-confusion} gives the corresponding head-to-head mat
 \section[Player Engagement and Preference Consistency]{\changed{Player Engagement and Preference Consistency}}
 \label{sec:eda-user-heterogeneity}
 
-The anonymous-player data are sparse, and because players are identified only by browser/player IDs we know nothing about who they are---their age, background, or gaming experience are all unknown. The data are nonetheless useful for understanding engagement and possible preference heterogeneity. Figure~\ref{fig:eda-engagement} shows votes over time, votes per anonymous player ID, and cumulative vote contribution.
+\changed{Aggregating individual votes into the single ranking of
+Section~\ref{sec:eda-rankings} is only meaningful if the underlying player
+population is reasonably consistent; this section examines who the voters are
+and whether they agree.} The anonymous-player data are sparse, and because players are identified only by browser/player IDs we know nothing about who they are---their age, background, or gaming experience are all unknown. The data are nonetheless useful for understanding engagement and possible preference heterogeneity. Figure~\ref{fig:eda-engagement} shows votes over time, votes per anonymous player ID, and cumulative vote contribution.
 
 \begin{figure}[H]
 \centering
@@ -1734,6 +1737,10 @@ and otherwise undescribed player population is itself a useful finding: it
 suggests that Super Mario Bros is a strong benchmark for PCG evaluation,
 because player preferences over levels are stable enough to produce a
 repeatable ranking rather than being dominated by individual taste.
+\changed{This consistency licenses the two uses made of the vote data in the
+remainder of the thesis: aggregating votes into a single preference ranking
+(Section~\ref{sec:eda-rankings}) and using them as a training signal for
+preference-aligned generation (Chapter~\ref{ch:mariodpo}).}
 
 % ===================================================================
 \section{Static Expressive Range}
@@ -1806,6 +1813,13 @@ Figure~\ref{fig:eda-static-vs-rating} relates selected structural summaries to p
 \label{fig:eda-static-vs-rating}
 \end{figure}
 
+\changed{For the judge function developed in
+Section~\ref{sec:dpo-judge}, these observations identify the structural terms
+worth encoding: reward density and unique-column ratio associate positively
+with preference, NCD distance from the original corpus negatively, and
+gap-heavy structure emerges as the dominant structural failure mode---together
+motivating the judge's style and gap-penalty terms.}
+
 % ===================================================================
 \section{Gameplay Trajectory Fingerprints}
 \label{sec:eda-trajectory-fingerprints}
@@ -1841,6 +1855,12 @@ The deployed analytics UI also supports level-level inspection beyond aggregate 
 \label{fig:eda-detailed-level-stats}
 \end{figure}
 
+\changed{For the judge function (Section~\ref{sec:dpo-judge}), the behavioural
+findings supply the dynamic terms: occupancy entropy and verticality associate
+positively with preference, concentrated death locations negatively, and
+hesitation captures poor flow---motivating the judge's verticality and flow
+terms.}
+
 % ===================================================================
 \section{Tag Semantics and Failure Modes}
 \label{sec:eda-tag-semantics}
@@ -1857,6 +1877,11 @@ Figure~\ref{fig:eda-tag-semantics} summarizes tag frequency, tag rate by generat
 \end{figure}
 
 Positive tags are strongly aligned with preference outcomes. Sides tagged \texttt{creative} win 87\% of the time and sides tagged \texttt{fun} win 71\% of the time. Negative tags behave differently: \texttt{impossible}, \texttt{too\_hard}, and \texttt{boring} are much more common on losing sides than winning sides. The tag-by-generator heatmap also makes generator failure modes interpretable: some generators lose because they are marked as impossible or too hard, while others are rejected as boring or visually broken.
+\changed{These patterns corroborate the design of the judge function
+(Section~\ref{sec:dpo-judge}): the concentration of \texttt{impossible} and
+\texttt{too\_hard} on losing sides supports a strong frustration (gap)
+penalty, while the alignment of \texttt{fun} and \texttt{creative} with
+winning sides validates that votes track enjoyment rather than noise.}
 
 % ===================================================================
 % MOVED(agent): from old §5.3 (M3), verbatim except where wrapped in \changed{}
@@ -2112,7 +2137,7 @@ resulting generator-level score correlates strongly with human win rate.}
 pairs at scale, with human votes retained at higher weight.}
 
 % ===================================================================
-\section{Summary of Findings}
+\section[Summary: A Reliable but Sparse Signal]{\changed{Summary: A Reliable but Sparse Signal}}
 \label{sec:eda-summary}
 
 PCG Arena provides a live human-preference measurement instrument for procedural level generators. It ranks generators through blind pairwise comparison, shows stable head-to-head patterns, connects rankings to static expressive range, reveals behavioral differences through trajectories, exposes engagement concentration and possible preference diversity, and uses tags to explain qualitative failure modes.
@@ -2121,13 +2146,23 @@ The main empirical findings are:
 \begin{enumerate}[nosep]
     \item \textbf{Preference ranking}: \texttt{original} and \texttt{mariodpo} are the top generators in the analyzed export, with nearly identical preference scores around 0.83.
     \item \textbf{Generator families}: Pattern-based generators are consistently weak, while neural and constructive generators occupy the middle tiers.
+    \item \textbf{Users}: Player votes are largely consistent across the anonymous population: the same generators tend to score high or low across players, suggesting that Super Mario Bros is a good benchmark whose preference signal is not dominated by individual taste.
     \item \textbf{Static structure}: Generators occupy visibly distinct expressive ranges. Reward density, unique-column ratio, and distance to the original corpus are more informative than any single difficulty proxy.
     \item \textbf{Gameplay behavior}: Trajectories reveal navigability and failure modes. Stronger generators tend to support broader movement footprints and less concentrated failure locations.
-    \item \textbf{Users}: Player votes are largely consistent across the anonymous population: the same generators tend to score high or low across players, suggesting that Super Mario Bros is a good benchmark whose preference signal is not dominated by individual taste.
     \item \textbf{Tags}: Optional tags add semantic explanations to votes, distinguishing positive qualities such as \texttt{fun} and \texttt{creative} from failure modes such as \texttt{impossible}, \texttt{too\_hard}, and \texttt{boring}.
+    \item \changed{\textbf{Judge function}: The preference correlates above can be combined into a single computational judge, $J_{final}$, whose generator-level scores correlate with human win rates at $r_s = 0.736$ (Section~\ref{sec:dpo-judge}).}
 \end{enumerate}
 
-These findings directly inform the design of the preference-aligned generation pipeline described in the following chapter.
+\changed{Two properties of this signal matter for what follows. It is
+\emph{reliable}: anonymous players largely agree on which generators are good
+(Section~\ref{sec:eda-user-heterogeneity}), so the aggregate ranking is not an
+artefact of individual taste. It is also \emph{sparse} at training time: the
+January training snapshot contains only 473 usable non-tie votes
+(Table~\ref{tab:eda-timeline}), far too few to fine-tune a sequence model
+directly. Section~\ref{sec:dpo-judge} supplies the missing piece---a validated
+computational proxy for human preference. The next chapter closes the loop,
+using the human votes and the judge together to train a preference-aligned
+generator.}
 
 
 \chapter{MarioDPO --- Preference-Aligned Level Generation}

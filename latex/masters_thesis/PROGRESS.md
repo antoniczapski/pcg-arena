@@ -1,7 +1,7 @@
 # Restructure Progress — Plan A
 
-Status: M3 done
-Last verified: 2026-07-19 grep suite | compile: pass (2 passes, 0 undefined refs); overfull hboxes confirmed pre-existing (KOT URLs)
+Status: M4 done
+Last verified: 2026-07-19 grep suite | compile: pass (2 passes, 0 undefined refs)
 
 ## M0 Discovery            [x] done
    - [x] read entire main.tex end to end (2529 lines)
@@ -30,7 +30,12 @@ Last verified: 2026-07-19 grep suite | compile: pass (2 passes, 0 undefined refs
    - [x] RLAIF closer replaced per §6.5
    - [x] Evidence column added to tab:dpo-judge-weights for all five weights (Exp. subsection + motivating EDA section each)
    - DoD: judge inside ch:eda; no self-referential ch:eda hits in §4.7 (only forward ch:mariodpo refs); labels/refs intact; compile clean
-## M4 Ch4 prose pass       [ ] not started
+## M4 Ch4 prose pass       [x] done
+   - [x] sec:eda-rankings: reason-2 interpretation replaced by deferral sentence to §5.6 (deferred claim queued for reinstatement in M5)
+   - [x] sec:eda-user-heterogeneity: opening "license for aggregation" + closing "license for training signal" framing sentences added
+   - [x] implication closers appended to §§4.4 (static→style/gap terms), 4.5 (trajectory→verticality/flow terms), 4.6 (tags→frustration penalty)
+   - [x] sec:eda-summary retitled "Summary: A Reliable but Sparse Signal"; findings reordered to new section order; judge finding (r_s = 0.736) added; bridge paragraph (reliable-but-sparse, 473) replaces old closing sentence
+   - DoD: no MarioDPO interpretation in Ch4; 3 closers present; compile clean
 ## M5 Ch5 rebuild          [ ] not started
 ## M6 Background trims     [ ] not started
 ## M7 Conclusions skeleton [ ] not started
