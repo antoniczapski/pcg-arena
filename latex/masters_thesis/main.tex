@@ -431,9 +431,10 @@ generators.
 \subsection{Mario Level Generators in the Literature}
 \label{subsec:bg-mario-generators}
 
-The PCG Arena platform includes 15 generators spanning all major paradigm
-families, selected to benchmark a broad cross-section of established PCG
-approaches. Table~\ref{tab:generators} provides a comparative overview.
+\changed{The PCG Arena platform hosts \TODO{confirm: 14 or 15} generators
+spanning all major paradigm families, 14 of which appear in the analyses of
+this thesis, selected to benchmark a broad cross-section of established PCG
+approaches.} Table~\ref{tab:generators} provides a comparative overview.
 
 \KOT{gdzieś bym jeszcze wspomniał, nie wiem jakie miejsce jest dobre, że nie wszyscy potrafią generować to samo i że wiele z zaprezentowanych podejśc upraszcza sobie życie generując tylko 1-2 rodzaje przeciwników, albo tylko kilka rodzajów bloków. Swoja droga pytanie czy to nie jest issue że o samej grze i co składa się na level dowiadujemy się tak późno w pracy...}
 
@@ -557,23 +558,12 @@ distribution as a 2D histogram, revealing a generator's output peaks, holes, and
 biases. ERA has been widely adopted~\citep{horn2014comparative,
 shaker2012evolving} but is purely descriptive---it characterises \emph{what} a
 generator produces, not whether players enjoy it.
-
-\changed{Figure~\ref{fig:era-grid} shows an ERA grid for the 13 PCG Arena
-generators, computed over 100 levels per generator (15 for the original SMB1
-baseline). Each panel is a 2D histogram of linearity (using the $R^2$
-formulation) against leniency. The plot reveals each generator's expressive
-range: e.g.\ Notch and its variants concentrate near high-linearity, low-hazard
-regions, while pattern-based and learned generators populate broader regions
-of the design space.}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{era-linearity-leniency.png}
-\caption{\changed{Expressive Range Analysis grid: 2D histogram of linearity
-($R^2$) versus leniency for each PCG Arena generator. Each panel uses the
-same axes; brighter cells indicate more levels at that combination.}}
-\label{fig:era-grid}
-\end{figure}
+% AC(agent): deleted in M6 — the ERA-grid results figure and its intro
+% paragraph duplicated Chapter 4 content; the results-bearing ERA figure
+% lives only in Ch.4 (fig:eda-expressive-range).
+\changed{An ERA characterisation of the PCG Arena generators themselves is
+presented in Section~\ref{sec:eda-static-expressive-range}
+(Figure~\ref{fig:eda-expressive-range}).}
 
 \subsection{Agent-Based Testing}
 \label{subsec:bg-eval-agents}
@@ -829,34 +819,31 @@ successor, Direct Preference Optimisation (DPO).
 \subsection{Reinforcement Learning from Human Feedback}
 \label{subsec:bg-rlhf}
 
-RLHF trains a policy to maximise a reward signal derived from human preferences
-rather than a hand-designed reward function. The pipeline crystallised over a
-sequence of four landmark papers:
-
-\begin{enumerate}[nosep]
-    \item \citet{christiano2017deep} proposed learning a reward model $\hat{r}$
-    from pairwise trajectory comparisons and optimising the policy against
-    $\hat{r}$ via PPO. Applied to Atari and MuJoCo.
-    \item \citet{ziegler2019fine} adapted the scheme to language models (GPT-2)
-    and introduced a KL penalty
-    $\beta\,\mathrm{KL}[\pi \| \pi_{\mathrm{ref}}]$ to prevent drift from
-    the pretrained model.
-    \item \citet{stiennon2020learning} scaled to summarisation (6.7B model, 64K
-    comparisons) and showed that the learned reward predicts human preferences
-    better than ROUGE\KOT{co, kto, z czym w ogóle o co chodzi>} \changed{(Recall-Oriented Understudy for Gisting Evaluation, a
-    standard automatic metric for text summarisation based on $n$-gram overlap)}.
-    \item \citet{ouyang2022training} codified the three-step recipe
-    (SFT~$\to$~Reward Model~$\to$~PPO). A 1.3B InstructGPT was preferred over
-    175B GPT-3, demonstrating that alignment quality matters more than model
-    scale.
-\end{enumerate}
-
-The RLHF pipeline addresses the same fundamental problem as PCG Arena:
-\emph{metric mismatch}. Just as ROUGE \KOT{ke? odnosisz sie do czegoś co wie ktokolwiek kto czyta tą pracę a nie rozmawia z tym samym LLMem?} fails to capture summary
-quality~\citep{stiennon2020learning}, automated PCG metrics fail to capture fun,
-aesthetics, or challenge appropriateness~\citep{marino2015empirical}. PCG Arena's
-paired-comparison voting is the game-design analogue of RLHF's preference
-collection phase.
+% AC(agent): addressed in M6 — four-item enumerate condensed into one paragraph
+% per restructure brief; all four citations, the KL-penalty idea, and the
+% ROUGE/metric-mismatch point retained. The three \KOT comments below refer to
+% the pre-condensation text and are kept for the reviewer.
+\changed{RLHF trains a policy to maximise a reward signal derived from human
+preferences rather than a hand-designed reward function.
+\citet{christiano2017deep} introduced the modern recipe: learn a reward model
+$\hat{r}$ from pairwise comparisons of behaviour, then optimise the policy
+against $\hat{r}$ with reinforcement learning. \citet{ziegler2019fine} adapted
+the scheme to language models, adding a KL penalty
+$\beta\,\mathrm{KL}[\pi \| \pi_{\mathrm{ref}}]$ that keeps the fine-tuned
+policy close to the pretrained model. \citet{stiennon2020learning} scaled the
+approach to text summarisation and showed that a reward model learned from 64K
+human comparisons predicts preference better than ROUGE, the standard
+$n$-gram-overlap summarisation metric---direct evidence that learned
+preferences outperform hand-crafted proxies. \citet{ouyang2022training}
+codified the three-step recipe (supervised fine-tuning, reward modelling, PPO)
+used to train InstructGPT, demonstrating that alignment quality matters more
+than model scale. The lesson transfers directly to PCG: just as ROUGE fails to
+capture summary quality, automated level metrics fail to capture fun,
+aesthetics, or challenge appropriateness~\citep{marino2015empirical}; PCG
+Arena's paired-comparison voting is the game-design analogue of RLHF's
+preference collection phase.}
+\KOT{co, kto, z czym w ogóle o co chodzi>}
+\KOT{ke? odnosisz sie do czegoś co wie ktokolwiek kto czyta tą pracę a nie rozmawia z tym samym LLMem?}
 \KOT{czyli wiemy, ż jest jakiś pieline, który ustabilizował się w jakichś 4 papirach które oferuyją masę buzzwordów. czyli nie wiemy nic. Jakbyś obciął tą całą subsekcję po 1 zdaniu to właściwie content przayswajalny dla czytelnika zostałby bez zmian. Tak, jest późno, pisałem dzisiaj recenzje paperów i mój saltyness zaczyna znowu wzrastać...}
 % AC: Celowy dobór RLHF/ROUGE --- paralela do PCG: ROUGE uważano za
 % dobrą metrykę podsumowań, ale okazało się że ludzkie preferencje

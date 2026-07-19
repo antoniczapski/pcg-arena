@@ -1,7 +1,7 @@
 # Restructure Progress — Plan A
 
-Status: M5 done
-Last verified: 2026-07-19 grep suite | compile: pass (0 undefined refs, 0 multiply-defined labels)
+Status: M6 done
+Last verified: 2026-07-19 grep suite | compile: pass (0 undefined refs)
 
 ## M0 Discovery            [x] done
    - [x] read entire main.tex end to end (2529 lines)
@@ -46,7 +46,11 @@ Last verified: 2026-07-19 grep suite | compile: pass (0 undefined refs, 0 multip
    - [x] sec:dpo-results: subsections renamed (Post-deployment / Full arena evaluation); clarification (c) inserted; deferred interpretation from M4 received; "controlled" wording → "post-deployment" (incl. table caption)
    - [x] sec:dpo-discussion: judge design-choice cross-references §4.7
    - DoD: Ch5 order = §5 target; 473/2,606 open §5.1; clarification (c) + deferred claim in §5.6; compile clean
-## M6 Background trims     [ ] not started
+## M6 Background trims     [x] done
+   - [x] fig:era-grid figure + its \changed intro paragraph DELETED; one-line \changed pointer to fig:eda-expressive-range added; % AC(agent) deletion note in place; zero era-grid hits remain
+   - [x] subsec:bg-rlhf: 4-item enumerate + follow-up paragraph condensed into one \changed paragraph; all 4 citations + KL penalty + ROUGE/metric-mismatch retained; 3 \KOT comments preserved below with % AC(agent) note
+   - [x] subsec:bg-mario-generators: "includes 15 generators" → "hosts \TODO{confirm: 14 or 15} generators … 14 of which appear in the analyses"
+   - DoD: no dangling era-grid refs; RLHF ≤ 1 paragraph, citations intact; generator count flagged
 ## M7 Conclusions skeleton [ ] not started
 ## M8 Global QA & delivery [ ] not started
 
