@@ -1,7 +1,7 @@
 # Restructure Progress — Plan A
 
-Status: M7 done
-Last verified: 2026-07-19 grep suite | compile: pass (0 undefined refs)
+Status: ALL MILESTONES DONE (M0–M8)
+Last verified: 2026-07-19 full grep suite green | compile: pass ×2 (85 pages, 0 undefined refs, 0 dup labels)
 
 ## M0 Discovery            [x] done
    - [x] read entire main.tex end to end (2529 lines)
@@ -56,7 +56,13 @@ Last verified: 2026-07-19 grep suite | compile: pass (0 undefined refs)
    - [x] sec:conc-limitations: 2 existing bullets kept; 3 new bullets added (baseline vote-set overlap vs. MarioDPO disjointness, judge bias in synthetic pairs, engagement concentration 54\%)
    - [x] sec:conc-future: 4 skeleton bullets (MarioDPO-v2 retraining, learned neural judge, beyond Mario, training-aware matchmaking), each \TODO{author: keep/expand}
    - DoD: no bare "tbd" in Ch6; all new prose \changed; compile clean
-## M8 Global QA & delivery [ ] not started
+## M8 Global QA & delivery [x] done
+   - [x] full §8 verification suite green (0 dup labels, 0 dangling refs, 0 era-grid hits)
+   - [x] all RQ[0-9] hits audited: 11, all new-scheme (Ch1 block/roadmap, Ch4 roadmap, Ch6 recap)
+   - [x] all ch:eda / ch:mariodpo / "this|previous|next chapter" / "above|below" hits in Ch4–5 audited — none broken post-move
+   - [x] \changed discipline sweep: new prose wrapped; moved-verbatim blocks unwrapped with % MOVED(agent) markers
+   - [x] CHANGES.md written (structure map, rewrite rationale, open questions, 11 TODO markers)
+   - [x] final compile: 85 pages, exit 0, 0 undefined references
 
 ## Open questions for Antoni
 - **14 vs 15 generators** (pre-seeded §11.1): §2 "Mario Level Generators in the Literature" says
