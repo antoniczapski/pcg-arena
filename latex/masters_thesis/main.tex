@@ -1859,33 +1859,36 @@ MarioDPO consists of four components:
         of Mario tilemaps while remaining compatible with autoregressive
         sequence modelling;
   \item a base generator trained to model the syntax of Nintendo-style levels;
-  \item a neuro-symbolic \emph{judge function} that converts the EDA findings
-        into a scalable preference proxy; and
+  \item a \emph{judge function} that converts the EDA findings into a scalable
+        preference proxy. We refer to it as \emph{neuro-symbolic} because it
+        combines a small set of hand-crafted, interpretable terms (style
+        distance, gap penalty, verticality, reward density) with weights fit to
+        the neural preference signal collected in PCG Arena; and
   \item a DPO fine-tuning stage that mixes real PCG Arena votes with
         judge-labelled synthetic pairs.
 \end{enumerate}
 
 The design deliberately separates \textbf{validity} from \textbf{preference}.
-Validity is enforced through representation choices, start/end constraints,
-post-processing, and optional A* filtering. Preference is learned from human
-votes and from the judge function. This separation is important: a level can be
-playable yet boring, or structurally diverse yet unpleasant. MarioDPO targets the
-stronger objective: generating levels that players are likely to prefer in blind
-A/B tests.
+Validity is enforced through representation choices, start/end constraints, and
+deterministic post-processing (Section~\ref{sec:dpo-implementation}). Preference
+is learned from human votes and from the judge function. This separation is
+important: a level can be playable yet boring, or structurally diverse yet
+unpleasant. MarioDPO targets the stronger objective: generating levels that
+players are likely to prefer in blind A/B tests.
 
-Figure~\ref{fig:dpo-pipeline} summarises the full pipeline. The original SMB
-levels provide the grammar prior, PCG Arena provides sparse but high-value human
-comparisons, the judge function expands these comparisons into a larger
-preference dataset, and DPO aligns the generator with the resulting preference
-signal.
+Figure~\ref{fig:dpo-pipeline} summarises the composition of the training data.
+The original SMB levels provide the grammar prior, PCG Arena provides sparse but
+high-value human comparisons, the judge function expands these comparisons into
+a larger preference dataset, and DPO aligns the generator with the resulting
+preference signal.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.95\textwidth]{dpo_training_data.png}
-\caption{MarioDPO training data pipeline. Human PCG Arena votes are retained as
-high-weight preference pairs, while the judge function supplies additional
-synthetic pairs with lower weight. The combined dataset is used for DPO
-fine-tuning.}
+\includegraphics[width=0.9\textwidth]{dpo_training_data.png}
+\caption{MarioDPO preference dataset: raw pair counts (left) and the same counts
+after applying the $10\times$ upweighting of human PCG Arena pairs (right). The
+few hundred human comparisons contribute roughly two thirds of the effective
+training signal, while judge-labelled synthetic pairs primarily broaden coverage.}
 \label{fig:dpo-pipeline}
 \end{figure}
 
@@ -1921,9 +1924,12 @@ sequence. This preserves vertical locality while still allowing standard
 left-to-right generation.
 
 Table~\ref{tab:dpo-representation} summarises the representation choices. The
-same representation is also used by the implementation's column-level generator:
-n-gram contexts are sequences of full columns, and post-processing operates on
-columns when enforcing ground continuity, start safety, and flag placement.
+same column-major representation is shared by the pipeline's simpler baseline
+generator, a column-level Markov model in which each \emph{token} is a full
+16-tile column and the \emph{n-gram context} is the sequence of the previous
+$n{-}1$ columns used to predict the next one. Post-processing acts on the same
+column units when enforcing ground continuity, start safety, and flag placement,
+so the DPO model and its baseline see and produce levels in the same units.
 
 \begin{table}[H]
 \centering
@@ -1963,13 +1969,29 @@ structural features. The judge is not intended to replace the final human
 evaluation; instead, it serves as a scalable preference proxy for generating
 additional DPO pairs.
 
-The judge function is neuro-symbolic in the sense that it combines manually
-interpretable terms---style distance, gap penalty, verticality, and flow---with
-weights derived from empirical correlations in the PCG Arena data. Its design is
-guided by three findings from Chapter~\ref{ch:eda}: players prefer levels that
-hold attention longer, tags such as \emph{fun} and \emph{creative} correlate with
-win rate, and high-performing generators tend to resemble original Nintendo
-levels without simply copying them.
+The judge function is neuro-symbolic in the sense introduced above: it combines
+manually interpretable terms---style distance, gap penalty, verticality, and
+flow---with weights derived from the empirical preference signal in the PCG
+Arena data. Three findings from Chapter~\ref{ch:eda} guide its design:
+high-performing generators produce longer play sessions and higher completion
+rates than low-performing ones; tags such as \emph{fun} and \emph{creative}
+correlate with win rate and, importantly, co-vary with measurable structural
+properties (verticality of the surface profile, hazard density, reward density);
+and high-performing generators tend to resemble original Nintendo levels without
+simply copying them.
+
+The judge itself is deliberately \emph{static}: at inference time it takes as
+input only the raw tile grid of a candidate level and returns a scalar. This is
+necessary because the target use case---scoring freshly generated, never-played
+levels---does not provide gameplay traces or player tags. The trajectory
+correlations and tag correlations reported below therefore play two distinct
+roles. Trajectory statistics (verticality of Mario's path, hesitation, completion)
+are used to \emph{validate} that a given structural aspect of the level matters
+to humans; the runtime judge then encodes that aspect as a structural proxy
+computable from the tile grid alone (for example, surface roughness in place of
+trajectory $\sigma_y$, gap fraction in place of gap-heavy generator identity).
+Tags are never inputs to the runtime judge; they are used only offline to select
+\emph{which} structural features to include and how to sign their weights.
 
 \subsection{Verticality Reward (Experiment A)}
 \label{subsec:dpo-judge-vert}
@@ -2006,11 +2028,17 @@ judge function.}
 \label{fig:dpo-exp-a}
 \end{figure}
 
-This finding motivates the verticality term in $J_{final}$. Flat, safe levels may
-be playable, but they often lack the variety that players tag as \emph{creative}
-or \emph{fun}. Conversely, verticality is rewarded only after basic validity and
-flow constraints are considered, because vertical movement caused by repeated
-falls or deaths should not be interpreted as desirable exploration.
+This finding motivates the verticality term in $J_{final}$. Because the runtime
+judge cannot observe a trajectory, it does not use $\sigma_y$ directly.
+Instead it computes \emph{surface roughness}---the mean absolute column-to-column
+difference of the ground-height profile---as a static structural proxy for
+trajectory verticality: hilly ground and multi-tier platforms produce large
+roughness, whereas long flat runs produce values near zero. The Experiment A
+correlation on $\sigma_y$ justifies giving this proxy a positive weight; flat,
+safe levels are playable but often lack the variety players tag as
+\emph{creative} or \emph{fun}. Verticality is rewarded only after basic validity
+and gap constraints are satisfied, so that repeated falls or stalled traversal
+cannot be counted as desirable exploration.
 
 \subsection{Hazard Hierarchy (Experiment B)}
 \label{subsec:dpo-judge-hazard}
@@ -2297,14 +2325,15 @@ strongly prefers the winner, the gradient is small.
 \paragraph{Inference-time filtering.}
 Preference alignment alone does not guarantee that every sampled level is valid.
 MarioDPO therefore uses rejection sampling at inference time. For each requested
-level the model generates a batch of $N=10$ candidates. Candidates failing basic
-format checks are discarded; when simulation is available, an A* agent filters
-out unplayable candidates. The remaining candidates are scored with $J_{final}$,
-and the highest-scoring candidate is selected. Finally, a deterministic
-post-processing pass ensures that Mario has a valid spawn point near the start,
-that a flag exists near the end, and that both regions contain solid ground. This
-``safety net'' is deliberately separate from the learned model: the model learns
-preference, while the filter enforces hard validity constraints.
+level the model generates a batch of $N=10$ candidates. Each candidate is
+normalised and passed through a deterministic post-processing pass that ensures
+Mario has a valid spawn point in the first columns, that a flag exists in the
+last columns, and that both regions contain solid ground. Candidates that still
+fail the arena format checks (rectangular shape, admissible height and width,
+tile-alphabet whitelist) are discarded. The remaining candidates are scored with
+$J_{final}$, and the highest-scoring candidate is selected. This ``safety net''
+is deliberately separate from the learned model: the model learns preference,
+while the filter enforces hard validity constraints.
 
 \section{Implementation Details}
 \label{sec:dpo-implementation}
