@@ -1,6 +1,6 @@
 # Restructure Progress — Plan A
 
-Status: M0 done
+Status: M1 done
 Last verified: 2026-07-19 grep suite (baseline) | compile: pass (79 pages, 0 undefined refs)
 
 ## M0 Discovery            [x] done
@@ -8,7 +8,13 @@ Last verified: 2026-07-19 grep suite (baseline) | compile: pass (79 pages, 0 und
    - [x] branch `restructure-plan-a` created; pre-existing uncommitted state preserved as baseline commit 056a44c
    - [x] baseline grep suite: 0 duplicate labels, 0 dangling refs, 16 RQ[0-9] hits, 2 fig:era-grid hits, 5 chapter-relative phrases, 15 ch:eda/ch:mariodpo/sec:dpo-judge hits
    - [x] baseline compile: pdflatex exit 0, 79 pages, 0 "Reference undefined" warnings
-## M1 Intro & abstracts    [ ] not started
+## M1 Intro & abstracts    [x] done
+   - [x] sec:intro-rq: 5-RQ block → canonical 3-RQ block (§6.1); "five"→"three" (\changed)
+   - [x] contributions: 4 → 5 items; judge contribution (§6.2) inserted as item 4
+   - [x] sec:intro-structure: roadmap rewritten to match Plan A structure (\changed)
+   - [x] EN abstract: judge clause (r_s = 0.736) inserted before MarioDPO sentence
+   - [x] PL abstract: mirrored PL judge clause (\changed); existing \KOT{przeczytać PL} untouched
+   - DoD: grep RQ[1-5] in Ch1 → only new RQ1–RQ3; \item count in contributions = 5
 ## M2 Ch4 re-scaffold      [ ] not started
 ## M3 Judge relocation     [ ] not started
 ## M4 Ch4 prose pass       [ ] not started

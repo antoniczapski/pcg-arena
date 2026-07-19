@@ -65,7 +65,7 @@
 \KOT{todo -- przeczytać PL potem}
 Ewaluacja generatorów treści proceduralnych (PCG) dla gier wideo stanowi istotne wyzwanie metodologiczne, ponieważ przyjemność gracza jest z natury subiektywna i trudna do zmierzenia za pomocą automatycznych metryk. Niniejsza praca przedstawia PCG Arenę --- platformę internetową do ślepego testowania A/B generatorów poziomów do gry Super Mario Bros poprzez dane o preferencjach graczy. Platforma umożliwia graczom rozgrywanie dwóch proceduralnie generowanych poziomów obok siebie w przeglądarce, głosowanie na preferowany poziom oraz opcjonalne tagowanie cech rozgrywki. Głosy są agregowane za pomocą systemu ratingowego Glicko-2, który zapewnia rankingi z przedziałami ufności.
 
-Na podstawie zebranych danych przeprowadzono analizę eksploracyjną charakteryzującą ranking preferencji generatorów, statyczny zakres ekspresyjny poziomów, trajektorie rozgrywki, heterogeniczność anonimowych użytkowników oraz semantykę tagów. Wyniki pokazują, że platforma może służyć zarówno jako ranking generatorów, jak i narzędzie diagnostyczne ujawniające ich tryby porażki. Finalnie, praca przedstawia MarioDPO --- generator poziomów wytrenowany metodą Direct Preference Optimization, który osiąga wynik preferencji 0.832, zbliżony do oryginalnych poziomów Nintendo.
+Na podstawie zebranych danych przeprowadzono analizę eksploracyjną charakteryzującą ranking preferencji generatorów, statyczny zakres ekspresyjny poziomów, trajektorie rozgrywki, heterogeniczność anonimowych użytkowników oraz semantykę tagów. Wyniki pokazują, że platforma może służyć zarówno jako ranking generatorów, jak i narzędzie diagnostyczne ujawniające ich tryby porażki. \changed{Zaobserwowane zależności zostały następnie zdestylowane do obliczeniowej funkcji oceniającej poziomy (ang. judge function), której oceny korelują z preferencjami graczy na poziomie $r_s = 0.736$.} Finalnie, praca przedstawia MarioDPO --- generator poziomów wytrenowany metodą Direct Preference Optimization, który osiąga wynik preferencji 0.832, zbliżony do oryginalnych poziomów Nintendo.
 }
 
 \englishabstract {
@@ -73,7 +73,7 @@ Evaluating procedural content generators (PCGs) for video games poses significan
 \KOT{gdzieś - może tutaj - zdanie, że Mario has been an important benchmark for a variety of PCG methods, from 2009 until today, albo cos innego ale we wstępie od razu dającego do zroumienia, że to nie jest losowa gierka wzięta bo tak}
 \changed{Super Mario Bros has been used as a benchmark for PCG level generation research since the first Mario AI Competition in 2009, making it an ideal domain for systematic generator comparison.} The platform enables players to play two procedurally generated levels side-by-side in their browser, vote for their preferred level, and optionally tag gameplay characteristics. Votes are aggregated using the Glicko-2 rating system, providing uncertainty-aware rankings with confidence intervals.
 
-Building on the collected data, we conduct an exploratory analysis that characterizes generator preference rankings, static expressive range, gameplay trajectory fingerprints, anonymous-user heterogeneity, and tag semantics. The analysis shows that PCG Arena functions not only as a leaderboard, but also as a diagnostic instrument for understanding why generators win or fail. Finally, we present MarioDPO, a level generator fine-tuned with Direct Preference Optimization that achieves a preference score of 0.832, approaching the hand-crafted original Nintendo baseline.
+Building on the collected data, we conduct an exploratory analysis that characterizes generator preference rankings, static expressive range, gameplay trajectory fingerprints, anonymous-user heterogeneity, and tag semantics. The analysis shows that PCG Arena functions not only as a leaderboard, but also as a diagnostic instrument for understanding why generators win or fail. \changed{These findings are further distilled into a computational preference judge whose scores correlate with human win rates at $r_s = 0.736$.} Finally, we present MarioDPO, a level generator fine-tuned with Direct Preference Optimization that achieves a preference score of 0.832, approaching the hand-crafted original Nintendo baseline.
 }
 
 \author         {Antoni Czapski}
@@ -160,24 +160,26 @@ valid-but-expensive human studies motivates the work presented in this thesis.
 
 This thesis addresses the PCG evaluation gap through the design, deployment, and
 analysis of \emph{PCG Arena}, a web-based platform for blind A/B testing of
-Mario level generators. We investigate five research questions:
+Mario level generators. \changed{We investigate three research questions:}
 
+\begingroup\color{red}
 \begin{description}[style=nextline]
-      \item[RQ1: Human preference ranking] Which generators are preferred by
-      players in blind pairwise comparisons?
-      \item[RQ2: Static expressive range] How do generators differ structurally,
-      and which static properties align with player preference?
-      \item[RQ3: Gameplay footprint] What behavioral signatures appear in player
-      trajectories for each generator?
-      \item[RQ4: User heterogeneity] Are anonymous player preferences and play
-      styles homogeneous, or do visible subgroups emerge?
-      \item[RQ5: Tag semantics] What do optional tags reveal about why levels win
-      or lose?
+  \item[RQ1 (Measurement)] Can a persistent, blind, web-based arena produce a
+    reliable human-preference ranking of Super Mario Bros level generators?
+    (Sections~\ref{sec:eda-rankings}--\ref{sec:eda-user-heterogeneity})
+  \item[RQ2 (Explanation)] Which structural and behavioural properties of levels
+    explain player preference, and can they be combined into a computational
+    proxy for human judgement?
+    (Sections~\ref{sec:eda-static-expressive-range}--\ref{sec:dpo-judge})
+  \item[RQ3 (Generation)] Can the collected preference data be used to train a
+    level generator that surpasses existing PCG methods and approaches
+    human-authored quality? (Chapter~\ref{ch:mariodpo})
 \end{description}
+\endgroup
 
 \KOT{probably noindent here to make it look better}
 
-\noindent The thesis makes four contributions:
+\noindent The thesis makes \changed{five} contributions:
 
 \begin{enumerate}
     \item \textbf{PCG Arena}, a persistent, open-access web platform for blind
@@ -192,6 +194,11 @@ Mario level generators. We investigate five research questions:
           votes to static expressive-range metrics, trajectory fingerprints,
           anonymous-user preference maps, and qualitative tag-based failure-mode
           diagnostics.
+    \item \changed{\textbf{A computational preference judge} ($J_{final}$), a neuro-symbolic
+          scoring function that operationalises the study's findings---style
+          similarity, verticality, flow, completion, and gap penalties---and
+          correlates with human win rates at $r_s = 0.736$, enabling scalable
+          synthesis of preference labels.}
     \item \textbf{MarioDPO}, a level generator fine-tuned with Direct Preference
           Optimisation on arena votes, achieving a preference score of 0.832 and
           approaching the hand-crafted Nintendo baseline.
@@ -204,10 +211,15 @@ The remainder of this thesis is organised as follows.
 Chapter~\ref{ch:background} surveys background and related work on procedural
 content generation \KOT{(in the context of Maio level generation?)} \changed{in the context of Mario level generation,} evaluation methodology,
 rating systems, and preference learning. Chapter~\ref{ch:system-design} describes the design and implementation
-of the PCG Arena platform. Chapter~\ref{ch:eda} presents the user study and an
-exploratory data analysis addressing the five research questions.
-Chapter~\ref{ch:mariodpo} details the development of the Judge Function and the
-MarioDPO generator. Chapter~\ref{ch:conclusions} summarises contributions,
+of the PCG Arena platform. \changed{Chapter~\ref{ch:eda} presents the user
+study: the study protocol and collected dataset, the generator preference
+ranking and player-consistency analysis (RQ1), and the structural,
+behavioural, and tag-based explanation of preference, culminating in a
+computational preference judge (RQ2). Chapter~\ref{ch:mariodpo} exploits these
+results (RQ3): it describes the level representation and base model, the
+construction of a preference dataset from human votes and judge-labelled
+synthetic pairs, DPO fine-tuning, and the evaluation of the resulting MarioDPO
+generator.} Chapter~\ref{ch:conclusions} summarises contributions,
 discusses limitations, and outlines future directions.
 
 
