@@ -1,6 +1,6 @@
 # Restructure Progress — Plan A
 
-Status: M6 done
+Status: M7 done
 Last verified: 2026-07-19 grep suite | compile: pass (0 undefined refs)
 
 ## M0 Discovery            [x] done
@@ -51,7 +51,11 @@ Last verified: 2026-07-19 grep suite | compile: pass (0 undefined refs)
    - [x] subsec:bg-rlhf: 4-item enumerate + follow-up paragraph condensed into one \changed paragraph; all 4 citations + KL penalty + ROUGE/metric-mismatch retained; 3 \KOT comments preserved below with % AC(agent) note
    - [x] subsec:bg-mario-generators: "includes 15 generators" → "hosts \TODO{confirm: 14 or 15} generators … 14 of which appear in the analyses"
    - DoD: no dangling era-grid refs; RLHF ≤ 1 paragraph, citations intact; generator count flagged
-## M7 Conclusions skeleton [ ] not started
+## M7 Conclusions skeleton [x] done
+   - [x] sec:conc-contributions: opening recap + one paragraph per RQ (RQ1 ranking/agreement, RQ2 correlates + judge r_s=0.736, RQ3 MarioDPO 0.832 ≈ 0.833) + five contributions in one sentence each; all \changed + \TODO{author: review}
+   - [x] sec:conc-limitations: 2 existing bullets kept; 3 new bullets added (baseline vote-set overlap vs. MarioDPO disjointness, judge bias in synthetic pairs, engagement concentration 54\%)
+   - [x] sec:conc-future: 4 skeleton bullets (MarioDPO-v2 retraining, learned neural judge, beyond Mario, training-aware matchmaking), each \TODO{author: keep/expand}
+   - DoD: no bare "tbd" in Ch6; all new prose \changed; compile clean
 ## M8 Global QA & delivery [ ] not started
 
 ## Open questions for Antoni

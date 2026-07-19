@@ -2613,7 +2613,45 @@ methods tested in this work.
 \section{Summary of Contributions}
 \label{sec:conc-contributions}
 
-tbd
+\changed{This thesis addressed the central evaluation gap in procedural
+content generation---the mismatch between scalable-but-inaccurate automated
+metrics and valid-but-expensive human studies---through the design,
+deployment, and exploitation of PCG Arena, a persistent web platform for blind
+A/B testing of Super Mario Bros level generators.
+\TODO{author: review and expand opening recap}}
+
+\changed{\textbf{RQ1 (Measurement).} A persistent, blind, web-based arena can
+produce a reliable human-preference ranking. The May 2026 export contains
+1,000 pairwise votes from 77 anonymous player IDs over 14 generators, yielding
+a stable leaderboard in which the human-authored \texttt{original} levels lead
+(preference score 0.833) and pattern-based generators trail. Crucially,
+anonymous players largely agree on which generators are good
+(Section~\ref{sec:eda-user-heterogeneity}), so the ranking reflects shared
+preference rather than individual taste. \TODO{author: review}}
+
+\changed{\textbf{RQ2 (Explanation).} Player preference is explainable from
+level structure and behaviour: reward density, unique-column ratio, and
+proximity to the original corpus associate positively with preference, while
+gap-heavy structure, concentrated death locations, and
+\texttt{impossible}/\texttt{too\_hard} tags mark the dominant failure modes.
+These correlates combine into the judge function $J_{final}$, whose
+generator-level scores correlate with human win rates at $r_s = 0.736$
+(Section~\ref{sec:dpo-judge}). \TODO{author: review}}
+
+\changed{\textbf{RQ3 (Generation).} The collected preferences suffice to train
+a better generator: MarioDPO, fine-tuned with DPO on 473 human pairs and 2,606
+judge-labelled synthetic pairs, achieves a preference score of 0.832,
+essentially tied with the human-authored baseline (0.833) and clearly ahead of
+the next-best procedural generators, ORE (0.655) and MarioGPT (0.643).
+\TODO{author: review}}
+
+\changed{In sum, the thesis contributes: (1)~PCG Arena, a persistent
+open-access platform for blind pairwise evaluation of Mario level generators;
+(2)~a user study of 1,000 blind votes across 14 generators; (3)~an exploratory
+analysis pipeline linking votes to structure, behaviour, and tags; (4)~a
+validated computational preference judge; and (5)~MarioDPO, a
+preference-aligned generator that approaches human-authored quality.
+\TODO{author: review}}
 
 \section{Limitations}
 \label{sec:conc-limitations}
@@ -2628,14 +2666,39 @@ tbd
           familiar with the original Nintendo levels may recognise them
           despite the blind setup, introducing a potential nostalgia or
           familiarity bias in favour of the human-authored baseline.
+    \item \changed{\textbf{Overlapping vote sets for baseline generators.} The
+          May ratings of the baseline generators aggregate votes collected
+          both before and after MarioDPO's deployment, so their training-time
+          and evaluation-time vote sets partially overlap. MarioDPO itself is
+          immune to this concern: its evaluation votes necessarily post-date
+          its January training snapshot (Section~\ref{sec:dpo-results}).}
+    \item \changed{\textbf{Judge bias in synthetic pairs.} The 2,606
+          judge-labelled training pairs inherit any bias of $J_{final}$; the
+          $10\times$ upweighting of human votes mitigates but does not
+          eliminate this (Section~\ref{sec:dpo-discussion}).}
+    \item \changed{\textbf{Engagement concentration.} The top 5 anonymous
+          player IDs account for 54\% of the analysed votes, so aggregate
+          scores partly reflect the preferences of a few highly active players
+          (Section~\ref{sec:eda-user-heterogeneity}).}
 \end{itemize}}
-
-tbd
 
 \section{Future Directions}
 \label{sec:conc-future}
 
-tbd
+\changed{\begin{itemize}
+    \item \textbf{Iterative retraining.} Train a MarioDPO-v2 on the May 2026
+          export and study whether repeated collect--train--deploy cycles
+          continue to improve preference scores. \TODO{author: keep/expand}
+    \item \textbf{Learned neural judge.} Replace the hand-weighted
+          $J_{final}$ with a neural preference model trained end-to-end on the
+          growing vote corpus. \TODO{author: keep/expand}
+    \item \textbf{Beyond Mario.} Extend the arena protocol to other content
+          domains to test the generality of blind pairwise evaluation of
+          procedural generators. \TODO{author: keep/expand}
+    \item \textbf{Training-aware matchmaking.} Extend AGIS to actively select
+          battles that maximise the value of votes as DPO training pairs, not
+          only their ranking information. \TODO{author: keep/expand}
+\end{itemize}}
 
 
 
