@@ -1,0 +1,122 @@
+# Restructure Progress — Plan A
+
+Status: M0 done
+Last verified: 2026-07-19 grep suite (baseline) | compile: pass (79 pages, 0 undefined refs)
+
+## M0 Discovery            [x] done
+   - [x] read entire main.tex end to end (2529 lines)
+   - [x] branch `restructure-plan-a` created; pre-existing uncommitted state preserved as baseline commit 056a44c
+   - [x] baseline grep suite: 0 duplicate labels, 0 dangling refs, 16 RQ[0-9] hits, 2 fig:era-grid hits, 5 chapter-relative phrases, 15 ch:eda/ch:mariodpo/sec:dpo-judge hits
+   - [x] baseline compile: pdflatex exit 0, 79 pages, 0 "Reference undefined" warnings
+## M1 Intro & abstracts    [ ] not started
+## M2 Ch4 re-scaffold      [ ] not started
+## M3 Judge relocation     [ ] not started
+## M4 Ch4 prose pass       [ ] not started
+## M5 Ch5 rebuild          [ ] not started
+## M6 Background trims     [ ] not started
+## M7 Conclusions skeleton [ ] not started
+## M8 Global QA & delivery [ ] not started
+
+## Open questions for Antoni
+- **14 vs 15 generators** (pre-seeded §11.1): §2 "Mario Level Generators in the Literature" says
+  "includes 15 generators"; `tab:generators` has 14 rows; EDA reports 14 generator IDs;
+  `tab:eval-comparison` bottom row also says "15 generators (all paradigms)". Normalised in M6
+  with a `\TODO`; the eval-comparison table cell left untouched but flagged here.
+- **Exact snapshot dates** (§11.2): training-snapshot extraction, deployment, and
+  post-deployment snapshot dates within January 2026 unknown; `\TODO` placeholders inserted (M2/M5).
+- **Title-page `\date{March 2026}`** (§11.3): likely stale (analysis extends to May 2026). Flagged, not changed.
+- **Chapter 4 title** (§11.4): set to "User Study: Measuring and Modelling Player Preference" per brief; author may prefer a variant.
+- **Polish abstract clause** (§11.5): PL judge sentence drafted by agent in M1; needs author's PL review (existing `\KOT{todo -- przeczytać PL potem}` already requests this).
+- **M2 DoD interpretation**: brief M2 requires the Ch4 roadmap to state "the chapter answers RQ1 / RQ2",
+  which necessarily leaves (new-scheme) `RQ` tokens in Ch4; the "grep RQ[0-9] returns nothing" DoD is
+  read as "no *stale* (old five-RQ scheme) references". All remaining RQ hits audited in M8.
+
+## Blockers
+- (none)
+
+---
+
+## M0 inventory (labels → location, before restructure)
+
+### Chapter 1 — Introduction (`ch:introduction`)
+| label | kind |
+|---|---|
+| sec:intro-pcg | section |
+| fig:smb-screenshot | figure (smb-retro.jpg) |
+| sec:intro-evaluation-problem | section |
+| sec:intro-rq | section (5 RQs + 4 contributions — REWRITE M1) |
+| sec:intro-structure | section (REWRITE M1) |
+
+### Chapter 2 — Background (`ch:background`)
+| label | kind |
+|---|---|
+| sec:bg-smb | section |
+| sec:bg-pcg | section |
+| subsec:bg-search / subsec:bg-grammar / subsec:bg-pcgml | subsections |
+| sec:bg-mario | section |
+| subsec:bg-mario-framework | subsection |
+| subsec:bg-mario-generators | subsection ("15 generators" — M6 TODO) |
+| tab:generators | table (14 rows) |
+| sec:bg-evaluation | section |
+| subsec:bg-eval-automated | subsection (fig:era-grid — DELETE M6) |
+| fig:era-grid | figure (era-linearity-leniency.png — DELETE M6) |
+| subsec:bg-eval-agents / subsec:bg-eval-human | subsections |
+| subsec:bg-eval-comparison + tab:eval-comparison | subsection + table |
+| sec:bg-rating | section |
+| subsec:bg-elo + eq:bt + eq:elo | subsection + equations |
+| subsec:bg-glicko2 + eq:glicko-rd-bg + eq:glicko-mu-bg | subsection + equations |
+| subsec:bg-arenas | subsection |
+| sec:bg-alignment | section |
+| subsec:bg-rlhf | subsection (CONDENSE M6) |
+| subsec:bg-dpo + eq:dpo | subsection + equation |
+
+### Chapter 3 — System Design (`ch:system-design`) — OUT OF SCOPE
+sec:sd-requirements, sec:sd-architecture (tab:tech-stack), subsec:sd-frontend, subsec:sd-backend,
+subsec:sd-database (tab:db-tables), sec:sd-engine, subsec:sd-ts-port (tab:physics),
+subsec:sd-level-format (tab:tile-legend, fig:ascii-level), subsec:sd-level-validation,
+sec:sd-battle, subsec:sd-battle-flow (fig:gameplay, fig:voting, fig:tag-selection),
+subsec:sd-tagging (tab:tags), sec:sd-matchmaking, subsec:sd-matchmaking-problem,
+subsec:sd-agis-stage1 (eq:agis-w1), subsec:sd-agis-stage2 (eq:agis-w2),
+subsec:sd-agis-params (tab:agis-params), sec:sd-rating, subsec:sd-glicko-update,
+subsec:sd-glicko-config (tab:glicko-params, fig:leaderboard, fig:generator-preview),
+sec:sd-builder (fig:builder), sec:sd-auth, sec:sd-deployment.
+
+### Chapter 4 — EDA (`ch:eda`) — old order
+| label | kind / plan |
+|---|---|
+| sec:eda-study-design + tab:eda-dataset | §4.1 (M2: + tab:eda-timeline, clar. (a)(b)) |
+| sec:eda-rankings + fig:eda-generator-ranking + fig:eda-pairwise-confusion | §4.2 (M4: MarioDPO deferral) |
+| sec:eda-static-expressive-range + fig:eda-static-metrics-table + fig:eda-expressive-range + fig:eda-static-vs-rating | old §4.3 → new §4.4 (M4: closer) |
+| sec:eda-trajectory-fingerprints + fig:eda-trajectory-stacks + fig:eda-trajectory-metrics + fig:eda-detailed-level-stats | old §4.4 → new §4.5 (M4: closer) |
+| sec:eda-user-heterogeneity + fig:eda-engagement + fig:eda-user-heatmap | old §4.5 → MOVE UP to new §4.3 (M2) |
+| sec:eda-tag-semantics + fig:eda-tag-semantics | old §4.6 → new §4.6 (M4: closer) |
+| sec:eda-summary | old §4.7 → new §4.8 (M4: rewrite) |
+
+### Chapter 5 — MarioDPO (`ch:mariodpo`) — old order
+| label | kind / plan |
+|---|---|
+| sec:dpo-motivation + fig:dpo-pipeline | §5.1 (M5: heavy rewrite) |
+| sec:dpo-tokenisation + eq:dpo-columns + tab:dpo-representation | §5.2 (M5: retitle, absorb SFT) |
+| sec:dpo-judge (subsec:dpo-judge-vert eq:dpo-ysigma fig:dpo-exp-a; subsec:dpo-judge-hazard fig:dpo-exp-b; subsec:dpo-judge-style eq:dpo-mahalanobis eq:dpo-style-reward fig:dpo-exp-d; subsec:dpo-judge-final eq:dpo-j-static eq:dpo-j-final tab:dpo-judge-weights fig:dpo-judge-analysis) | old §5.3 → MOVE to Ch4 new §4.7 (M3) |
+| sec:dpo-training (wrapper) | DELETE wrapper M5; label reattached to dataset section |
+| subsec:dpo-sft + eq:dpo-sft-loss | MOVE+MERGE into §5.2 (M5) |
+| subsec:dpo-dataset + tab:dpo-dataset | PROMOTE to §5.3 (M5) |
+| subsec:dpo-training-details + tab:dpo-training-config | PROMOTE to §5.4 (M5) |
+| sec:dpo-implementation | §5.5 (M5: light cross-ref edits) |
+| sec:dpo-results + tab:dpo-controlled-results + fig:dpo-generator-analysis + fig:dpo-better-than-other-pcg | §5.6 (M5: rewrite framing) |
+| sec:dpo-discussion | §5.7 (M5: light edits) |
+
+### Chapter 6 — Conclusions (`ch:conclusions`)
+sec:conc-contributions (tbd — M7), sec:conc-limitations (2 bullets + tbd — M7), sec:conc-future (tbd — M7).
+
+### New labels planned
+- tab:eda-timeline (M2, §4.1)
+- subsec:dpo-representation (M5, §5.2 first subsection)
+
+### Baseline verification output (M0)
+- duplicate labels: none
+- refs to missing labels: none
+- `RQ[0-9]` hits: 16 (intro 5-RQ block, intro-structure, Ch4 opener + section titles + one prose reference)
+- `fig:era-grid`: 2 (intro paragraph + figure env, both in subsec:bg-eval-automated)
+- chapter-relative phrasing: 5 hits ("this chapter" x4, "following chapter" x1)
+- ch:eda / ch:mariodpo / sec:dpo-judge: 15 hits
