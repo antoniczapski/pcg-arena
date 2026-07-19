@@ -1,7 +1,7 @@
 # Restructure Progress — Plan A
 
-Status: M4 done
-Last verified: 2026-07-19 grep suite | compile: pass (2 passes, 0 undefined refs)
+Status: M5 done
+Last verified: 2026-07-19 grep suite | compile: pass (0 undefined refs, 0 multiply-defined labels)
 
 ## M0 Discovery            [x] done
    - [x] read entire main.tex end to end (2529 lines)
@@ -36,7 +36,16 @@ Last verified: 2026-07-19 grep suite | compile: pass (2 passes, 0 undefined refs
    - [x] implication closers appended to §§4.4 (static→style/gap terms), 4.5 (trajectory→verticality/flow terms), 4.6 (tags→frustration penalty)
    - [x] sec:eda-summary retitled "Summary: A Reliable but Sparse Signal"; findings reordered to new section order; judge finding (r_s = 0.736) added; bridge paragraph (reliable-but-sparse, 473) replaces old closing sentence
    - DoD: no MarioDPO interpretation in Ch4; 3 closers present; compile clean
-## M5 Ch5 rebuild          [ ] not started
+## M5 Ch5 rebuild          [x] done
+   - [x] sec:dpo-motivation retitled + heavily rewritten per §6.6: three-assets recap, sparsity argument (473 vs 64K \citet{stiennon2020learning}), three-ingredient strategy, component list now references judge (§4.7)
+   - [x] fig:dpo-pipeline caption cross-references judge section
+   - [x] "Training Pipeline" wrapper deleted; SFT subsection absorbed into retitled "Level Representation and Base Model" (new subsec:dpo-representation label; transition sentence added)
+   - [x] subsec:dpo-dataset PROMOTED to \section "Preference Dataset Construction" carrying both labels (sec:dpo-training + subsec:dpo-dataset); opener rewritten to cite judge
+   - [x] subsec:dpo-training-details PROMOTED to \section "DPO Fine-Tuning and Inference-Time Filtering"
+   - [x] sec:dpo-implementation: judge/experiment-module sentences now cross-reference §4.7
+   - [x] sec:dpo-results: subsections renamed (Post-deployment / Full arena evaluation); clarification (c) inserted; deferred interpretation from M4 received; "controlled" wording → "post-deployment" (incl. table caption)
+   - [x] sec:dpo-discussion: judge design-choice cross-references §4.7
+   - DoD: Ch5 order = §5 target; 473/2,606 open §5.1; clarification (c) + deferred claim in §5.6; compile clean
 ## M6 Background trims     [ ] not started
 ## M7 Conclusions skeleton [ ] not started
 ## M8 Global QA & delivery [ ] not started

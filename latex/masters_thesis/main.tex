@@ -2169,18 +2169,33 @@ generator.}
 \label{ch:mariodpo}
 
 
-\section{Motivation and Approach}
+\section[Motivation: From Sparse Votes to a Training Signal]{\changed{Motivation: From Sparse Votes to a Training Signal}}
 \label{sec:dpo-motivation}
 
-The previous chapter established two facts that motivate the final technical
-contribution of this thesis. First, blind pairwise votes collected through PCG
-Arena produce a stable ranking of Mario level generators: the original Nintendo
-levels remain the strongest baseline, but several modern generators approach
-their quality. Second, the raw telemetry and tag data reveal measurable
-correlates of preference---engagement duration, completion, vertical movement,
-style similarity, and the avoidance of frustrating hazards. MarioDPO uses these
-signals not only to \textit{evaluate} generators, but also to \textit{improve}
-one.
+\changed{The previous chapter delivered three assets. First, blind pairwise
+votes produce a reliable ranking signal: anonymous players largely agree on
+which generators are good (Section~\ref{sec:eda-user-heterogeneity}). Second,
+the analysis identified measurable correlates of preference---style
+similarity, reward density, verticality, flow, and the avoidance of gap-heavy
+frustration
+(Sections~\ref{sec:eda-static-expressive-range}--\ref{sec:eda-tag-semantics}).
+Third, these correlates were distilled into a validated computational judge,
+$J_{final}$, which predicts generator-level human win rates at $r_s = 0.736$
+(Section~\ref{sec:dpo-judge}). What the arena does \emph{not} deliver is
+scale: human votes are the most reliable supervision signal, but they are too
+sparse to train a sequence model directly. The January 2026 training snapshot
+contains only 473 usable non-tie votes---orders of magnitude below the
+preference datasets used to align language models (e.g., the 64K comparisons
+of \citet{stiennon2020learning}) and far too few to fine-tune a level
+generator on preference alone.}
+
+\changed{MarioDPO therefore combines three ingredients. A strong supervised
+prior trained on the original Nintendo levels ensures the model already speaks
+valid Mario syntax before any preference optimisation begins. The 473 human
+pairs, upweighted $10\times$, anchor training to genuine human judgement. And
+the judge function from Section~\ref{sec:dpo-judge} labels 2,606 additional
+synthetic pairs, expanding the dataset to a trainable scale without abandoning
+the human preference objective.}
 
 The central idea is to close the loop between human evaluation and procedural
 generation. Rather than optimising a generator for playability alone, or for an
@@ -2198,13 +2213,11 @@ MarioDPO consists of four components:
         of Mario tilemaps while remaining compatible with autoregressive
         sequence modelling;
   \item a base generator trained to model the syntax of Nintendo-style levels;
-  \item a \emph{judge function} that converts the EDA findings into a scalable
-        preference proxy. We refer to it as \emph{neuro-symbolic} because it
-        combines a small set of hand-crafted, interpretable terms (style
-        distance, gap penalty, verticality, reward density) with weights fit to
-        the neural preference signal collected in PCG Arena; and
-  \item a DPO fine-tuning stage that mixes real PCG Arena votes with
-        judge-labelled synthetic pairs.
+  \item \changed{a preference dataset combining the human PCG Arena votes with
+        synthetic pairs labelled by the judge function developed in
+        Section~\ref{sec:dpo-judge}; and}
+  \item a DPO fine-tuning stage \changed{that aligns the base generator with
+        the resulting preference signal}.
 \end{enumerate}
 
 The design deliberately separates \textbf{validity} from \textbf{preference}.
@@ -2227,12 +2240,16 @@ preference signal.
 \caption{MarioDPO preference dataset: raw pair counts (left) and the same counts
 after applying the $10\times$ upweighting of human PCG Arena pairs (right). The
 few hundred human comparisons contribute roughly two thirds of the effective
-training signal, while judge-labelled synthetic pairs primarily broaden coverage.}
+training signal, while \changed{pairs labelled by the judge function
+(Section~\ref{sec:dpo-judge})} primarily broaden coverage.}
 \label{fig:dpo-pipeline}
 \end{figure}
 
-\section{Column-Major Tokenisation}
+\section[Level Representation and Base Model]{\changed{Level Representation and Base Model}}
 \label{sec:dpo-tokenisation}
+
+\subsection{Column-Major Tokenisation}
+\label{subsec:dpo-representation}
 
 Mario levels in this thesis are represented as ASCII tilemaps: each level is a
 matrix of characters, with rows corresponding to vertical tile positions and
@@ -2296,13 +2313,15 @@ sliding a window over the column-major sequence. At inference time, generated
 segments are decoded back into 16-row tilemaps and then passed through the
 validity filters described in Section~\ref{subsec:dpo-training-details}.
 
-\section{Training Pipeline}
-\label{sec:dpo-training}
-
+% AC(agent): M5 — "Training Pipeline" wrapper section deleted; the SFT
+% subsection below is absorbed into "Level Representation and Base Model";
+% the label sec:dpo-training is reattached to the promoted "Preference Dataset
+% Construction" section so old refs resolve.
 \subsection{Supervised Fine-Tuning (SFT)}
 \label{subsec:dpo-sft}
 
-The base policy $\pi_{ref}$ is a GPT-2-style autoregressive decoder trained on
+\changed{Having fixed the level representation, we now train the base policy
+that the DPO stage will later fine-tune.} The base policy $\pi_{ref}$ is a GPT-2-style autoregressive decoder trained on
 column-major Mario sequences, following the language-modelling framing of
 MarioGPT~\citep{sudhakaran2023mariogpt}. The purpose of this stage is not yet to
 optimise preference; it is to learn the syntax of valid SMB levels: ground tends
@@ -2329,10 +2348,13 @@ preference data is still small, so the reference policy should already produce
 plausible levels before DPO begins. DPO then moves this policy toward preference
 signals without allowing it to drift arbitrarily far from valid Mario syntax.
 
-\subsection{Preference Dataset Construction}
+\section{Preference Dataset Construction}
+\label{sec:dpo-training}
 \label{subsec:dpo-dataset}
 
-The DPO dataset contains two sources of pairwise supervision.
+\changed{The DPO dataset contains two sources of pairwise supervision: direct
+human votes from PCG Arena and synthetic pairs scored by the judge function
+developed in Section~\ref{sec:dpo-judge}.}
 
 \paragraph{Human pairs.}
 Each non-tie PCG Arena vote is converted into a pair $(y_w, y_l)$, where $y_w$ is
@@ -2376,7 +2398,7 @@ feedback. If the judge and a human vote disagree in similar regions of the level
 space, the human vote dominates the gradient through repeated sampling or
 example weighting.
 
-\subsection{DPO Training}
+\section[DPO Fine-Tuning and Inference-Time Filtering]{\changed{DPO Fine-Tuning and Inference-Time Filtering}}
 \label{subsec:dpo-training-details}
 
 The DPO objective is the one introduced in Equation~\ref{eq:dpo}. In the MarioDPO
@@ -2445,12 +2467,13 @@ model is sequence-based, this column-level implementation is useful in two ways:
 it provides a strong syntax-preserving baseline and it supplies generated
 candidates for arena evaluation.
 
-The experiment module implements the judge and preference-data construction. It
+The experiment module implements the judge \changed{function of
+Section~\ref{sec:dpo-judge}} and preference-data construction. It
 loads exported PCG Arena statistics, extracts trajectory features
 ($\sigma_y$, path entropy, hesitation ratio, and maximum progress), fits the
 original-level centroid, scores all levels with $J_{final}$, and creates both
 human and synthetic preference pairs. The same module produces the diagnostic
-plots used in this chapter.
+plots used in \changed{Section~\ref{sec:dpo-judge} and in} this chapter.
 
 The post-processing module performs deterministic repairs that are better
 expressed as constraints than as learned behaviour. It removes duplicate Mario or
@@ -2462,23 +2485,32 @@ losses caused by missing spawn or termination markers.
 \section{Results}
 \label{sec:dpo-results}
 
-MarioDPO is evaluated in two complementary ways. First, the January 2026
-MarioDPO experimental snapshot measures judge-function validity and compares the
-new generator with established baselines. Second, the May 2026 PCG Arena export
-analysed in Chapter~\ref{ch:eda} evaluates MarioDPO under the same blind
-pairwise-preference protocol as all other generators.
+\changed{MarioDPO is evaluated in two complementary ways
+(Table~\ref{tab:eda-timeline}). First, a post-deployment snapshot taken in
+January 2026, immediately after MarioDPO entered the arena, provides a
+formative evaluation against the established baselines. Second, the May 2026
+PCG Arena export analysed in Chapter~\ref{ch:eda} provides the summative
+evaluation under the same blind pairwise-preference protocol as all other
+generators.}
 
-\subsection*{Controlled MarioDPO snapshot}
+\subsection*{\changed{Post-deployment evaluation (January 2026 snapshot)}}
 
-Table~\ref{tab:dpo-controlled-results} summarises the controlled snapshot. The
+Table~\ref{tab:dpo-controlled-results} summarises the \changed{post-deployment} snapshot. The
 original Nintendo levels remain the strongest baseline with an 89.6\% win rate,
 but MarioDPO reaches 83.3\%, outperforming all other procedural generators in
 the comparison. MarioGPT reaches 63.8\%, MarioGAN 48.4\%, and the pattern-based
 generators average only 25.5\%.
 
+\changed{Because MarioDPO did not exist on the platform before deployment, all
+of its evaluation battles necessarily post-date its training data; its
+reported win rate and preference score are computed on votes disjoint from its
+training pairs. Ratings of the baseline generators, by contrast, aggregate
+votes from both periods; we return to this in the limitations
+(Section~\ref{sec:conc-limitations}).}
+
 \begin{table}[H]
 \centering
-\caption{Controlled MarioDPO experimental snapshot. Win rate is computed from
+\caption{\changed{Post-deployment evaluation snapshot.} Win rate is computed from
 PCG Arena pairwise outcomes in the January 2026 export.}
 \label{tab:dpo-controlled-results}
 \begin{tabular}{lrrr}
@@ -2513,12 +2545,14 @@ closest procedural competitor to the original levels.}
 \label{fig:dpo-generator-analysis}
 \end{figure}
 
-\subsection*{Full arena snapshot}
+\subsection*{\changed{Full arena evaluation (May 2026 export)}}
 
 In the later May 2026 PCG Arena export, MarioDPO remains the strongest
 procedural generator. It obtains a preference score of 0.832, essentially tied
 with the original Nintendo levels at 0.833 and ahead of ORE (0.655) and MarioGPT
-(0.643). The pairwise matrix in Chapter~\ref{ch:eda} further shows that MarioDPO
+(0.643). \changed{MarioDPO thus approaches the human baseline and clearly
+outperforms the other procedural generators in this export, suggesting that
+preference-aligned generation is a promising direction for the platform.} The pairwise matrix in Chapter~\ref{ch:eda} further shows that MarioDPO
 performs consistently across many direct matchups rather than benefiting only
 from weak opponents.
 
@@ -2531,7 +2565,7 @@ method and the closest competitor to the original human-authored levels.}
 \label{fig:dpo-better-than-other-pcg}
 \end{figure}
 
-The change from an 83.3\% win rate in the controlled snapshot to a 0.832
+The change from an 83.3\% win rate in the \changed{post-deployment} snapshot to a 0.832
 preference score in the full arena export reflects the different aggregation
 methods: the later analysis counts ties as 0.5 and compares more opponents under
 broader player behaviour. The important qualitative conclusion is stable across
@@ -2551,7 +2585,7 @@ valid, readable Mario geometry before preference optimisation begins. This avoid
 a common failure mode of pure search or random generation: the optimiser spends
 most of its capacity rediscovering basic syntax rather than improving quality.
 
-Second, the judge function captures multiple dimensions of preference rather
+Second, the judge function \changed{(Section~\ref{sec:dpo-judge})} captures multiple dimensions of preference rather
 than a single difficulty metric. The final score rewards style similarity and
 vertical exploration, penalises gap-heavy frustration, and incorporates flow and
 completion. This is consistent with the EDA results: players prefer levels that
