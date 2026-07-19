@@ -1,7 +1,7 @@
 # Restructure Progress — Plan A
 
-Status: M2 done
-Last verified: 2026-07-19 grep suite | compile: pass (81 pages, 0 undefined refs after 2 passes)
+Status: M3 done
+Last verified: 2026-07-19 grep suite | compile: pass (2 passes, 0 undefined refs); overfull hboxes confirmed pre-existing (KOT URLs)
 
 ## M0 Discovery            [x] done
    - [x] read entire main.tex end to end (2529 lines)
@@ -22,7 +22,14 @@ Last verified: 2026-07-19 grep suite | compile: pass (81 pages, 0 undefined refs
    - [x] RQn: prefixes dropped from remaining section titles; stale "second research question"/"RQ1" prose fixed
    - [x] tab:eda-timeline written (booktabs, red = new content) + clarification sentences (a)+(b) at end of §4.1
    - DoD: section order matches §5; only new-scheme RQ hits in Ch4 (roadmap); tab:eda-timeline \ref'd; compile clean
-## M3 Judge relocation     [ ] not started
+## M3 Judge relocation     [x] done
+   - [x] entire sec:dpo-judge (4 subsections, 4 figures, weights table, all labels) MOVED from Ch5 to Ch4 between tags and summary; % MOVED(agent) marker at destination
+   - [x] retitled "A Computational Judge of Level Preference"; label sec:dpo-judge kept
+   - [x] opener rewritten per §6.5 (sparsity paragraph SAVED for M5, not discarded — to be reinstated in sec:dpo-motivation)
+   - [x] self-refs fixed: "neuro-symbolic in the sense introduced above" → "in the sense that"; "Three findings from Chapter ch:eda" → "from the preceding sections (§§4.4–4.6)"; hazard "Chapter ch:eda showed" → Section ref; style "The DPO stage" + Chapter ref
+   - [x] RLAIF closer replaced per §6.5
+   - [x] Evidence column added to tab:dpo-judge-weights for all five weights (Exp. subsection + motivating EDA section each)
+   - DoD: judge inside ch:eda; no self-referential ch:eda hits in §4.7 (only forward ch:mariodpo refs); labels/refs intact; compile clean
 ## M4 Ch4 prose pass       [ ] not started
 ## M5 Ch5 rebuild          [ ] not started
 ## M6 Background trims     [ ] not started

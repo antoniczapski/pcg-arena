@@ -1859,6 +1859,259 @@ Figure~\ref{fig:eda-tag-semantics} summarizes tag frequency, tag rate by generat
 Positive tags are strongly aligned with preference outcomes. Sides tagged \texttt{creative} win 87\% of the time and sides tagged \texttt{fun} win 71\% of the time. Negative tags behave differently: \texttt{impossible}, \texttt{too\_hard}, and \texttt{boring} are much more common on losing sides than winning sides. The tag-by-generator heatmap also makes generator failure modes interpretable: some generators lose because they are marked as impossible or too hard, while others are rejected as boring or visually broken.
 
 % ===================================================================
+% MOVED(agent): from old §5.3 (M3), verbatim except where wrapped in \changed{}
+\section[A Computational Judge of Level Preference]{\changed{A Computational Judge of Level Preference}}
+\label{sec:dpo-judge}
+
+\changed{The preceding sections identified consistent correlates of preference:
+similarity to the original corpus and reward density
+(Section~\ref{sec:eda-static-expressive-range}), verticality and flow
+(Section~\ref{sec:eda-trajectory-fingerprints}), and the frustration modes
+surfaced by tags (Section~\ref{sec:eda-tag-semantics}). This section
+operationalises these findings into a single computable score, $J_{final}$,
+that predicts human preference from structural and telemetry features alone.
+The judge serves two purposes: it tests whether the observed correlates
+generalise into a predictive model, and---as Chapter~\ref{ch:mariodpo}
+shows---it provides the scalable supervision signal needed to train a
+preference-aligned generator. The experiments below were run on the January
+training snapshot (Table~\ref{tab:eda-timeline}), i.e., the data available at
+generator-training time; the May analyses above corroborate the same
+directional findings.}
+
+The judge function is \changed{\emph{neuro-symbolic} in the sense that} it combines
+manually interpretable terms---style distance, gap penalty, verticality, and
+flow---with weights derived from the empirical preference signal in the PCG
+Arena data. \changed{Three findings from the preceding sections
+(Sections~\ref{sec:eda-static-expressive-range}--\ref{sec:eda-tag-semantics})
+guide its design:}
+high-performing generators produce longer play sessions and higher completion
+rates than low-performing ones; tags such as \emph{fun} and \emph{creative}
+correlate with win rate and, importantly, co-vary with measurable structural
+properties (verticality of the surface profile, hazard density, reward density);
+and high-performing generators tend to resemble original Nintendo levels without
+simply copying them.
+
+The judge itself is deliberately \emph{static}: at inference time it takes as
+input only the raw tile grid of a candidate level and returns a scalar. This is
+necessary because the target use case---scoring freshly generated, never-played
+levels---does not provide gameplay traces or player tags. The trajectory
+correlations and tag correlations reported below therefore play two distinct
+roles. Trajectory statistics (verticality of Mario's path, hesitation, completion)
+are used to \emph{validate} that a given structural aspect of the level matters
+to humans; the runtime judge then encodes that aspect as a structural proxy
+computable from the tile grid alone (for example, surface roughness in place of
+trajectory $\sigma_y$, gap fraction in place of gap-heavy generator identity).
+Tags are never inputs to the runtime judge; they are used only offline to select
+\emph{which} structural features to include and how to sign their weights.
+
+\subsection{Verticality Reward (Experiment A)}
+\label{subsec:dpo-judge-vert}
+
+The first component tests whether players prefer levels that encourage movement
+through the vertical space of the screen, rather than only horizontal running on
+flat ground. For each trajectory we compute the standard deviation of Mario's
+vertical coordinate,
+%
+\begin{equation}
+\label{eq:dpo-ysigma}
+\sigma_y = \sqrt{\frac{1}{T}\sum_{t=1}^{T}(y_t - \bar{y})^2},
+\end{equation}
+%
+where $T$ is the number of recorded trajectory samples. High $\sigma_y$ indicates
+that the player moved across multiple elevations, typically because the level
+contains hills, platforms, pipes, or jumping sequences. We also compute a simple
+path-entropy proxy: the number of distinct tile coordinates visited by the
+player.
+
+Experiment A found that verticality is positively associated with human
+preference. Across levels with sufficient data, $\sigma_y$ correlates with win
+rate at $r_s = 0.257$ ($p = 0.019$), while path entropy correlates at
+$r_s = 0.275$. The effect is modest, but significant: players do not merely
+prefer easy levels; they prefer easy levels with some spatial variety.
+Figure~\ref{fig:dpo-exp-a} visualises this relationship.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{exp_a_verticality.png}
+\caption{Experiment A: trajectory verticality and path entropy are positively
+associated with human win rate. MarioDPO uses $\sigma_y$ as a reward term in the
+judge function.}
+\label{fig:dpo-exp-a}
+\end{figure}
+
+This finding motivates the verticality term in $J_{final}$. Because the runtime
+judge cannot observe a trajectory, it does not use $\sigma_y$ directly.
+Instead it computes \emph{surface roughness}---the mean absolute column-to-column
+difference of the ground-height profile---as a static structural proxy for
+trajectory verticality: hilly ground and multi-tier platforms produce large
+roughness, whereas long flat runs produce values near zero. The Experiment A
+correlation on $\sigma_y$ justifies giving this proxy a positive weight; flat,
+safe levels are playable but often lack the variety players tag as
+\emph{creative} or \emph{fun}. Verticality is rewarded only after basic validity
+and gap constraints are satisfied, so that repeated falls or stalled traversal
+cannot be counted as desirable exploration.
+
+\subsection{Hazard Hierarchy (Experiment B)}
+\label{subsec:dpo-judge-hazard}
+
+The second component addresses a limitation of aggregate difficulty measures.
+\changed{Section~\ref{sec:eda-trajectory-fingerprints} showed that} higher death counts are generally associated
+with lower preference, but not all sources of difficulty are equal. In Mario,
+enemies can be avoided, jumped on, or used as part of a satisfying action
+sequence. Gaps, by contrast, frequently create abrupt failures, especially in
+short blind evaluations where players have little time to learn a level.
+
+The database snapshot used for the judge experiments did not contain reliable
+gap-density and enemy-density fields for all levels, so Experiment B used
+generator identity as a proxy. The three pattern-based generators produce many
+levels with fragmented ground and repeated gap structures. They achieved an
+average win rate of only 25.7\%, compared with 54.2\% for the remaining
+generators. This large gap supports a hierarchy of hazards: pit-heavy level
+structure is penalised more strongly than moderate enemy placement.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{exp_b_hazard_hierarchy.png}
+\caption{Experiment B: pattern-based generators form a low-performing cluster,
+supporting a strong gap/frustration penalty in the judge function.}
+\label{fig:dpo-exp-b}
+\end{figure}
+
+MarioDPO encodes this result through a gap penalty. When explicit structural
+features are available, the penalty is proportional to gap density; when they are
+missing, pattern-generator membership is used as a conservative proxy. The judge
+also includes a flow term based on hesitation, defined as the fraction of
+trajectory intervals with near-zero horizontal velocity. Hesitation is weak by
+itself, but it captures a common failure mode of generated levels: the player is
+not dead, yet the level layout produces stopping, confusion, or repeated small
+corrections.
+
+Experiment C attempted to measure whether deaths clustered at a small number of
+locations are more damaging than deaths spread throughout a level. The available
+data were insufficient for a stable death-entropy estimate, and the early-death
+rate correlation was weak ($r_s = -0.134$). Death entropy is therefore treated as
+a diagnostic feature rather than a primary term in the final judge used for
+DPO-pair construction.
+
+\subsection{Style Matching (Experiment D)}
+\label{subsec:dpo-judge-style}
+
+The third component captures the ``Nintendo factor'' observed throughout the
+arena results: human-authored original levels consistently outperform algorithmic
+generators. Rather than hard-coding individual tile ratios, MarioDPO estimates a
+style centroid from original levels in a telemetry-derived feature space. Let
+$\mathbf{z}$ be the feature vector of a level and let $\boldsymbol{\mu}_{O}$ and
+$\Sigma_{O}$ denote the mean and covariance of the original-level feature vectors.
+The Mahalanobis distance to the original style is
+%
+\begin{equation}
+\label{eq:dpo-mahalanobis}
+D_M(\mathbf{z}) =
+\sqrt{(\mathbf{z}-\boldsymbol{\mu}_{O})^\top
+\Sigma_{O}^{-1}(\mathbf{z}-\boldsymbol{\mu}_{O})}.
+\end{equation}
+%
+
+Mahalanobis distance is preferable to Euclidean distance here because the
+features have different scales and correlations. A generator is not rewarded for
+matching one marginal statistic independently; it is rewarded for occupying the
+same joint region of feature space as original levels. The style reward is then
+defined as a bounded inverse distance,
+%
+\begin{equation}
+\label{eq:dpo-style-reward}
+R_{style} = \frac{1}{1 + D_M}.
+\end{equation}
+
+Experiment D confirms that this term is meaningful. Mahalanobis distance from
+the original centroid correlates negatively with win rate ($r_s = -0.279$,
+$p = 0.0105$), while the inverse style reward correlates positively at the same
+magnitude. Figure~\ref{fig:dpo-exp-d} shows the relationship.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{exp_d_original_centroid.png}
+\caption{Experiment D: levels closer to the original-level centroid in feature
+space achieve higher win rates. MarioDPO uses this relationship as a style reward
+rather than as a hard constraint.}
+\label{fig:dpo-exp-d}
+\end{figure}
+
+Importantly, the style term is not a copying objective. Original levels define a
+region of desirable structure, not a set of templates to reproduce. The DPO stage
+\changed{(Chapter~\ref{ch:mariodpo})} can still increase the probability of novel levels, provided that their
+telemetry and structural features remain close to the high-performing region.
+
+\subsection{Final Judge Function}
+\label{subsec:dpo-judge-final}
+
+The final judge function combines the above components in two stages. The first
+stage can be computed before expensive simulation, using style and hazard
+features:
+%
+\begin{equation}
+\label{eq:dpo-j-static}
+J_{static}
+= w_{style}\frac{1}{1 + D_M}
+- w_{gap}\,\mathit{GapPenalty}
++ w_{comp}\,\mathit{CompletionRate}.
+\end{equation}
+%
+The second stage adds dynamic telemetry extracted from an A* or player
+trajectory:
+%
+\begin{equation}
+\label{eq:dpo-j-final}
+J_{final}
+= J_{static}
++ w_{vert}\frac{\sigma_y}{50}
++ w_{flow}(1 - \mathit{Hesitation}).
+\end{equation}
+
+The implemented weights are shown in Table~\ref{tab:dpo-judge-weights}. They
+were chosen from the relative strength and reliability of the experiments above:
+style and verticality receive moderate positive weights, flow receives a smaller
+positive weight, and gap-heavy structure receives the strongest penalty.
+
+\begin{table}[H]
+\centering
+\caption{Weights used by the \changed{judge function, with the experimental and
+exploratory evidence motivating each term}.}
+\label{tab:dpo-judge-weights}
+\footnotesize
+\begin{tabular}{@{} l c p{3.4cm} p{5.6cm} @{}}
+\toprule
+\textbf{Term} & \textbf{Weight} & \textbf{Rationale} & \changed{\textbf{Evidence}} \\
+\midrule
+$w_{style}$ & 0.32 & Original-centroid similarity, Experiment D & \changed{Exp.~D (\S\ref{subsec:dpo-judge-style}); NCD distance to \texttt{original} corpus (\S\ref{sec:eda-static-expressive-range})} \\
+$w_{vert}$  & 0.26 & Verticality reward, Experiment A & \changed{Exp.~A (\S\ref{subsec:dpo-judge-vert}); occupancy entropy and verticality (\S\ref{sec:eda-trajectory-fingerprints})} \\
+$w_{flow}$  & 0.10 & Penalise hesitation and poor flow & \changed{hesitation analysis (\S\ref{subsec:dpo-judge-hazard}); trajectory flow patterns (\S\ref{sec:eda-trajectory-fingerprints})} \\
+$w_{gap}$   & 0.50 & Strong penalty for gap-heavy/pattern-like failure modes & \changed{Exp.~B (\S\ref{subsec:dpo-judge-hazard}); gap-dominated expressive range (\S\ref{sec:eda-static-expressive-range}); \texttt{impossible}/\texttt{too\_hard} tags (\S\ref{sec:eda-tag-semantics})} \\
+$w_{comp}$  & 0.20 & Reward observed completion without making ease the sole target & \changed{progress and death-concentration findings (\S\ref{sec:eda-trajectory-fingerprints})} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+To validate the combined judge, we aggregate $J_{final}$ by generator and compare
+it with the corresponding human win rates. The Spearman correlation is
+$r_s = 0.736$ with $p = 0.0027$, a strong relationship given that the judge uses
+only telemetry and structural proxies rather than the votes themselves.
+Figure~\ref{fig:dpo-judge-analysis} shows the component distributions and the
+relationship between judge score and human preference.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{judge_function_analysis.png}
+\caption{Judge-function component analysis. The final score combines style
+reward, trajectory verticality, hesitation, completion, and gap penalties. The
+resulting generator-level score correlates strongly with human win rate.}
+\label{fig:dpo-judge-analysis}
+\end{figure}
+
+\changed{Chapter~\ref{ch:mariodpo} uses $J_{final}$ to synthesise preference
+pairs at scale, with human votes retained at higher weight.}
+
+% ===================================================================
 \section{Summary of Findings}
 \label{sec:eda-summary}
 
@@ -2007,248 +2260,6 @@ Mario level. For levels exceeding this length, training examples are obtained by
 sliding a window over the column-major sequence. At inference time, generated
 segments are decoded back into 16-row tilemaps and then passed through the
 validity filters described in Section~\ref{subsec:dpo-training-details}.
-
-\section{Judge Function Development}
-\label{sec:dpo-judge}
-
-Human votes are the most reliable supervision signal in PCG Arena, but they are
-too sparse to train a sequence model directly. The January 2026 snapshot used in
-the MarioDPO experiments contains 473 usable non-tie votes. To expand this data
-without abandoning the human preference objective, we construct a judge function
-$J$ that predicts the human preference quality of a level from telemetry and
-structural features. The judge is not intended to replace the final human
-evaluation; instead, it serves as a scalable preference proxy for generating
-additional DPO pairs.
-
-The judge function is neuro-symbolic in the sense introduced above: it combines
-manually interpretable terms---style distance, gap penalty, verticality, and
-flow---with weights derived from the empirical preference signal in the PCG
-Arena data. Three findings from Chapter~\ref{ch:eda} guide its design:
-high-performing generators produce longer play sessions and higher completion
-rates than low-performing ones; tags such as \emph{fun} and \emph{creative}
-correlate with win rate and, importantly, co-vary with measurable structural
-properties (verticality of the surface profile, hazard density, reward density);
-and high-performing generators tend to resemble original Nintendo levels without
-simply copying them.
-
-The judge itself is deliberately \emph{static}: at inference time it takes as
-input only the raw tile grid of a candidate level and returns a scalar. This is
-necessary because the target use case---scoring freshly generated, never-played
-levels---does not provide gameplay traces or player tags. The trajectory
-correlations and tag correlations reported below therefore play two distinct
-roles. Trajectory statistics (verticality of Mario's path, hesitation, completion)
-are used to \emph{validate} that a given structural aspect of the level matters
-to humans; the runtime judge then encodes that aspect as a structural proxy
-computable from the tile grid alone (for example, surface roughness in place of
-trajectory $\sigma_y$, gap fraction in place of gap-heavy generator identity).
-Tags are never inputs to the runtime judge; they are used only offline to select
-\emph{which} structural features to include and how to sign their weights.
-
-\subsection{Verticality Reward (Experiment A)}
-\label{subsec:dpo-judge-vert}
-
-The first component tests whether players prefer levels that encourage movement
-through the vertical space of the screen, rather than only horizontal running on
-flat ground. For each trajectory we compute the standard deviation of Mario's
-vertical coordinate,
-%
-\begin{equation}
-\label{eq:dpo-ysigma}
-\sigma_y = \sqrt{\frac{1}{T}\sum_{t=1}^{T}(y_t - \bar{y})^2},
-\end{equation}
-%
-where $T$ is the number of recorded trajectory samples. High $\sigma_y$ indicates
-that the player moved across multiple elevations, typically because the level
-contains hills, platforms, pipes, or jumping sequences. We also compute a simple
-path-entropy proxy: the number of distinct tile coordinates visited by the
-player.
-
-Experiment A found that verticality is positively associated with human
-preference. Across levels with sufficient data, $\sigma_y$ correlates with win
-rate at $r_s = 0.257$ ($p = 0.019$), while path entropy correlates at
-$r_s = 0.275$. The effect is modest, but significant: players do not merely
-prefer easy levels; they prefer easy levels with some spatial variety.
-Figure~\ref{fig:dpo-exp-a} visualises this relationship.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.85\textwidth]{exp_a_verticality.png}
-\caption{Experiment A: trajectory verticality and path entropy are positively
-associated with human win rate. MarioDPO uses $\sigma_y$ as a reward term in the
-judge function.}
-\label{fig:dpo-exp-a}
-\end{figure}
-
-This finding motivates the verticality term in $J_{final}$. Because the runtime
-judge cannot observe a trajectory, it does not use $\sigma_y$ directly.
-Instead it computes \emph{surface roughness}---the mean absolute column-to-column
-difference of the ground-height profile---as a static structural proxy for
-trajectory verticality: hilly ground and multi-tier platforms produce large
-roughness, whereas long flat runs produce values near zero. The Experiment A
-correlation on $\sigma_y$ justifies giving this proxy a positive weight; flat,
-safe levels are playable but often lack the variety players tag as
-\emph{creative} or \emph{fun}. Verticality is rewarded only after basic validity
-and gap constraints are satisfied, so that repeated falls or stalled traversal
-cannot be counted as desirable exploration.
-
-\subsection{Hazard Hierarchy (Experiment B)}
-\label{subsec:dpo-judge-hazard}
-
-The second component addresses a limitation of aggregate difficulty measures.
-Chapter~\ref{ch:eda} showed that higher death counts are generally associated
-with lower preference, but not all sources of difficulty are equal. In Mario,
-enemies can be avoided, jumped on, or used as part of a satisfying action
-sequence. Gaps, by contrast, frequently create abrupt failures, especially in
-short blind evaluations where players have little time to learn a level.
-
-The database snapshot used for the judge experiments did not contain reliable
-gap-density and enemy-density fields for all levels, so Experiment B used
-generator identity as a proxy. The three pattern-based generators produce many
-levels with fragmented ground and repeated gap structures. They achieved an
-average win rate of only 25.7\%, compared with 54.2\% for the remaining
-generators. This large gap supports a hierarchy of hazards: pit-heavy level
-structure is penalised more strongly than moderate enemy placement.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.85\textwidth]{exp_b_hazard_hierarchy.png}
-\caption{Experiment B: pattern-based generators form a low-performing cluster,
-supporting a strong gap/frustration penalty in the judge function.}
-\label{fig:dpo-exp-b}
-\end{figure}
-
-MarioDPO encodes this result through a gap penalty. When explicit structural
-features are available, the penalty is proportional to gap density; when they are
-missing, pattern-generator membership is used as a conservative proxy. The judge
-also includes a flow term based on hesitation, defined as the fraction of
-trajectory intervals with near-zero horizontal velocity. Hesitation is weak by
-itself, but it captures a common failure mode of generated levels: the player is
-not dead, yet the level layout produces stopping, confusion, or repeated small
-corrections.
-
-Experiment C attempted to measure whether deaths clustered at a small number of
-locations are more damaging than deaths spread throughout a level. The available
-data were insufficient for a stable death-entropy estimate, and the early-death
-rate correlation was weak ($r_s = -0.134$). Death entropy is therefore treated as
-a diagnostic feature rather than a primary term in the final judge used for
-DPO-pair construction.
-
-\subsection{Style Matching (Experiment D)}
-\label{subsec:dpo-judge-style}
-
-The third component captures the ``Nintendo factor'' observed throughout the
-arena results: human-authored original levels consistently outperform algorithmic
-generators. Rather than hard-coding individual tile ratios, MarioDPO estimates a
-style centroid from original levels in a telemetry-derived feature space. Let
-$\mathbf{z}$ be the feature vector of a level and let $\boldsymbol{\mu}_{O}$ and
-$\Sigma_{O}$ denote the mean and covariance of the original-level feature vectors.
-The Mahalanobis distance to the original style is
-%
-\begin{equation}
-\label{eq:dpo-mahalanobis}
-D_M(\mathbf{z}) =
-\sqrt{(\mathbf{z}-\boldsymbol{\mu}_{O})^\top
-\Sigma_{O}^{-1}(\mathbf{z}-\boldsymbol{\mu}_{O})}.
-\end{equation}
-%
-
-Mahalanobis distance is preferable to Euclidean distance here because the
-features have different scales and correlations. A generator is not rewarded for
-matching one marginal statistic independently; it is rewarded for occupying the
-same joint region of feature space as original levels. The style reward is then
-defined as a bounded inverse distance,
-%
-\begin{equation}
-\label{eq:dpo-style-reward}
-R_{style} = \frac{1}{1 + D_M}.
-\end{equation}
-
-Experiment D confirms that this term is meaningful. Mahalanobis distance from
-the original centroid correlates negatively with win rate ($r_s = -0.279$,
-$p = 0.0105$), while the inverse style reward correlates positively at the same
-magnitude. Figure~\ref{fig:dpo-exp-d} shows the relationship.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.85\textwidth]{exp_d_original_centroid.png}
-\caption{Experiment D: levels closer to the original-level centroid in feature
-space achieve higher win rates. MarioDPO uses this relationship as a style reward
-rather than as a hard constraint.}
-\label{fig:dpo-exp-d}
-\end{figure}
-
-Importantly, the style term is not a copying objective. Original levels define a
-region of desirable structure, not a set of templates to reproduce. The DPO stage
-can still increase the probability of novel levels, provided that their
-telemetry and structural features remain close to the high-performing region.
-
-\subsection{Final Judge Function}
-\label{subsec:dpo-judge-final}
-
-The final judge function combines the above components in two stages. The first
-stage can be computed before expensive simulation, using style and hazard
-features:
-%
-\begin{equation}
-\label{eq:dpo-j-static}
-J_{static}
-= w_{style}\frac{1}{1 + D_M}
-- w_{gap}\,\mathit{GapPenalty}
-+ w_{comp}\,\mathit{CompletionRate}.
-\end{equation}
-%
-The second stage adds dynamic telemetry extracted from an A* or player
-trajectory:
-%
-\begin{equation}
-\label{eq:dpo-j-final}
-J_{final}
-= J_{static}
-+ w_{vert}\frac{\sigma_y}{50}
-+ w_{flow}(1 - \mathit{Hesitation}).
-\end{equation}
-
-The implemented weights are shown in Table~\ref{tab:dpo-judge-weights}. They
-were chosen from the relative strength and reliability of the experiments above:
-style and verticality receive moderate positive weights, flow receives a smaller
-positive weight, and gap-heavy structure receives the strongest penalty.
-
-\begin{table}[H]
-\centering
-\caption{Weights used by the MarioDPO judge function.}
-\label{tab:dpo-judge-weights}
-\begin{tabular}{lll}
-\toprule
-\textbf{Term} & \textbf{Weight} & \textbf{Rationale} \\
-\midrule
-$w_{style}$ & 0.32 & Original-centroid similarity, Experiment D \\
-$w_{vert}$  & 0.26 & Verticality reward, Experiment A \\
-$w_{flow}$  & 0.10 & Penalise hesitation and poor flow \\
-$w_{gap}$   & 0.50 & Strong penalty for gap-heavy/pattern-like failure modes \\
-$w_{comp}$  & 0.20 & Reward observed completion without making ease the sole target \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-To validate the combined judge, we aggregate $J_{final}$ by generator and compare
-it with the corresponding human win rates. The Spearman correlation is
-$r_s = 0.736$ with $p = 0.0027$, a strong relationship given that the judge uses
-only telemetry and structural proxies rather than the votes themselves.
-Figure~\ref{fig:dpo-judge-analysis} shows the component distributions and the
-relationship between judge score and human preference.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.95\textwidth]{judge_function_analysis.png}
-\caption{Judge-function component analysis. The final score combines style
-reward, trajectory verticality, hesitation, completion, and gap penalties. The
-resulting generator-level score correlates strongly with human win rate.}
-\label{fig:dpo-judge-analysis}
-\end{figure}
-
-This validation justifies using $J_{final}$ for Reinforcement Learning from AI
-Feedback (RLAIF): the judge can label many candidate level pairs cheaply, while
-real human votes remain the highest-weight examples in the DPO dataset.
 
 \section{Training Pipeline}
 \label{sec:dpo-training}
