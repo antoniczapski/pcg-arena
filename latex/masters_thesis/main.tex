@@ -68,7 +68,7 @@
 \KOT{todo -- przeczytać PL potem}
 Ewaluacja generatorów treści proceduralnych (PCG) dla gier wideo stanowi istotne wyzwanie metodologiczne, ponieważ przyjemność gracza jest z natury subiektywna i trudna do zmierzenia za pomocą automatycznych metryk. Niniejsza praca przedstawia PCG Arenę --- platformę internetową do ślepego testowania A/B generatorów poziomów do gry Super Mario Bros poprzez dane o preferencjach graczy. \changed{Super Mario Bros jest wykorzystywane jako benchmark w badaniach nad proceduralnym generowaniem poziomów od pierwszych zawodów Mario AI Competition w 2009 roku, co czyni je naturalną dziedziną do systematycznego porównywania generatorów.} Platforma umożliwia graczom rozgrywanie dwóch proceduralnie generowanych poziomów obok siebie w przeglądarce, głosowanie na preferowany poziom oraz opcjonalne tagowanie cech rozgrywki. Głosy są agregowane za pomocą systemu ratingowego Glicko-2, który zapewnia rankingi z przedziałami ufności.
 
-Na podstawie zebranych danych przeprowadzono analizę eksploracyjną charakteryzującą ranking preferencji generatorów, statyczny zakres ekspresyjny poziomów, trajektorie rozgrywki, heterogeniczność anonimowych użytkowników oraz semantykę tagów. Wyniki pokazują, że platforma może służyć zarówno jako ranking generatorów, jak i narzędzie diagnostyczne ujawniające ich tryby porażki. \changed{Analiza pokazuje ponadto, że automatyczne metryki strukturalne nie są w stanie zastąpić rankingu opartego na ludzkich preferencjach, co motywuje trenowanie generatora bezpośrednio na preferencjach graczy.} Finalnie, praca przedstawia MarioDPO --- generator poziomów wytrenowany metodą Direct Preference Optimization, który osiąga wynik preferencji 0.832, zbliżony do oryginalnych poziomów Nintendo.
+Na podstawie zebranych danych przeprowadzono analizę eksploracyjną charakteryzującą ranking preferencji generatorów, statyczny zakres ekspresyjny poziomów, trajektorie rozgrywki, heterogeniczność anonimowych użytkowników oraz semantykę tagów. Wyniki pokazują, że platforma może służyć zarówno jako ranking generatorów, jak i narzędzie diagnostyczne ujawniające ich tryby porażki. \changed{Analiza pokazuje ponadto, że automatyczne metryki strukturalne nie są w stanie zastąpić rankingu opartego na ludzkich preferencjach, co motywuje trenowanie generatora bezpośrednio na preferencjach graczy.} Finalnie, praca przedstawia MarioDPO --- generator poziomów wytrenowany metodą Direct Preference Optimization, który osiąga najwyższy wynik preferencji spośród testowanych generatorów, zbliżony do oryginalnych poziomów Nintendo.
 }
 
 \englishabstract {
@@ -76,7 +76,7 @@ Evaluating procedural content generators (PCGs) for video games poses significan
 \KOT{gdzieś - może tutaj - zdanie, że Mario has been an important benchmark for a variety of PCG methods, from 2009 until today, albo cos innego ale we wstępie od razu dającego do zroumienia, że to nie jest losowa gierka wzięta bo tak}
 \changed{Super Mario Bros has been used as a benchmark for PCG level generation research since the first Mario AI Competition in 2009, making it an ideal domain for systematic generator comparison.} The platform enables players to play two procedurally generated levels side-by-side in their browser, vote for their preferred level, and optionally tag gameplay characteristics. Votes are aggregated using the Glicko-2 rating system, providing uncertainty-aware rankings with confidence intervals.
 
-Building on the collected data, we conduct an exploratory analysis that characterizes generator preference rankings, static expressive range, gameplay trajectory fingerprints, anonymous-user heterogeneity, and tag semantics. The analysis shows that PCG Arena functions not only as a leaderboard, but also as a diagnostic instrument for understanding why generators win or fail. \changed{It further shows that automated structural metrics cannot substitute for the human ranking, motivating training directly on player preferences.} Finally, we present MarioDPO, a level generator fine-tuned with Direct Preference Optimization that achieves a preference score of 0.832, approaching the hand-crafted original Nintendo baseline.
+Building on the collected data, we conduct an exploratory analysis that characterizes generator preference rankings, static expressive range, gameplay trajectory fingerprints, anonymous-user heterogeneity, and tag semantics. The analysis shows that PCG Arena functions not only as a leaderboard, but also as a diagnostic instrument for understanding why generators win or fail. \changed{It further shows that automated structural metrics cannot substitute for the human ranking, motivating training directly on player preferences.} Finally, we present MarioDPO, a level generator fine-tuned with Direct Preference Optimization that achieves a the highest win rate score among tested generators, approaching the hand-crafted original Nintendo baseline.
 }
 
 \author         {Antoni Czapski}
@@ -170,7 +170,7 @@ Mario level generators. \changed{We investigate three research questions:}
   \item[RQ1 (Measurement)] Can a persistent, blind, web-based arena produce a
     reliable human-preference ranking of Super Mario Bros level generators?
     (Sections~\ref{sec:eda-rankings}--\ref{sec:eda-user-heterogeneity})
-  \item[RQ2 (Metrics)] Can automated metrics substitute for the human ranking?
+  \item[RQ2 (Metrics)] Can structural properties of levels explain human ranking?
     (Sections~\ref{sec:eda-static-expressive-range}--\ref{sec:dpo-judge})
   \item[RQ3 (Generation)] Can the collected preference data be used to train a
     level generator that surpasses existing PCG methods and approaches
@@ -1833,8 +1833,6 @@ follows the preference ranking.}
 \end{figure}
 
 % ===================================================================
-% AC(agent): review pass — old §4.5 (trajectories) and §4.6 (tags) merged;
-% trajectory-metrics figure dropped; analytics-UI figure moved to Ch. 3.
 \section[Diagnosing Failure: Trajectories and Tags]{\changed{Diagnosing Failure: Trajectories and Tags}}
 \label{sec:eda-trajectory-fingerprints}
 \label{sec:eda-tag-semantics}
@@ -1858,7 +1856,7 @@ progress is 1126.5 pixels for \texttt{original} and 988.0 pixels for
 \texttt{mariodpo}. For the weakest generators the traces pile up and terminate
 early: \texttt{patternCount} has a median maximum progress of only 174.5
 pixels, and 63\% of its recorded deaths fall into a single early horizontal
-bin. Players facing these levels do not gradually lose interest---they hit a
+bin. Players facing these levels do not gradually lose interest but rather they hit a
 wall within the first screens.}
 
 Tags provide a lightweight qualitative layer over the binary vote. They are optional, sparse, and subjective, so they should not be treated as ground-truth labels. Their value is diagnostic: they help distinguish why a level wins or loses.

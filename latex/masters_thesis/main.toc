@@ -56,36 +56,31 @@
 \contentsline {section}{\numberline {3.6}Glicko-2 Rating System}{38}{section.3.6}%
 \contentsline {subsection}{\numberline {3.6.1}Rating Update Procedure}{38}{subsection.3.6.1}%
 \contentsline {subsection}{\numberline {3.6.2}Configuration}{39}{subsection.3.6.2}%
-\contentsline {section}{\numberline {3.7}Builder Profile and Generator Submission}{40}{section.3.7}%
-\contentsline {section}{\numberline {3.8}Authentication}{41}{section.3.8}%
-\contentsline {section}{\numberline {3.9}Deployment and Infrastructure}{42}{section.3.9}%
-\contentsline {chapter}{\numberline {4}User Study: Measuring and Modelling Player Preference}{43}{chapter.4}%
-\contentsline {section}{\numberline {4.1}Study Protocol and Dataset}{43}{section.4.1}%
-\contentsline {section}{\numberline {4.2}Generator Preference Ranking}{45}{section.4.2}%
-\contentsline {section}{\numberline {4.3}Player Engagement and Preference Consistency}{47}{section.4.3}%
-\contentsline {section}{\numberline {4.4}Static Expressive Range}{50}{section.4.4}%
-\contentsline {section}{\numberline {4.5}Gameplay Trajectory Fingerprints}{53}{section.4.5}%
-\contentsline {section}{\numberline {4.6}Tag Semantics and Failure Modes}{56}{section.4.6}%
-\contentsline {section}{\numberline {4.7}A Computational Judge of Level Preference}{57}{section.4.7}%
-\contentsline {subsection}{\numberline {4.7.1}Verticality Reward (Experiment A)}{58}{subsection.4.7.1}%
-\contentsline {subsection}{\numberline {4.7.2}Hazard Hierarchy (Experiment B)}{59}{subsection.4.7.2}%
-\contentsline {subsection}{\numberline {4.7.3}Style Matching (Experiment D)}{60}{subsection.4.7.3}%
-\contentsline {subsection}{\numberline {4.7.4}Final Judge Function}{62}{subsection.4.7.4}%
-\contentsline {section}{\numberline {4.8}Summary: A Reliable but Sparse Signal}{63}{section.4.8}%
-\contentsline {chapter}{\numberline {5}MarioDPO --- Preference-Aligned Level Generation}{65}{chapter.5}%
-\contentsline {section}{\numberline {5.1}Motivation: From Sparse Votes to a Training Signal}{65}{section.5.1}%
-\contentsline {section}{\numberline {5.2}Level Representation and Base Model}{67}{section.5.2}%
-\contentsline {subsection}{\numberline {5.2.1}Column-Major Tokenisation}{67}{subsection.5.2.1}%
-\contentsline {subsection}{\numberline {5.2.2}Supervised Fine-Tuning (SFT)}{68}{subsection.5.2.2}%
-\contentsline {section}{\numberline {5.3}Preference Dataset Construction}{68}{section.5.3}%
-\contentsline {paragraph}{Human pairs.}{68}{section*.39}%
-\contentsline {paragraph}{Synthetic pairs.}{69}{section*.40}%
-\contentsline {section}{\numberline {5.4}DPO Fine-Tuning and Inference-Time Filtering}{69}{section.5.4}%
-\contentsline {paragraph}{Inference-time filtering.}{70}{section*.43}%
-\contentsline {section}{\numberline {5.5}Implementation Details}{70}{section.5.5}%
-\contentsline {section}{\numberline {5.6}Results}{71}{section.5.6}%
-\contentsline {section}{\numberline {5.7}Analysis and Discussion}{74}{section.5.7}%
-\contentsline {chapter}{\numberline {6}Conclusions and Future Work}{77}{chapter.6}%
-\contentsline {section}{\numberline {6.1}Summary of Contributions}{77}{section.6.1}%
-\contentsline {section}{\numberline {6.2}Limitations}{78}{section.6.2}%
-\contentsline {section}{\numberline {6.3}Future Directions}{78}{section.6.3}%
+\contentsline {section}{\numberline {3.7}Builder Profile and Generator Submission}{41}{section.3.7}%
+\contentsline {section}{\numberline {3.8}Authentication}{42}{section.3.8}%
+\contentsline {section}{\numberline {3.9}Deployment and Infrastructure}{43}{section.3.9}%
+\contentsline {chapter}{\numberline {4}User Study: Measuring and Modelling Player Preference}{45}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Study Protocol and Dataset}{45}{section.4.1}%
+\contentsline {section}{\numberline {4.2}Generator Preference Ranking}{47}{section.4.2}%
+\contentsline {section}{\numberline {4.3}Player Engagement and Preference Consistency}{49}{section.4.3}%
+\contentsline {section}{\numberline {4.4}Static Structure: A Coarse Filter, Not a Ranking}{52}{section.4.4}%
+\contentsline {section}{\numberline {4.5}Diagnosing Failure: Trajectories and Tags}{54}{section.4.5}%
+\contentsline {section}{\numberline {4.6}A Pragmatic Judge for Sparse Votes}{56}{section.4.6}%
+\contentsline {section}{\numberline {4.7}Summary: A Reliable but Sparse Signal}{58}{section.4.7}%
+\contentsline {chapter}{\numberline {5}MarioDPO --- Preference-Aligned Level Generation}{59}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Motivation: From Sparse Votes to a Training Signal}{59}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Level Representation and Base Model}{61}{section.5.2}%
+\contentsline {subsection}{\numberline {5.2.1}Column-Major Tokenisation}{61}{subsection.5.2.1}%
+\contentsline {subsection}{\numberline {5.2.2}Supervised Fine-Tuning (SFT)}{62}{subsection.5.2.2}%
+\contentsline {section}{\numberline {5.3}Preference Dataset Construction}{62}{section.5.3}%
+\contentsline {paragraph}{Human pairs.}{62}{section*.33}%
+\contentsline {paragraph}{Synthetic pairs.}{63}{section*.34}%
+\contentsline {section}{\numberline {5.4}DPO Fine-Tuning and Inference-Time Filtering}{63}{section.5.4}%
+\contentsline {paragraph}{Inference-time filtering.}{64}{section*.37}%
+\contentsline {section}{\numberline {5.5}Implementation Details}{64}{section.5.5}%
+\contentsline {section}{\numberline {5.6}Results}{65}{section.5.6}%
+\contentsline {section}{\numberline {5.7}Analysis and Discussion}{68}{section.5.7}%
+\contentsline {chapter}{\numberline {6}Conclusions and Future Work}{71}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Summary of Contributions}{71}{section.6.1}%
+\contentsline {section}{\numberline {6.2}Limitations}{72}{section.6.2}%
+\contentsline {section}{\numberline {6.3}Future Directions}{72}{section.6.3}%
