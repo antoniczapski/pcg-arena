@@ -68,7 +68,7 @@
 \KOT{todo -- przeczytać PL potem}
 Ewaluacja generatorów treści proceduralnych (PCG) dla gier wideo stanowi istotne wyzwanie metodologiczne, ponieważ przyjemność gracza jest z natury subiektywna i trudna do zmierzenia za pomocą automatycznych metryk. Niniejsza praca przedstawia PCG Arenę --- platformę internetową do ślepego testowania A/B generatorów poziomów do gry Super Mario Bros poprzez dane o preferencjach graczy. \changed{Super Mario Bros jest wykorzystywane jako benchmark w badaniach nad proceduralnym generowaniem poziomów od pierwszych zawodów Mario AI Competition w 2009 roku, co czyni je naturalną dziedziną do systematycznego porównywania generatorów.} Platforma umożliwia graczom rozgrywanie dwóch proceduralnie generowanych poziomów obok siebie w przeglądarce, głosowanie na preferowany poziom oraz opcjonalne tagowanie cech rozgrywki. Głosy są agregowane za pomocą systemu ratingowego Glicko-2, który zapewnia rankingi z przedziałami ufności.
 
-Na podstawie zebranych danych przeprowadzono analizę eksploracyjną charakteryzującą ranking preferencji generatorów, statyczny zakres ekspresyjny poziomów, trajektorie rozgrywki, heterogeniczność anonimowych użytkowników oraz semantykę tagów. Wyniki pokazują, że platforma może służyć zarówno jako ranking generatorów, jak i narzędzie diagnostyczne ujawniające ich tryby porażki. \changed{Zaobserwowane zależności zostały następnie zdestylowane do obliczeniowej funkcji oceniającej poziomy (ang. judge function), której oceny korelują z preferencjami graczy na poziomie $r_s = 0.736$.} Finalnie, praca przedstawia MarioDPO --- generator poziomów wytrenowany metodą Direct Preference Optimization, który osiąga wynik preferencji 0.832, zbliżony do oryginalnych poziomów Nintendo.
+Na podstawie zebranych danych przeprowadzono analizę eksploracyjną charakteryzującą ranking preferencji generatorów, statyczny zakres ekspresyjny poziomów, trajektorie rozgrywki, heterogeniczność anonimowych użytkowników oraz semantykę tagów. Wyniki pokazują, że platforma może służyć zarówno jako ranking generatorów, jak i narzędzie diagnostyczne ujawniające ich tryby porażki. \changed{Analiza pokazuje ponadto, że automatyczne metryki strukturalne nie są w stanie zastąpić rankingu opartego na ludzkich preferencjach, co motywuje trenowanie generatora bezpośrednio na preferencjach graczy.} Finalnie, praca przedstawia MarioDPO --- generator poziomów wytrenowany metodą Direct Preference Optimization, który osiąga wynik preferencji 0.832, zbliżony do oryginalnych poziomów Nintendo.
 }
 
 \englishabstract {
@@ -76,7 +76,7 @@ Evaluating procedural content generators (PCGs) for video games poses significan
 \KOT{gdzieś - może tutaj - zdanie, że Mario has been an important benchmark for a variety of PCG methods, from 2009 until today, albo cos innego ale we wstępie od razu dającego do zroumienia, że to nie jest losowa gierka wzięta bo tak}
 \changed{Super Mario Bros has been used as a benchmark for PCG level generation research since the first Mario AI Competition in 2009, making it an ideal domain for systematic generator comparison.} The platform enables players to play two procedurally generated levels side-by-side in their browser, vote for their preferred level, and optionally tag gameplay characteristics. Votes are aggregated using the Glicko-2 rating system, providing uncertainty-aware rankings with confidence intervals.
 
-Building on the collected data, we conduct an exploratory analysis that characterizes generator preference rankings, static expressive range, gameplay trajectory fingerprints, anonymous-user heterogeneity, and tag semantics. The analysis shows that PCG Arena functions not only as a leaderboard, but also as a diagnostic instrument for understanding why generators win or fail. \changed{These findings are further distilled into a computational preference judge whose scores correlate with human win rates at $r_s = 0.736$.} Finally, we present MarioDPO, a level generator fine-tuned with Direct Preference Optimization that achieves a preference score of 0.832, approaching the hand-crafted original Nintendo baseline.
+Building on the collected data, we conduct an exploratory analysis that characterizes generator preference rankings, static expressive range, gameplay trajectory fingerprints, anonymous-user heterogeneity, and tag semantics. The analysis shows that PCG Arena functions not only as a leaderboard, but also as a diagnostic instrument for understanding why generators win or fail. \changed{It further shows that automated structural metrics cannot substitute for the human ranking, motivating training directly on player preferences.} Finally, we present MarioDPO, a level generator fine-tuned with Direct Preference Optimization that achieves a preference score of 0.832, approaching the hand-crafted original Nintendo baseline.
 }
 
 \author         {Antoni Czapski}
@@ -170,9 +170,7 @@ Mario level generators. \changed{We investigate three research questions:}
   \item[RQ1 (Measurement)] Can a persistent, blind, web-based arena produce a
     reliable human-preference ranking of Super Mario Bros level generators?
     (Sections~\ref{sec:eda-rankings}--\ref{sec:eda-user-heterogeneity})
-  \item[RQ2 (Explanation)] Which structural and behavioural properties of levels
-    explain player preference, and can they be combined into a computational
-    proxy for human judgement?
+  \item[RQ2 (Metrics)] Can automated metrics substitute for the human ranking?
     (Sections~\ref{sec:eda-static-expressive-range}--\ref{sec:dpo-judge})
   \item[RQ3 (Generation)] Can the collected preference data be used to train a
     level generator that surpasses existing PCG methods and approaches
@@ -182,7 +180,7 @@ Mario level generators. \changed{We investigate three research questions:}
 
 \KOT{probably noindent here to make it look better}
 
-\noindent The thesis makes \changed{five} contributions:
+\noindent The thesis makes \changed{four} contributions:
 
 \begin{enumerate}
     \item \textbf{PCG Arena}, a persistent, open-access web platform for blind
@@ -197,11 +195,6 @@ Mario level generators. \changed{We investigate three research questions:}
           votes to static expressive-range metrics, trajectory fingerprints,
           anonymous-user preference maps, and qualitative tag-based failure-mode
           diagnostics.
-    \item \changed{\textbf{A computational preference judge} ($J_{final}$), an interpretable
-          scoring function that operationalises the study's findings---style
-          similarity, verticality, flow, completion, and gap penalties---and
-          correlates with human win rates at $r_s = 0.736$, enabling scalable
-          synthesis of preference labels.}
     \item \textbf{MarioDPO}, a level generator fine-tuned with Direct Preference
           Optimisation on arena votes, achieving a preference score of 0.832 and
           approaching the hand-crafted Nintendo baseline.
@@ -216,9 +209,9 @@ content generation \KOT{(in the context of Maio level generation?)} \changed{in 
 rating systems, and preference learning. Chapter~\ref{ch:system-design} describes the design and implementation
 of the PCG Arena platform. \changed{Chapter~\ref{ch:eda} presents the user
 study: the study protocol and collected dataset, the generator preference
-ranking and player-consistency analysis (RQ1), and the structural,
-behavioural, and tag-based explanation of preference, culminating in a
-computational preference judge (RQ2). Chapter~\ref{ch:mariodpo} uses these
+ranking and player-consistency analysis (RQ1), and an assessment of whether
+static structure, gameplay behaviour, and tags can substitute for the human
+ranking (RQ2). Chapter~\ref{ch:mariodpo} uses these
 results (RQ3): it describes the level representation and base model, the
 construction of a preference dataset from human votes and judge-labelled
 synthetic pairs, DPO fine-tuning, and the evaluation of the resulting MarioDPO
@@ -796,8 +789,9 @@ Arena outside the games domain.
 
 \textbf{LLM-as-a-Judge.} \citet{zheng2023judging} studied using GPT-4 as a
 surrogate judge for pairwise evaluation, achieving $>$80\% agreement with human
-preferences. PCG Arena's \emph{Judge Function} plays an analogous role: a
-lightweight model predicting which of two Mario levels a human would prefer.
+preferences. PCG Arena's \emph{Judge Function} plays an analogous role \changed{on a
+much smaller scale: a heuristic filter used to label additional level pairs
+(Section~\ref{sec:dpo-judge})}.
 
 \citet{sarkar2017glicko2} applied Glicko-2 to the human computation game
 \emph{Paradox}, treating puzzle-tasks as rated entities alongside players.
@@ -1485,6 +1479,19 @@ win rates, a level gallery, and tag distributions
     \label{fig:generator-preview}
 \end{figure}
 
+\changed{For researchers, the platform additionally exposes a per-level
+analytics view (Figure~\ref{fig:eda-detailed-level-stats}) that combines the
+level map with recorded player traces, death locations, and tag counts,
+supporting qualitative inspection of individual levels.}
+
+% MOVED(agent): figure relocated from old §4.5 (review pass), verbatim
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{detailed_level_statistics_page.png}
+\caption{Detailed Level Statistics page from PCG Arena. The interface supports qualitative inspection of individual levels through trajectory overlays, death locations, tag counts, and level visualization.}
+\label{fig:eda-detailed-level-stats}
+\end{figure}
+
 \section{Builder Profile and Generator Submission}
 \label{sec:sd-builder}
 
@@ -1570,7 +1577,7 @@ are performed via a scheduled script that copies the SQLite file to a timestampe
 
 
 
-\chapter[User Study: Measuring and Modelling Player Preference]{\changed{User Study: Measuring and Modelling Player Preference}}
+\chapter{User Study: Measuring and Modelling Player Preference}
 \label{ch:eda}
 
 \changed{This chapter presents the PCG Arena data as a user study of player
@@ -1580,12 +1587,12 @@ measurement question (RQ1): Section~\ref{sec:eda-rankings} derives a
 preference ranking of generators from blind pairwise votes, and
 Section~\ref{sec:eda-user-heterogeneity} examines whether the anonymous player
 population is consistent enough for this aggregation to be meaningful. The
-remaining sections address the explanation question (RQ2):
+remaining sections address the metrics question (RQ2):
 Sections~\ref{sec:eda-static-expressive-range}--\ref{sec:eda-tag-semantics}
-relate preference to static level structure, gameplay trajectories, and
-subjective tags, and Section~\ref{sec:dpo-judge} distils these findings into a
-computational judge of level preference that Chapter~\ref{ch:mariodpo} uses as
-a training signal.}
+test whether static level structure, gameplay trajectories, and subjective
+tags can explain or replace the ranking, and Section~\ref{sec:dpo-judge}
+builds a pragmatic judge that Chapter~\ref{ch:mariodpo} uses to label
+additional training pairs.}
 
 The analysis is exploratory: its conclusions rely on patterns observed in the data and its visualisations rather than on formal hypothesis testing. The aim is to demonstrate what PCG Arena can measure---preference, structure, gameplay behaviour, user heterogeneity, and qualitative failure modes---while acknowledging that the current dataset is still too small to support claims of universal design laws.
 
@@ -1629,13 +1636,13 @@ longer collection process, summarised in Table~\ref{tab:eda-timeline}.}
 \centering
 \color{red}
 \footnotesize
-\begin{tabular}{@{} l l p{3.1cm} p{4.6cm} @{}}
+\begin{tabular}{@{} l l p{2.4cm} p{4.2cm} @{}}
 \toprule
 \textbf{Phase} & \textbf{Period} & \textbf{Data} & \textbf{Role in this study} \\
 \midrule
 Baseline collection & launch $\to$ Jan.\ 2026 & votes over the 13 baseline generators & --- \\
 Training snapshot & Jan.\ 2026 & 473 usable non-tie votes & judge calibration and DPO training pairs \\
-MarioDPO deployment & Jan.\ 2026 & --- & model frozen; never retrained \\
+MarioDPO deployment & Jan.\ 2026 & --- & model frozen \\
 Full export & May 2026 & 1,000 votes, 14 generators & definitive analysis and generator evaluation \\
 \bottomrule
 \end{tabular}
@@ -1730,7 +1737,7 @@ makes of the votes: combining them into a single preference ranking
 preference-aligned generation (Chapter~\ref{ch:mariodpo}).}
 
 % ===================================================================
-\section{Static Expressive Range}
+\section[Static Structure: A Coarse Filter, Not a Ranking]{\changed{Static Structure: A Coarse Filter, Not a Ranking}}
 \label{sec:eda-static-expressive-range}
 
 \changed{This section asks} what we can learn about a generator by
@@ -1757,14 +1764,66 @@ compare generators within this study, not as an absolute, cross-paper measure
 of difficulty. Diversity is estimated with tile/column entropy, the unique-column
 ratio, the compression ratio, and gzip normalized compression distance (NCD).
 
-Figure~\ref{fig:eda-static-metrics-table} summarizes the main static metrics by generator. Figure~\ref{fig:eda-expressive-range} then shows each generator's expressive range in the plane of linearity and operational leniency.
+\changed{Table~\ref{tab:eda-static-metrics} reports these metrics per
+generator, ordered by preference score.}
 
-\begin{figure}[H]
+\begin{table}[H]
 \centering
-\includegraphics[width=0.95\textwidth]{eda_static_metrics_table.png}
-\caption{Static expressive metrics computed from level text files. Metrics include fitted-surface linearity, operational leniency, gap density, enemy density, and within-generator compression distance. Each of the five metric columns is shaded within the column from red (low) to green (high) as a visual reading aid.}
-\label{fig:eda-static-metrics-table}
-\end{figure}
+\color{red}
+\footnotesize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{@{} l r r r r r r r @{}}
+\toprule
+\textbf{Generator} & \textbf{Score} & \textbf{Levels} & \textbf{Linearity} & \textbf{Leniency} & \textbf{Gap dens.} & \textbf{Enemy dens.} & \textbf{NCD} \\
+\midrule
+original           & 0.83 & 15  & 0.02 & 0.61 & 0.18 & 0.08 & 0.83 \\
+mariodpo           & 0.83 & 200 & 0.06 & 0.67 & 0.14 & 0.09 & 0.81 \\
+ore                & 0.65 & 100 & 0.11 & 0.63 & 0.16 & 0.06 & 0.85 \\
+mariogpt           & 0.64 & 100 & 0.10 & 0.55 & 0.22 & 0.06 & 0.76 \\
+notch              & 0.53 & 100 & 0.12 & 0.70 & 0.10 & 0.02 & 0.75 \\
+mariogan           & 0.51 & 100 & 0.04 & 0.62 & 0.10 & 0.07 & 0.73 \\
+hopper             & 0.49 & 100 & 0.17 & 0.63 & 0.11 & 0.12 & 0.73 \\
+genetic            & 0.49 & 100 & 0.03 & 0.73 & 0.05 & 0.03 & 0.77 \\
+marioDiffusion     & 0.44 & 100 & 0.05 & 0.44 & 0.28 & 0.02 & 0.78 \\
+patternWeightCount & 0.38 & 100 & 0.07 & 0.72 & 0.08 & 0.13 & 0.87 \\
+notchParamRand     & 0.37 & 100 & 0.14 & 0.74 & 0.07 & 0.02 & 0.73 \\
+notchParam         & 0.31 & 100 & 0.05 & 0.71 & 0.07 & 0.02 & 0.70 \\
+patternOccur       & 0.28 & 100 & 0.05 & 0.70 & 0.08 & 0.17 & 0.87 \\
+patternCount       & 0.26 & 100 & 0.15 & 0.72 & 0.05 & 0.25 & 0.83 \\
+\bottomrule
+\end{tabular}
+\caption{\changed{Static expressive metrics by generator (May 2026 export),
+ordered by the preference score of Section~\ref{sec:eda-rankings}. Linearity
+is the surface-fit $R^2$; NCD is the mean within-generator normalised
+compression distance.}}
+\label{tab:eda-static-metrics}
+\end{table}
+
+\changed{The table supports one clear reading: static structure acts as a
+coarse filter, not a ranking. The four highest-scoring generators have similar
+profiles---linearity between 0.02 and 0.11, leniency between 0.55 and 0.67,
+gap density between 0.14 and 0.22, enemy density between 0.06 and
+0.09---yet their preference scores span 0.64 to 0.83; nothing in the static
+columns anticipates that players prefer \texttt{original} and
+\texttt{mariodpo} over \texttt{ore} and \texttt{mariogpt} by almost 0.2.
+Conversely, no column separates strong from weak generators: the highest
+leniency belongs to \texttt{notchParamRand} (0.74, score 0.37), the highest
+structural diversity by NCD to \texttt{patternWeightCount} and
+\texttt{patternOccur} (0.87, scores 0.38 and 0.28), and the lowest-ranked
+\texttt{patternCount} has above-average linearity. Extreme values do flag
+degenerate designs---\texttt{patternCount}'s enemy density (0.25) is roughly
+triple that of any top-tier generator, and \texttt{marioDiffusion}'s leniency
+(0.44) is the lowest in the corpus---but such red flags identify obvious
+failures rather than order the plausible generators.}
+
+\changed{This answers RQ2 in the negative for ranking purposes: automated
+structural metrics cannot substitute for human votes, consistent with the
+metric--experience misalignment reported by
+\citet{marino2015empirical}. Figure~\ref{fig:eda-expressive-range} makes the
+same point visually: each generator occupies a recognisable region of the
+linearity--leniency plane, so the metrics do \emph{characterise}
+generators---but neither the location nor the spread of these footprints
+follows the preference ranking.}
 
 \begin{figure}[H]
 \centering
@@ -1773,43 +1832,16 @@ Figure~\ref{fig:eda-static-metrics-table} summarizes the main static metrics by 
 \label{fig:eda-expressive-range}
 \end{figure}
 
-Taken together, the two figures show several consistent patterns. The
-high-ranked generators \texttt{original}, \texttt{mariodpo}, \texttt{ore} and
-\texttt{mariogpt} are the only ones that combine non-trivial reward density
-with a moderate amount of gaps and enemies: there is something to collect, and
-there is some, but not too much, danger. The pattern-based generators sit at
-the opposite extreme. They produce zero rewards and the highest enemy density
-in the corpus, and on the expressive-range scatter their levels collapse into
-a narrow strip dominated by gaps and obstacles. Even when their leniency score
-looks moderate, this is a side-effect of having very few power-ups and little
-structural variety rather than evidence of a well-balanced design. Constructive
-generators such as \texttt{notch}, \texttt{notchParam} and \texttt{notchParamRand}
-lie in between: they offer flat, easy ground with low enemy density, but
-essentially no rewards, which is consistent with them being safe but bland.
-Finally, \texttt{ore} stands out as the most structurally diverse generator,
-with the highest unique-column ratio and the highest within-generator NCD,
-which helps explain why it climbs into the top tier despite using a much
-simpler chunk-based assembly approach than the neural generators.
-
-Figure~\ref{fig:eda-static-vs-rating} relates selected structural summaries to preference score. With only 14 generators, these plots should be read as showing the direction and rough strength of each association, not as formal statistical tests. Reward density and unique-column ratio show the clearest positive association with preference score in this export, while distance from the \texttt{original} corpus by NCD is negatively associated with preference. Crucially, however, no single metric explains the ranking on its own: the better predictors still have visible exceptions, and difficulty proxies such as enemy density show no consistent relationship with preference at all. This is precisely the difficulty that motivates PCG Arena---player preference is a multi-dimensional signal that no individual static metric captures, which is why direct human comparison, rather than any automated proxy, is needed to rank generators reliably.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{eda_static_metrics_vs_rating.png}
-\caption{Generator preference score against selected static metrics. The fitted lines are descriptive trend guides, not causal claims.}
-\label{fig:eda-static-vs-rating}
-\end{figure}
-
-\changed{For the judge function developed in
-Section~\ref{sec:dpo-judge}, these observations identify the structural terms
-worth encoding: reward density and unique-column ratio associate positively
-with preference, NCD distance from the original corpus negatively, and
-gap-heavy structure emerges as the dominant structural failure mode---together
-motivating the judge's style and gap-penalty terms.}
-
 % ===================================================================
-\section{Gameplay Trajectory Fingerprints}
+% AC(agent): review pass — old §4.5 (trajectories) and §4.6 (tags) merged;
+% trajectory-metrics figure dropped; analytics-UI figure moved to Ch. 3.
+\section[Diagnosing Failure: Trajectories and Tags]{\changed{Diagnosing Failure: Trajectories and Tags}}
 \label{sec:eda-trajectory-fingerprints}
+\label{sec:eda-tag-semantics}
+
+\changed{Static structure cannot explain the ranking, but the votes come with
+two further data layers that can explain \emph{losses}: where players fail
+(gameplay trajectories) and what they report (tags).}
 
 For each generator, Figure~\ref{fig:eda-trajectory-stacks} overlays all recorded Mario paths as thin red traces. This plot is intentionally simple: it shows where players actually moved in levels from each generator under the one-attempt battle protocol.
 
@@ -1820,37 +1852,14 @@ For each generator, Figure~\ref{fig:eda-trajectory-stacks} overlays all recorded
 \label{fig:eda-trajectory-stacks}
 \end{figure}
 
-The trajectory stacks make generator differences visually apparent. Stronger generators such as \texttt{original} and \texttt{mariodpo} show paths that often progress substantially through the level and occupy a broad portion of the play space. Several low-ranked pattern generators show many traces terminating early or concentrating in narrow regions, consistent with the high early-failure rates computed from death locations.
-
-Figure~\ref{fig:eda-trajectory-metrics} reduces these visual patterns to generator-level summaries. Occupancy entropy measures how broadly trajectories cover a fixed spatial grid. Median maximum $x$ measures progress through the level. Verticality is the mean within-trajectory standard deviation of $y$. Death concentration is the largest share of death locations falling into a single horizontal bin. These are behavioral descriptors of a one-attempt protocol: death-location metrics indicate where failures happen, not how often players retry the same level.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.95\textwidth]{eda_trajectory_metrics_vs_rating.png}
-\caption{Trajectory-derived behavioral summaries versus generator preference score. Higher occupancy entropy and lower death concentration are associated with stronger generators in this export.}
-\label{fig:eda-trajectory-metrics}
-\end{figure}
-
-The strongest trajectory-level patterns are occupancy entropy and death concentration. Generator-level occupancy entropy has a positive rank association with preference score, while concentrated death locations have a negative association. The weakest pattern generator, \texttt{patternCount}, has median maximum progress of only 174.5 pixels and a max death-bin share of 0.63, meaning failures are highly concentrated early in the level. In contrast, \texttt{original} and \texttt{mariodpo} have median progress around 1126.5 and 988.0 pixels respectively, with lower death concentration.
-
-The deployed analytics UI also supports level-level inspection beyond aggregate plots. Figure~\ref{fig:eda-detailed-level-stats} shows the Detailed Level Statistics page, which combines the level view, player traces, death locations, and tag counts. This is important as a platform contribution: PCG Arena is not only a leaderboard, but also an instrument for diagnosing why a generator wins or loses.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.95\textwidth]{detailed_level_statistics_page.png}
-\caption{Detailed Level Statistics page from PCG Arena. The interface supports qualitative inspection of individual levels through trajectory overlays, death locations, tag counts, and level visualization.}
-\label{fig:eda-detailed-level-stats}
-\end{figure}
-
-\changed{For the judge function (Section~\ref{sec:dpo-judge}), the behavioural
-findings supply the dynamic terms: occupancy entropy and verticality associate
-positively with preference, concentrated death locations negatively, and
-hesitation captures poor flow---motivating the judge's verticality and flow
-terms.}
-
-% ===================================================================
-\section{Tag Semantics and Failure Modes}
-\label{sec:eda-tag-semantics}
+\changed{The stacks read as a failure map. For the top generators the traces
+extend far into the level and cover a broad vertical band: the median maximum
+progress is 1126.5 pixels for \texttt{original} and 988.0 pixels for
+\texttt{mariodpo}. For the weakest generators the traces pile up and terminate
+early: \texttt{patternCount} has a median maximum progress of only 174.5
+pixels, and 63\% of its recorded deaths fall into a single early horizontal
+bin. Players facing these levels do not gradually lose interest---they hit a
+wall within the first screens.}
 
 Tags provide a lightweight qualitative layer over the binary vote. They are optional, sparse, and subjective, so they should not be treated as ground-truth labels. Their value is diagnostic: they help distinguish why a level wins or loses.
 
@@ -1864,291 +1873,121 @@ Figure~\ref{fig:eda-tag-semantics} summarizes tag frequency, tag rate by generat
 \end{figure}
 
 Positive tags are strongly aligned with preference outcomes. Sides tagged \texttt{creative} win 87\% of the time and sides tagged \texttt{fun} win 71\% of the time. Negative tags behave differently: \texttt{impossible}, \texttt{too\_hard}, and \texttt{boring} are much more common on losing sides than winning sides. The tag-by-generator heatmap also makes generator failure modes interpretable: some generators lose because they are marked as impossible or too hard, while others are rejected as boring or visually broken.
-\changed{These patterns corroborate the design of the judge function
-(Section~\ref{sec:dpo-judge}): the concentration of \texttt{impossible} and
-\texttt{too\_hard} on losing sides supports a strong frustration (gap)
-penalty, while the alignment of \texttt{fun} and \texttt{creative} with
-winning sides validates that votes track enjoyment rather than noise.}
+
+\changed{Trajectories and tags converge on the same conclusion. The dominant,
+diagnosable driver of lost battles is \emph{frustration}: levels that kill the
+player early and repeatedly in the same places are the levels tagged
+\texttt{impossible} and \texttt{too\_hard}, and they lose. Positive quality
+behaves differently: \texttt{fun} and \texttt{creative} align with winning,
+but Section~\ref{sec:eda-static-expressive-range} found no structural recipe
+for them. This asymmetry---failure is easy to detect, enjoyment is
+not---shapes the judge function of the next section.}
 
 % ===================================================================
-% MOVED(agent): from old §5.3 (M3), verbatim except where wrapped in \changed{}
-\section[A Computational Judge of Level Preference]{\changed{A Computational Judge of Level Preference}}
+% AC(agent): review pass — Experiments A–D and their figures removed; judge
+% presented as a pragmatic failure filter validated in-sample only.
+\section[A Pragmatic Judge for Sparse Votes]{\changed{A Pragmatic Judge for Sparse Votes}}
 \label{sec:dpo-judge}
 
-\changed{The preceding sections identified consistent correlates of preference:
-similarity to the original corpus and reward density
-(Section~\ref{sec:eda-static-expressive-range}), verticality and flow
-(Section~\ref{sec:eda-trajectory-fingerprints}), and the frustration modes
-surfaced by tags (Section~\ref{sec:eda-tag-semantics}). This section
-operationalises these findings into a single computable score, $J_{final}$,
-that predicts human preference from structural and telemetry features alone.
-The judge serves two purposes: it tests whether the observed correlates
-generalise into a predictive model, and---as Chapter~\ref{ch:mariodpo}
-shows---it provides the scalable supervision signal needed to train a
-preference-aligned generator. The experiments below were run on the January
-training snapshot (Table~\ref{tab:eda-timeline}), i.e., the data available at
-generator-training time; the May analyses above corroborate the same
-directional findings.}
+\changed{Chapter~\ref{ch:mariodpo} trains a generator on preference pairs, and
+the 473 usable human votes of the January training snapshot
+(Table~\ref{tab:eda-timeline}) are far too few for that purpose on their own.
+We therefore need an automatic way to label additional level pairs. The
+preceding sections dictate what such a labeller can and cannot be: no
+combination of static metrics reproduces the human ranking
+(Section~\ref{sec:eda-static-expressive-range}), so we do not attempt to model
+enjoyment. What \emph{is} reliably measurable is failure
+(Section~\ref{sec:eda-tag-semantics}). The judge function $J_{final}$ is
+therefore a deliberately coarse filter: it separates obviously flawed levels
+from plausible ones rather than scoring how much fun a level is.}
 
-\changed{The judge combines a small number of interpretable terms---style
-distance, gap penalty, verticality, and flow---whose weights were chosen from
-the preference patterns observed in the PCG Arena data.} \changed{Three findings from the preceding sections
-(Sections~\ref{sec:eda-static-expressive-range}--\ref{sec:eda-tag-semantics})
-guide its design:}
-high-performing generators produce longer play sessions and higher completion
-rates than low-performing ones; tags such as \emph{fun} and \emph{creative}
-correlate with win rate and, importantly, co-vary with measurable structural
-properties (verticality of the surface profile, hazard density, reward density);
-and high-performing generators tend to resemble original Nintendo levels without
-simply copying them.
-
-The judge itself is deliberately \emph{static}: at inference time it takes as
-input only the raw tile grid of a candidate level and returns a scalar. \changed{This
-is necessary because the levels it has to score are freshly generated and have
-never been played, so no gameplay traces or player tags exist for them.} The trajectory
-correlations and tag correlations reported below therefore play two distinct
-roles. Trajectory statistics (verticality of Mario's path, hesitation, completion)
-are used to \emph{validate} that a given structural aspect of the level matters
-to humans; the runtime judge then encodes that aspect as a structural proxy
-computable from the tile grid alone (for example, surface roughness in place of
-trajectory $\sigma_y$, gap fraction in place of gap-heavy generator identity).
-Tags are never inputs to the runtime judge; they are used only offline to select
-\emph{which} structural features to include and how to sign their weights.
-
-\subsection{Verticality Reward (Experiment A)}
-\label{subsec:dpo-judge-vert}
-
-The first component tests whether players prefer levels that encourage movement
-through the vertical space of the screen, rather than only horizontal running on
-flat ground. For each trajectory we compute the standard deviation of Mario's
-vertical coordinate,
-%
-\begin{equation}
-\label{eq:dpo-ysigma}
-\sigma_y = \sqrt{\frac{1}{T}\sum_{t=1}^{T}(y_t - \bar{y})^2},
-\end{equation}
-%
-where $T$ is the number of recorded trajectory samples. High $\sigma_y$ indicates
-that the player moved across multiple elevations, typically because the level
-contains hills, platforms, pipes, or jumping sequences. We also compute a simple
-path-entropy proxy: the number of distinct tile coordinates visited by the
-player.
-
-Experiment A found that verticality is positively associated with human
-preference. Across levels with sufficient data, $\sigma_y$ correlates with win
-rate at $r_s = 0.257$ ($p = 0.019$), while path entropy correlates at
-$r_s = 0.275$. The effect is modest, but significant: players do not merely
-prefer easy levels; they prefer easy levels with some spatial variety.
-Figure~\ref{fig:dpo-exp-a} visualises this relationship.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.85\textwidth]{exp_a_verticality.png}
-\caption{Experiment A: trajectory verticality and path entropy are positively
-associated with human win rate. MarioDPO uses $\sigma_y$ as a reward term in the
-judge function.}
-\label{fig:dpo-exp-a}
-\end{figure}
-
-This finding motivates the verticality term in $J_{final}$. Because the runtime
-judge cannot observe a trajectory, it does not use $\sigma_y$ directly.
-Instead it computes \emph{surface roughness}---the mean absolute column-to-column
-difference of the ground-height profile---as a static structural proxy for
-trajectory verticality: hilly ground and multi-tier platforms produce large
-roughness, whereas long flat runs produce values near zero. The Experiment A
-correlation on $\sigma_y$ justifies giving this proxy a positive weight; flat,
-safe levels are playable but often lack the variety players tag as
-\emph{creative} or \emph{fun}. Verticality is rewarded only after basic validity
-and gap constraints are satisfied, so that repeated falls or stalled traversal
-cannot be counted as desirable exploration.
-
-\subsection{Hazard Hierarchy (Experiment B)}
-\label{subsec:dpo-judge-hazard}
-
-The second component addresses a limitation of aggregate difficulty measures.
-\changed{Section~\ref{sec:eda-trajectory-fingerprints} showed that} higher death counts are generally associated
-with lower preference, but not all sources of difficulty are equal. In Mario,
-enemies can be avoided, jumped on, or used as part of a satisfying action
-sequence. Gaps, by contrast, frequently create abrupt failures, especially in
-short blind evaluations where players have little time to learn a level.
-
-The database snapshot used for the judge experiments did not contain reliable
-gap-density and enemy-density fields for all levels, so Experiment B used
-generator identity as a proxy. The three pattern-based generators produce many
-levels with fragmented ground and repeated gap structures. They achieved an
-average win rate of only 25.7\%, compared with 54.2\% for the remaining
-generators. This large gap supports a hierarchy of hazards: pit-heavy level
-structure is penalised more strongly than moderate enemy placement.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.85\textwidth]{exp_b_hazard_hierarchy.png}
-\caption{Experiment B: pattern-based generators form a low-performing cluster,
-supporting a strong gap/frustration penalty in the judge function.}
-\label{fig:dpo-exp-b}
-\end{figure}
-
-MarioDPO encodes this result through a gap penalty. When explicit structural
-features are available, the penalty is proportional to gap density; when they are
-missing, pattern-generator membership is used as a conservative proxy. The judge
-also includes a flow term based on hesitation, defined as the fraction of
-trajectory intervals with near-zero horizontal velocity. Hesitation is weak by
-itself, but it captures a common failure mode of generated levels: the player is
-not dead, yet the level layout produces stopping, confusion, or repeated small
-corrections.
-
-Experiment C attempted to measure whether deaths clustered at a small number of
-locations are more damaging than deaths spread throughout a level. The available
-data were insufficient for a stable death-entropy estimate, and the early-death
-rate correlation was weak ($r_s = -0.134$). Death entropy is therefore treated as
-a diagnostic feature rather than a primary term in the final judge used for
-DPO-pair construction.
-
-\subsection{Style Matching (Experiment D)}
-\label{subsec:dpo-judge-style}
-
-The third component captures the ``Nintendo factor'' observed throughout the
-arena results: human-authored original levels consistently outperform algorithmic
-generators. Rather than hard-coding individual tile ratios, MarioDPO estimates a
-style centroid from original levels in a telemetry-derived feature space. Let
-$\mathbf{z}$ be the feature vector of a level and let $\boldsymbol{\mu}_{O}$ and
-$\Sigma_{O}$ denote the mean and covariance of the original-level feature vectors.
-The Mahalanobis distance to the original style is
-%
-\begin{equation}
-\label{eq:dpo-mahalanobis}
-D_M(\mathbf{z}) =
-\sqrt{(\mathbf{z}-\boldsymbol{\mu}_{O})^\top
-\Sigma_{O}^{-1}(\mathbf{z}-\boldsymbol{\mu}_{O})}.
-\end{equation}
-%
-
-Mahalanobis distance is preferable to Euclidean distance here because the
-features have different scales and correlations. A generator is not rewarded for
-matching one marginal statistic independently; it is rewarded for occupying the
-same joint region of feature space as original levels. The style reward is then
-defined as a bounded inverse distance,
-%
-\begin{equation}
-\label{eq:dpo-style-reward}
-R_{style} = \frac{1}{1 + D_M}.
-\end{equation}
-
-Experiment D confirms that this term is meaningful. Mahalanobis distance from
-the original centroid correlates negatively with win rate ($r_s = -0.279$,
-$p = 0.0105$), while the inverse style reward correlates positively at the same
-magnitude. Figure~\ref{fig:dpo-exp-d} shows the relationship.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.85\textwidth]{exp_d_original_centroid.png}
-\caption{Experiment D: levels closer to the original-level centroid in feature
-space achieve higher win rates. MarioDPO uses this relationship as a style reward
-rather than as a hard constraint.}
-\label{fig:dpo-exp-d}
-\end{figure}
-
-Importantly, the style term is not a copying objective. Original levels define a
-region of desirable structure, not a set of templates to reproduce. The DPO stage
-\changed{(Chapter~\ref{ch:mariodpo})} can still increase the probability of novel levels, provided that their
-telemetry and structural features remain close to the high-performing region.
-
-\subsection{Final Judge Function}
-\label{subsec:dpo-judge-final}
-
-The final judge function combines the above components in two stages. The first
-stage can be computed before expensive simulation, using style and hazard
-features:
-%
-\begin{equation}
-\label{eq:dpo-j-static}
-J_{static}
-= w_{style}\frac{1}{1 + D_M}
-- w_{gap}\,\mathit{GapPenalty}
-+ w_{comp}\,\mathit{CompletionRate}.
-\end{equation}
-%
-The second stage adds dynamic telemetry extracted from an A* or player
-trajectory:
+\changed{The judge is a hand-weighted sum of five interpretable terms:}
 %
 \begin{equation}
 \label{eq:dpo-j-final}
-J_{final}
-= J_{static}
-+ w_{vert}\frac{\sigma_y}{50}
-+ w_{flow}(1 - \mathit{Hesitation}).
+\changed{J_{final}
+= w_{style}\frac{1}{1 + D_M}
+- w_{gap}\,\mathit{GapPenalty}
++ w_{comp}\,\mathit{Completion}
++ w_{vert}\,\frac{\sigma_y}{50}
++ w_{flow}\,(1 - \mathit{Hesitation}),}
 \end{equation}
-
-The implemented weights are shown in Table~\ref{tab:dpo-judge-weights}. They
-were chosen from the relative strength and reliability of the experiments above:
-style and verticality receive moderate positive weights, flow receives a smaller
-positive weight, and gap-heavy structure receives the strongest penalty.
+%
+\changed{where $D_M$ is the Mahalanobis distance from a level's feature vector
+to the centroid of the original Nintendo levels, rewarding proximity to the
+human-authored region of feature space; $\mathit{GapPenalty}$ penalises
+fragmented, pit-heavy ground; $\mathit{Completion}$ is the observed completion
+rate; $\sigma_y$ is the standard deviation of Mario's vertical position in an
+A* or player trajectory; and $\mathit{Hesitation}$ is the fraction of
+trajectory time spent at near-zero horizontal velocity. For freshly generated
+levels with no play data, the trajectory quantities are replaced by static
+proxies computed from the tile grid (surface roughness for $\sigma_y$, the
+structural gap fraction for the penalty). The weights
+(Table~\ref{tab:dpo-judge-weights}) were set by hand. The gap penalty
+dominates because frustration is the one failure mode the data identifies
+unambiguously (Section~\ref{sec:eda-tag-semantics}); the remaining terms
+encode the softer observations of
+Sections~\ref{sec:eda-static-expressive-range}
+and~\ref{sec:eda-trajectory-fingerprints}.}
 
 \begin{table}[H]
 \centering
-\caption{Weights used by the \changed{judge function, with the experimental and
-exploratory evidence motivating each term}.}
-\label{tab:dpo-judge-weights}
-\footnotesize
-\begin{tabular}{@{} l c p{3.4cm} p{5.6cm} @{}}
+\color{red}
+\begin{tabular}{@{} l c p{7.2cm} @{}}
 \toprule
-\textbf{Term} & \textbf{Weight} & \textbf{Rationale} & \changed{\textbf{Evidence}} \\
+\textbf{Term} & \textbf{Weight} & \textbf{Role} \\
 \midrule
-$w_{style}$ & 0.32 & Original-centroid similarity, Experiment D & \changed{Exp.~D (\S\ref{subsec:dpo-judge-style}); NCD distance to \texttt{original} corpus (\S\ref{sec:eda-static-expressive-range})} \\
-$w_{vert}$  & 0.26 & Verticality reward, Experiment A & \changed{Exp.~A (\S\ref{subsec:dpo-judge-vert}); occupancy entropy and verticality (\S\ref{sec:eda-trajectory-fingerprints})} \\
-$w_{flow}$  & 0.10 & Penalise hesitation and poor flow & \changed{hesitation analysis (\S\ref{subsec:dpo-judge-hazard}); trajectory flow patterns (\S\ref{sec:eda-trajectory-fingerprints})} \\
-$w_{gap}$   & 0.50 & Strong penalty for gap-heavy/pattern-like failure modes & \changed{Exp.~B (\S\ref{subsec:dpo-judge-hazard}); gap-dominated expressive range (\S\ref{sec:eda-static-expressive-range}); \texttt{impossible}/\texttt{too\_hard} tags (\S\ref{sec:eda-tag-semantics})} \\
-$w_{comp}$  & 0.20 & Reward observed completion without making ease the sole target & \changed{progress and death-concentration findings (\S\ref{sec:eda-trajectory-fingerprints})} \\
+$w_{gap}$   & 0.50 & penalise the dominant failure mode: fragmented, pit-heavy structure \\
+$w_{style}$ & 0.32 & reward proximity to the original-level centroid \\
+$w_{vert}$  & 0.26 & reward vertical variety \\
+$w_{comp}$  & 0.20 & reward observed completion \\
+$w_{flow}$  & 0.10 & penalise hesitation and poor flow \\
 \bottomrule
 \end{tabular}
+\caption{\changed{Judge-function weights (hand-set).}}
+\label{tab:dpo-judge-weights}
 \end{table}
 
-To validate the combined judge, we aggregate $J_{final}$ by generator and compare
-it with the corresponding human win rates. The Spearman correlation is
-$r_s = 0.736$ with $p = 0.0027$, a strong relationship given that the judge uses
-only telemetry and structural proxies rather than the votes themselves.
-Figure~\ref{fig:dpo-judge-analysis} shows the component distributions and the
-relationship between judge score and human preference.
+\changed{Aggregated by generator on the January snapshot, $J_{final}$
+correlates with human win rate at $r_s = 0.736$ ($p = 0.0027$). This number
+must be read carefully: it is an in-sample consistency check over 14
+generators, not out-of-sample predictive power. The weights were chosen on the
+same data, the completion term is derived from observed play, and in this run
+the gap penalty fell back to a pattern-generator indicator because reliable
+per-level gap features were unavailable. What the correlation shows is that
+the judge reproduces the coarse quality tiering---it reliably places the
+degenerate, frustrating generators below the plausible ones. It catches
+easy-to-spot failures; it does not measure the fun of playing.}
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.95\textwidth]{judge_function_analysis.png}
-\caption{Judge-function component analysis. The final score combines style
-reward, trajectory verticality, hesitation, completion, and gap penalties. The
-resulting generator-level score correlates strongly with human win rate.}
-\label{fig:dpo-judge-analysis}
-\end{figure}
-
-\changed{Chapter~\ref{ch:mariodpo} uses $J_{final}$ to synthesise preference
-pairs at scale, with human votes retained at higher weight.}
+\changed{That, however, is exactly the granularity Chapter~\ref{ch:mariodpo}
+needs: the judge is used only to label clearly-unequal level pairs, supplying
+broad negative coverage against known failure modes, while the sparse human
+votes---strongly upweighted---remain the sole carrier of the preference
+signal. The judge's real test is therefore downstream: whether the generator
+trained with its labels wins blind human votes it has never seen.}
 
 % ===================================================================
 \section[Summary: A Reliable but Sparse Signal]{\changed{Summary: A Reliable but Sparse Signal}}
 \label{sec:eda-summary}
 
-PCG Arena provides a live human-preference measurement instrument for procedural level generators. It ranks generators through blind pairwise comparison, shows stable head-to-head patterns, connects rankings to static expressive range, reveals behavioral differences through trajectories, exposes engagement concentration and possible preference diversity, and uses tags to explain qualitative failure modes.
-
-The main empirical findings are:
+\changed{The chapter's findings form a single argument:}
 \begin{enumerate}[nosep]
-    \item \textbf{Preference ranking}: \texttt{original} and \texttt{mariodpo} are the top generators in the analyzed export, with nearly identical preference scores around 0.83.
-    \item \textbf{Generator families}: Pattern-based generators are consistently weak, while neural and constructive generators occupy the middle tiers.
-    \item \textbf{Users}: Player votes are largely consistent across the anonymous population: the same generators tend to score high or low across players, suggesting that Super Mario Bros is a good benchmark whose preference signal is not dominated by individual taste.
-    \item \textbf{Static structure}: Generators occupy visibly distinct expressive ranges. Reward density, unique-column ratio, and distance to the original corpus are more informative than any single difficulty proxy.
-    \item \textbf{Gameplay behavior}: Trajectories reveal navigability and failure modes. Stronger generators tend to support broader movement footprints and less concentrated failure locations.
-    \item \textbf{Tags}: Optional tags add semantic explanations to votes, distinguishing positive qualities such as \texttt{fun} and \texttt{creative} from failure modes such as \texttt{impossible}, \texttt{too\_hard}, and \texttt{boring}.
-    \item \changed{\textbf{Judge function}: The preference correlates above can be combined into a single computational judge, $J_{final}$, whose generator-level scores correlate with human win rates at $r_s = 0.736$ (Section~\ref{sec:dpo-judge}).}
+    \item \changed{\textbf{Measurement works}: blind pairwise votes produce a stable ranking, with \texttt{original} and \texttt{mariodpo} nearly tied at the top ($\approx$0.83) and pattern-based generators at the bottom.}
+    \item \changed{\textbf{Players agree}: the same generators score high or low across the anonymous population, so the aggregate ranking reflects shared preference rather than individual taste.}
+    \item \changed{\textbf{Static metrics cannot rank}: the top generators have near-identical static profiles and no metric column separates strong from weak; structure acts only as a coarse filter for degenerate designs.}
+    \item \changed{\textbf{Failure is diagnosable}: early, concentrated deaths and \texttt{impossible}/\texttt{too\_hard} tags mark losing levels, while \texttt{fun} and \texttt{creative} align with wins but show no structural recipe.}
+    \item \changed{\textbf{A coarse judge suffices for labelling}: combining the failure signals yields $J_{final}$, which reproduces the quality tiering in-sample ($r_s = 0.736$) by catching easy-to-spot failures, not by measuring enjoyment.}
 \end{enumerate}
 
-\changed{Two properties of this signal matter for what follows. It is
+\changed{Two properties of the vote signal matter for what follows. It is
 \emph{reliable}: anonymous players largely agree on which generators are good
 (Section~\ref{sec:eda-user-heterogeneity}), so the aggregate ranking is not an
-artefact of individual taste. It is also \emph{sparse} at training time: the
+artefact of individual taste. It is also \emph{sparse}: the
 January training snapshot contains only 473 usable non-tie votes
 (Table~\ref{tab:eda-timeline}), far too few to fine-tune a sequence model
-directly. Section~\ref{sec:dpo-judge} supplies the missing piece---a validated
-computational proxy for human preference. The next chapter closes the loop,
-using the human votes and the judge together to train a preference-aligned
-generator.}
+directly. The next chapter therefore trains on the human votes as the primary
+preference signal and uses the judge only to broaden negative
+coverage---closing the loop from measurement to generation.}
 
 
 \chapter{MarioDPO --- Preference-Aligned Level Generation}
@@ -2158,30 +1997,30 @@ generator.}
 \section[Motivation: From Sparse Votes to a Training Signal]{\changed{Motivation: From Sparse Votes to a Training Signal}}
 \label{sec:dpo-motivation}
 
-\changed{The previous chapter delivered three assets. First, blind pairwise
+\changed{The previous chapter delivered three results. First, blind pairwise
 votes produce a reliable ranking signal: anonymous players largely agree on
 which generators are good (Section~\ref{sec:eda-user-heterogeneity}). Second,
-the analysis identified measurable correlates of preference---style
-similarity, reward density, verticality, flow, and the avoidance of gap-heavy
-frustration
-(Sections~\ref{sec:eda-static-expressive-range}--\ref{sec:eda-tag-semantics}).
-Third, these correlates were distilled into a validated computational judge,
-$J_{final}$, which predicts generator-level human win rates at $r_s = 0.736$
-(Section~\ref{sec:dpo-judge}). What the arena does \emph{not} deliver is
-scale: human votes are the most reliable supervision signal, but they are too
-sparse to train a sequence model directly. The January 2026 training snapshot
-contains only 473 usable non-tie votes---orders of magnitude below the
-preference datasets used to align language models (e.g., the 64K comparisons
-of \citet{stiennon2020learning}) and far too few to fine-tune a level
-generator on preference alone.}
+no automated metric substitutes for that signal---player enjoyment has no
+simple structural proxy
+(Section~\ref{sec:eda-static-expressive-range})---which is precisely why
+MarioDPO is trained on the preferences themselves rather than on a
+hand-crafted fitness function. Third, although enjoyment resists measurement,
+failure does not: frustrating, uncompletable structure is reliably
+identifiable, and the judge function of Section~\ref{sec:dpo-judge} labels it
+cheaply and at scale. What the arena does \emph{not} deliver is volume: the
+January 2026 training snapshot contains only 473 usable non-tie
+votes---orders of magnitude below the preference datasets used to align
+language models (e.g., the 64K comparisons of \citet{stiennon2020learning})
+and far too few to fine-tune a level generator on preference alone.}
 
 \changed{MarioDPO therefore combines three ingredients. A strong supervised
 prior trained on the original Nintendo levels ensures the model already speaks
 valid Mario syntax before any preference optimisation begins. The 473 human
-pairs, upweighted $10\times$, anchor training to genuine human judgement. And
-the judge function from Section~\ref{sec:dpo-judge} labels 2,606 additional
-synthetic pairs, expanding the dataset to a trainable scale without abandoning
-the human preference objective.}
+pairs, upweighted $10\times$, anchor training to genuine human
+judgement---they are the only carrier of the ``fun'' signal. And the judge
+function labels 2,606 additional synthetic pairs, providing the broad negative
+coverage needed to steer the model away from known failure modes without
+diluting the human preference objective.}
 
 The central idea is to close the loop between human evaluation and procedural
 generation. Rather than optimising a generator for playability alone, or for an
@@ -2459,7 +2298,7 @@ loads exported PCG Arena statistics, extracts trajectory features
 ($\sigma_y$, path entropy, hesitation ratio, and maximum progress), fits the
 original-level centroid, scores all levels with $J_{final}$, and creates both
 human and synthetic preference pairs. The same module produces the diagnostic
-plots used in \changed{Section~\ref{sec:dpo-judge} and in} this chapter.
+plots used in this chapter.
 
 The post-processing module performs deterministic repairs that are better
 expressed as constraints than as learned behaviour. It removes duplicate Mario or
@@ -2516,8 +2355,9 @@ Two patterns are visible. First, MarioDPO has the lowest style distance among th
 procedural generators, indicating that the original-centroid reward successfully
 pulls it toward the human-authored region of feature space. Second, its mean
 judge score is higher than the original baseline even though its human win rate
-is lower. This is not a contradiction: the judge is a proxy trained from limited
-features, while human votes remain the final criterion. The discrepancy suggests
+is lower. \changed{This is not a contradiction: the judge is a coarse failure
+filter, not a measure of enjoyment (Section~\ref{sec:dpo-judge}); human votes
+remain the final criterion.} The discrepancy suggests
 that MarioDPO has learned many of the features captured by the judge, but still
 lacks some aspects of hand-authored Nintendo design.
 
@@ -2570,18 +2410,17 @@ valid, readable Mario geometry before preference optimisation begins. This avoid
 a common failure mode of pure search or random generation: the optimiser spends
 most of its capacity rediscovering basic syntax rather than improving quality.
 
-Second, the judge function \changed{(Section~\ref{sec:dpo-judge})} captures multiple dimensions of preference rather
-than a single difficulty metric. The final score rewards style similarity and
-vertical exploration, penalises gap-heavy frustration, and incorporates flow and
-completion. This is consistent with the EDA results: players prefer levels that
-are accessible, but accessibility alone is not enough. Levels must also sustain
-engagement and provide recognisable Mario-like structure.
+Second, the judge function \changed{(Section~\ref{sec:dpo-judge}) supplies
+broad negative coverage rather than a model of enjoyment. It reliably flags
+the failure modes identified in Chapter~\ref{ch:eda}---gap-fragmented,
+uncompletable, structurally degenerate levels---so DPO sees many unambiguous
+negative examples, while the human votes carry the preference signal itself.}
 
 Third, the preference dataset preserves the primacy of human judgement. Synthetic
 pairs make the dataset large enough for DPO, but the 10$\times$ weight on human
 votes ensures that the model is ultimately anchored to PCG Arena preferences.
 This design is important because $J_{final}$ is only an approximation. It
-correlates strongly with human win rate, but it cannot capture nostalgia,
+\changed{reproduces the coarse quality tiering}, but it cannot capture nostalgia,
 aesthetic surprise, or all forms of level readability.
 
 Several limitations remain. The human preference dataset is still small by deep
@@ -2627,14 +2466,17 @@ anonymous players largely agree on which generators are good
 (Section~\ref{sec:eda-user-heterogeneity}), so the ranking reflects shared
 preference rather than individual taste. \TODO{author: review}}
 
-\changed{\textbf{RQ2 (Explanation).} Player preference is explainable from
-level structure and behaviour: reward density, unique-column ratio, and
-proximity to the original corpus associate positively with preference, while
-gap-heavy structure, concentrated death locations, and
-\texttt{impossible}/\texttt{too\_hard} tags mark the dominant failure modes.
-These correlates combine into the judge function $J_{final}$, whose
-generator-level scores correlate with human win rates at $r_s = 0.736$
-(Section~\ref{sec:dpo-judge}). \TODO{author: review}}
+\changed{\textbf{RQ2 (Metrics).} No. Automated structural metrics act as a
+coarse filter, not a ranking: the four most-preferred generators have nearly
+indistinguishable static profiles yet span almost 0.2 in preference score, and
+no metric column separates strong from weak generators
+(Section~\ref{sec:eda-static-expressive-range}). What is measurable is
+failure: frustrating, uncompletable structure shows up consistently in
+trajectories and tags (Section~\ref{sec:eda-tag-semantics}). A pragmatic judge
+built on these failure signals reproduces the coarse quality tiering in-sample
+($r_s = 0.736$) and suffices to synthesise training labels, but it detects
+easy-to-spot failures rather than measuring enjoyment.
+\TODO{author: review}}
 
 \changed{\textbf{RQ3 (Generation).} The collected preferences suffice to train
 a better generator: MarioDPO, fine-tuned with DPO on 473 human pairs and 2,606
@@ -2646,10 +2488,9 @@ the next-best procedural generators, ORE (0.655) and MarioGPT (0.643).
 \changed{In sum, the thesis contributes: (1)~PCG Arena, a persistent
 open-access platform for blind pairwise evaluation of Mario level generators;
 (2)~a user study of 1,000 blind votes across 14 generators; (3)~an exploratory
-analysis pipeline linking votes to structure, behaviour, and tags; (4)~a
-validated computational preference judge; and (5)~MarioDPO, a
-preference-aligned generator that approaches human-authored quality.
-\TODO{author: review}}
+analysis pipeline linking votes to structure, behaviour, and tags; and
+(4)~MarioDPO, a preference-aligned generator that approaches human-authored
+quality. \TODO{author: review}}
 
 \section{Limitations}
 \label{sec:conc-limitations}
