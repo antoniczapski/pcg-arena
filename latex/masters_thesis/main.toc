@@ -71,16 +71,16 @@
 \contentsline {section}{\numberline {5.1}Motivation: From Sparse Votes to a Training Signal}{59}{section.5.1}%
 \contentsline {section}{\numberline {5.2}Level Representation and Base Model}{61}{section.5.2}%
 \contentsline {subsection}{\numberline {5.2.1}Column-Major Tokenisation}{61}{subsection.5.2.1}%
-\contentsline {subsection}{\numberline {5.2.2}Supervised Fine-Tuning (SFT)}{62}{subsection.5.2.2}%
+\contentsline {subsection}{\numberline {5.2.2}Base Model}{62}{subsection.5.2.2}%
 \contentsline {section}{\numberline {5.3}Preference Dataset Construction}{62}{section.5.3}%
 \contentsline {paragraph}{Human pairs.}{62}{section*.33}%
-\contentsline {paragraph}{Synthetic pairs.}{63}{section*.34}%
+\contentsline {paragraph}{Synthetic pairs.}{62}{section*.34}%
 \contentsline {section}{\numberline {5.4}DPO Fine-Tuning and Inference-Time Filtering}{63}{section.5.4}%
-\contentsline {paragraph}{Inference-time filtering.}{64}{section*.37}%
-\contentsline {section}{\numberline {5.5}Implementation Details}{64}{section.5.5}%
-\contentsline {section}{\numberline {5.6}Results}{65}{section.5.6}%
-\contentsline {section}{\numberline {5.7}Analysis and Discussion}{68}{section.5.7}%
-\contentsline {chapter}{\numberline {6}Conclusions and Future Work}{71}{chapter.6}%
-\contentsline {section}{\numberline {6.1}Summary of Contributions}{71}{section.6.1}%
-\contentsline {section}{\numberline {6.2}Limitations}{72}{section.6.2}%
-\contentsline {section}{\numberline {6.3}Future Directions}{72}{section.6.3}%
+\contentsline {paragraph}{Inference-time filtering.}{63}{section*.37}%
+\contentsline {section}{\numberline {5.5}Results}{64}{section.5.5}%
+\contentsline {section}{\numberline {5.6}Analysis and Discussion}{65}{section.5.6}%
+\contentsline {chapter}{\numberline {6}Conclusions and Future Work}{67}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Summary of Contributions}{67}{section.6.1}%
+\contentsline {section}{\numberline {6.2}Limitations}{68}{section.6.2}%
+\contentsline {section}{\numberline {6.3}Future Directions}{68}{section.6.3}%
+\contentsline {section}{\numberline {6.4}Closing Remarks}{69}{section.6.4}%

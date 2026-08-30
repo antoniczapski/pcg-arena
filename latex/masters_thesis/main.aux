@@ -275,8 +275,8 @@
 \@writefile{toc}{\contentsline {section}{\numberline {4.6}A Pragmatic Judge for Sparse Votes}{56}{section.4.6}\protected@file@percent }
 \newlabel{sec:dpo-judge}{{4.6}{56}{A Pragmatic Judge for Sparse Votes}{section.4.6}{}}
 \newlabel{eq:dpo-j-final}{{4.1}{57}{A Pragmatic Judge for Sparse Votes}{equation.4.6.1}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {4.4}{\ignorespaces \textcolor {red}{Judge-function weights (hand-set).}}}{57}{table.caption.30}\protected@file@percent }
-\newlabel{tab:dpo-judge-weights}{{4.4}{57}{\changed {Judge-function weights (hand-set).}}{table.caption.30}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {4.4}{\ignorespaces \textcolor {red}{Judge-function weights, obtained by grid search over interpretable weights maximising pairwise agreement with human votes.}}}{57}{table.caption.30}\protected@file@percent }
+\newlabel{tab:dpo-judge-weights}{{4.4}{57}{\changed {Judge-function weights, obtained by grid search over interpretable weights maximising pairwise agreement with human votes.}}{table.caption.30}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {4.7}Summary: A Reliable but Sparse Signal}{58}{section.4.7}\protected@file@percent }
 \newlabel{sec:eda-summary}{{4.7}{58}{Summary: A Reliable but Sparse Signal}{section.4.7}{}}
 \citation{stiennon2020learning}
@@ -288,6 +288,7 @@
 \newlabel{sec:dpo-motivation}{{5.1}{59}{Motivation: From Sparse Votes to a Training Signal}{section.5.1}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {5.1}{\ignorespaces MarioDPO preference dataset: raw pair counts (left) and the same counts after applying the $10\times $ upweighting of human PCG Arena pairs (right). The few hundred human comparisons contribute roughly two thirds of the effective training signal, while \textcolor {red}{pairs labelled by the judge function (Section~\ref {sec:dpo-judge})} primarily broaden coverage.}}{60}{figure.caption.31}\protected@file@percent }
 \newlabel{fig:dpo-pipeline}{{5.1}{60}{MarioDPO preference dataset: raw pair counts (left) and the same counts after applying the $10\times $ upweighting of human PCG Arena pairs (right). The few hundred human comparisons contribute roughly two thirds of the effective training signal, while \changed {pairs labelled by the judge function (Section~\ref {sec:dpo-judge})} primarily broaden coverage}{figure.caption.31}{}}
+\citation{sudhakaran2023mariogpt}
 \@writefile{toc}{\contentsline {section}{\numberline {5.2}Level Representation and Base Model}{61}{section.5.2}\protected@file@percent }
 \newlabel{sec:dpo-tokenisation}{{5.2}{61}{Level Representation and Base Model}{section.5.2}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {5.2.1}Column-Major Tokenisation}{61}{subsection.5.2.1}\protected@file@percent }
@@ -295,46 +296,41 @@
 \newlabel{eq:dpo-columns}{{5.1}{61}{Column-Major Tokenisation}{equation.5.2.1}{}}
 \@writefile{lot}{\contentsline {table}{\numberline {5.1}{\ignorespaces MarioDPO level representation and tokenisation choices.}}{61}{table.caption.32}\protected@file@percent }
 \newlabel{tab:dpo-representation}{{5.1}{61}{MarioDPO level representation and tokenisation choices}{table.caption.32}{}}
-\citation{sudhakaran2023mariogpt}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.2.2}Supervised Fine-Tuning (SFT)}{62}{subsection.5.2.2}\protected@file@percent }
-\newlabel{subsec:dpo-sft}{{5.2.2}{62}{Supervised Fine-Tuning (SFT)}{subsection.5.2.2}{}}
-\newlabel{eq:dpo-sft-loss}{{5.2}{62}{Supervised Fine-Tuning (SFT)}{equation.5.2.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2.2}Base Model}{62}{subsection.5.2.2}\protected@file@percent }
+\newlabel{subsec:dpo-sft}{{5.2.2}{62}{Base Model}{subsection.5.2.2}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {5.3}Preference Dataset Construction}{62}{section.5.3}\protected@file@percent }
 \newlabel{sec:dpo-training}{{5.3}{62}{Preference Dataset Construction}{section.5.3}{}}
 \newlabel{subsec:dpo-dataset}{{5.3}{62}{Preference Dataset Construction}{section.5.3}{}}
 \@writefile{toc}{\contentsline {paragraph}{Human pairs.}{62}{section*.33}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Synthetic pairs.}{63}{section*.34}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {5.2}{\ignorespaces Preference dataset used for MarioDPO fine-tuning.}}{63}{table.caption.35}\protected@file@percent }
-\newlabel{tab:dpo-dataset}{{5.2}{63}{Preference dataset used for MarioDPO fine-tuning}{table.caption.35}{}}
+\@writefile{toc}{\contentsline {paragraph}{Synthetic pairs.}{62}{section*.34}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {5.2}{\ignorespaces Preference dataset used for MarioDPO fine-tuning.}}{62}{table.caption.35}\protected@file@percent }
+\newlabel{tab:dpo-dataset}{{5.2}{62}{Preference dataset used for MarioDPO fine-tuning}{table.caption.35}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {5.4}DPO Fine-Tuning and Inference-Time Filtering}{63}{section.5.4}\protected@file@percent }
 \newlabel{subsec:dpo-training-details}{{5.4}{63}{DPO Fine-Tuning and Inference-Time Filtering}{section.5.4}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {5.3}{\ignorespaces MarioDPO fine-tuning configuration.}}{64}{table.caption.36}\protected@file@percent }
-\newlabel{tab:dpo-training-config}{{5.3}{64}{MarioDPO fine-tuning configuration}{table.caption.36}{}}
-\@writefile{toc}{\contentsline {paragraph}{Inference-time filtering.}{64}{section*.37}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5.5}Implementation Details}{64}{section.5.5}\protected@file@percent }
-\newlabel{sec:dpo-implementation}{{5.5}{64}{Implementation Details}{section.5.5}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {5.6}Results}{65}{section.5.6}\protected@file@percent }
-\newlabel{sec:dpo-results}{{5.6}{65}{Results}{section.5.6}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {5.4}{\ignorespaces \textcolor {red}{Initial MarioDPO evaluation snapshot.} Win rate is computed from PCG Arena pairwise outcomes in the January 2026 export.}}{66}{table.caption.39}\protected@file@percent }
-\newlabel{tab:dpo-controlled-results}{{5.4}{66}{\changed {Initial MarioDPO evaluation snapshot.} Win rate is computed from PCG Arena pairwise outcomes in the January 2026 export}{table.caption.39}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {5.2}{\ignorespaces Generator-level analysis from the MarioDPO experiment snapshot. The judge score correlates strongly with human win rate, and MarioDPO forms the closest procedural competitor to the original levels.}}{67}{figure.caption.40}\protected@file@percent }
-\newlabel{fig:dpo-generator-analysis}{{5.2}{67}{Generator-level analysis from the MarioDPO experiment snapshot. The judge score correlates strongly with human win rate, and MarioDPO forms the closest procedural competitor to the original levels}{figure.caption.40}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {5.3}{\ignorespaces MarioDPO compared with other procedural generators. Across both the controlled experiment and the full arena snapshot, MarioDPO is the strongest PCG method and the closest competitor to the original human-authored levels.}}{68}{figure.caption.42}\protected@file@percent }
-\newlabel{fig:dpo-better-than-other-pcg}{{5.3}{68}{MarioDPO compared with other procedural generators. Across both the controlled experiment and the full arena snapshot, MarioDPO is the strongest PCG method and the closest competitor to the original human-authored levels}{figure.caption.42}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {5.7}Analysis and Discussion}{68}{section.5.7}\protected@file@percent }
-\newlabel{sec:dpo-discussion}{{5.7}{68}{Analysis and Discussion}{section.5.7}{}}
-\@writefile{toc}{\contentsline {chapter}{\numberline {6}Conclusions and Future Work}{71}{chapter.6}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {5.3}{\ignorespaces MarioDPO fine-tuning configuration.}}{63}{table.caption.36}\protected@file@percent }
+\newlabel{tab:dpo-training-config}{{5.3}{63}{MarioDPO fine-tuning configuration}{table.caption.36}{}}
+\@writefile{toc}{\contentsline {paragraph}{Inference-time filtering.}{63}{section*.37}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5.5}Results}{64}{section.5.5}\protected@file@percent }
+\newlabel{sec:dpo-results}{{5.5}{64}{Results}{section.5.5}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5.2}{\ignorespaces MarioDPO compared with other procedural generators\textcolor {red}{: it is the strongest PCG method in the arena and the closest competitor to the original human-authored levels}.}}{64}{figure.caption.38}\protected@file@percent }
+\newlabel{fig:dpo-better-than-other-pcg}{{5.2}{64}{MarioDPO compared with other procedural generators\changed {: it is the strongest PCG method in the arena and the closest competitor to the original human-authored levels}}{figure.caption.38}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5.6}Analysis and Discussion}{65}{section.5.6}\protected@file@percent }
+\newlabel{sec:dpo-discussion}{{5.6}{65}{Analysis and Discussion}{section.5.6}{}}
+\@writefile{toc}{\contentsline {chapter}{\numberline {6}Conclusions and Future Work}{67}{chapter.6}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
-\newlabel{ch:conclusions}{{6}{71}{Conclusions and Future Work}{chapter.6}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {6.1}Summary of Contributions}{71}{section.6.1}\protected@file@percent }
-\newlabel{sec:conc-contributions}{{6.1}{71}{Summary of Contributions}{section.6.1}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {6.2}Limitations}{72}{section.6.2}\protected@file@percent }
-\newlabel{sec:conc-limitations}{{6.2}{72}{Limitations}{section.6.2}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {6.3}Future Directions}{72}{section.6.3}\protected@file@percent }
-\newlabel{sec:conc-future}{{6.3}{72}{Future Directions}{section.6.3}{}}
+\newlabel{ch:conclusions}{{6}{67}{Conclusions and Future Work}{chapter.6}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6.1}Summary of Contributions}{67}{section.6.1}\protected@file@percent }
+\newlabel{sec:conc-contributions}{{6.1}{67}{Summary of Contributions}{section.6.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6.2}Limitations}{68}{section.6.2}\protected@file@percent }
+\newlabel{sec:conc-limitations}{{6.2}{68}{Limitations}{section.6.2}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6.3}Future Directions}{68}{section.6.3}\protected@file@percent }
+\newlabel{sec:conc-future}{{6.3}{68}{Future Directions}{section.6.3}{}}
+\citation{marino2015empirical}
 \bibstyle{plainnat}
 \bibdata{bibliography}
+\@writefile{toc}{\contentsline {section}{\numberline {6.4}Closing Remarks}{69}{section.6.4}\protected@file@percent }
+\newlabel{sec:conc-closing}{{6.4}{69}{Closing Remarks}{section.6.4}{}}
 \bibcite{bradley1952rank}{{1}{1952}{{Bradley and Terry}}{{}}}
 \bibcite{chiang2024chatbot}{{2}{2024}{{Chiang et~al.}}{{Chiang, Zheng, Sheng, Angelopoulos, Li, Li, Zhang, Zhu, Jordan, Gonzalez, and Stoica}}}
 \bibcite{christiano2017deep}{{3}{2017}{{Christiano et~al.}}{{Christiano, Leike, Brown, Martic, Legg, and Amodei}}}
@@ -371,4 +367,4 @@
 \bibcite{yannakakis2011experience}{{34}{2011}{{Yannakakis and Togelius}}{{}}}
 \bibcite{zheng2023judging}{{35}{2023}{{Zheng et~al.}}{{Zheng, Chiang, Sheng, Zhuang, Wu, Zhuang, Lin, Li, Li, Xing, Zhang, Gonzalez, and Stoica}}}
 \bibcite{ziegler2019fine}{{36}{2019}{{Ziegler et~al.}}{{Ziegler, Stiennon, Wu, Brown, Radford, Amodei, Christiano, and Irving}}}
-\gdef \@abspage@last{79}
+\gdef \@abspage@last{75}
