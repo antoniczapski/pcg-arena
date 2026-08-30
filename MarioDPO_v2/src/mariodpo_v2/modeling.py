@@ -69,8 +69,14 @@ def load_model(
     """
     from transformers import AutoModelForCausalLM, GPT2Config, GPT2LMHeadModel
 
+    # Force safetensors: transformers>=4.57 refuses to torch.load pickle (.bin)
+    # checkpoints unless torch>=2.6 (CVE-2025-32434). Loading the safetensors
+    # weights avoids the blocked code path entirely and is the secure choice
+    # (safetensors cannot execute arbitrary code on load).
     if checkpoint is not None:
-        return AutoModelForCausalLM.from_pretrained(str(checkpoint))
+        return AutoModelForCausalLM.from_pretrained(
+            str(checkpoint), use_safetensors=True
+        )
     if dummy:
         # Tiny model: proves wiring on CPU without downloading ~350 MB.
         cfg = GPT2Config(
@@ -79,7 +85,9 @@ def load_model(
         )
         return GPT2LMHeadModel(cfg)
     token = os.environ.get("HF_TOKEN")
-    return AutoModelForCausalLM.from_pretrained(model_name, token=token)
+    return AutoModelForCausalLM.from_pretrained(
+        model_name, token=token, use_safetensors=True
+    )
 
 
 # --- SFT dataset (continue-pretraining corpus) -----------------------------

@@ -1,0 +1,40 @@
+{
+  "os": "Windows-10-10.0.26200-SP0",
+  "python": "CPython 3.11.15",
+  "startedAt": "2026-06-15T20:21:09.523389Z",
+  "program": "C:\\Users\\user\\Studia\\DataScience\\Semestr_V\\pcg-arena\\MarioDPO_v2\\scripts\\03_sft.py",
+  "codePath": "MarioDPO_v2\\scripts\\03_sft.py",
+  "codePathLocal": "MarioDPO_v2\\scripts\\03_sft.py",
+  "git": {
+    "remote": "git@github.com:antoniczapski/pcg-arena.git",
+    "commit": "cd0cb4a5be4946fd442f5ac9c8a15e7a384dc0d7"
+  },
+  "email": "antoni.krzysztof.czapski@gmail.com",
+  "root": "C:\\Users\\user\\Studia\\DataScience\\Semestr_V\\pcg-arena",
+  "host": "MSI",
+  "executable": "C:\\ProgramData\\Anaconda3\\envs\\mariodpo\\python.exe",
+  "cpu_count": 6,
+  "cpu_count_logical": 12,
+  "gpu": "NVIDIA GeForce RTX 2060",
+  "gpu_count": 1,
+  "disk": {
+    "/": {
+      "total": "869493895168",
+      "used": "825007308800"
+    }
+  },
+  "memory": {
+    "total": "34191249408"
+  },
+  "gpu_nvidia": [
+    {
+      "name": "NVIDIA GeForce RTX 2060",
+      "memoryTotal": "6442450944",
+      "cudaCores": 1920,
+      "architecture": "Turing",
+      "uuid": "GPU-85ac6bca-37bd-4a95-59ea-4b63be8c07b2"
+    }
+  ],
+  "cudaVersion": "12.4",
+  "writerId": "ka2m3bdwpyabwhhel36b2iw4arco5b7t"
+}

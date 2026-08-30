@@ -1,14 +1,14 @@
-\babel@toc {polish}{}\relax 
-\babel@toc {english}{}\relax 
-\babel@toc {polish}{}\relax 
-\babel@toc {english}{}\relax 
-\babel@toc {polish}{}\relax 
-\babel@toc {english}{}\relax 
-\babel@toc {english}{}\relax 
-\babel@toc {polish}{}\relax 
-\babel@toc {english}{}\relax 
-\babel@toc {polish}{}\relax 
-\babel@toc {english}{}\relax 
+\babel@toc {polish}{}
+\babel@toc {english}{}
+\babel@toc {polish}{}
+\babel@toc {english}{}
+\babel@toc {polish}{}
+\babel@toc {english}{}
+\babel@toc {english}{}
+\babel@toc {polish}{}
+\babel@toc {english}{}
+\babel@toc {polish}{}
+\babel@toc {english}{}
 \contentsline {chapter}{\numberline {1}Introduction}{9}{chapter.1}%
 \contentsline {section}{\numberline {1.1}Procedural Content Generation in Video Games}{9}{section.1.1}%
 \contentsline {section}{\numberline {1.2}The Evaluation Problem}{10}{section.1.2}%

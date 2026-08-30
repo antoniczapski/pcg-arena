@@ -2033,15 +2033,15 @@ function labels 2,606 additional synthetic pairs, providing the broad negative
 coverage needed to steer the model away from known failure modes without
 diluting the human preference objective.}
 
-The central idea is to close the loop between human evaluation and procedural
-generation. Rather than optimising a generator for playability alone, or for an
-ad hoc diversity metric, MarioDPO fine-tunes a level generator on pairwise
-preferences. In this setting a generated level is treated as a sequence, a vote
-in PCG Arena provides a preferred and rejected completion, and Direct Preference
-Optimisation (DPO; Section~\ref{subsec:bg-dpo}) updates the generator so that
-preferred levels become more likely than rejected ones. This is the same
-alignment principle used in modern language-model training, applied to game
-content instead of natural language.
+The method has three stages. First, a \emph{judge function} learns to predict,
+from a level's tiles alone, which of two levels a player would prefer; this turns
+a few hundred sparse votes into a scorer that can be applied to any freshly
+generated level. Second, a pretrained Mario language model is
+\emph{continue-pretrained} on the arena level corpus so that it speaks the
+platform's exact $16$-row, $37$-tile representation. Third, the model is aligned
+with \emph{Direct Preference Optimisation} (DPO; Section~\ref{subsec:bg-dpo}) on
+the human votes, augmented by additional pairs that the judge labels
+automatically.
 
 MarioDPO consists of four components:
 \begin{enumerate}[nosep]
@@ -2186,25 +2186,23 @@ effective dataset size is 7,336 comparisons.
 
 \begin{table}[H]
 \centering
-\caption{Preference dataset used for MarioDPO fine-tuning.}
+\caption{Preference dataset for DPO fine-tuning. Human votes are oversampled
+ten-fold relative to the judge-labelled synthetic pairs.}
 \label{tab:dpo-dataset}
 \begin{tabular}{lrrr}
 \toprule
-\textbf{Source} & \textbf{Pairs} & \textbf{Weight} & \textbf{Effective count} \\
+\textbf{Source} & \textbf{Pairs} & \textbf{Weight} & \textbf{Records} \\
 \midrule
-Human PCG Arena votes & 473   & $10\times$ & 4,730 \\
-Judge-labelled synthetic pairs & 2,606 & $1\times$  & 2,606 \\
+Human PCG Arena votes          & 816   & $10\times$ & 8,160 \\
+Judge-labelled synthetic pairs & 2,000 & $1\times$  & 2,000 \\
 \midrule
-\textbf{Total} & \textbf{3,079} & --- & \textbf{7,336} \\
+\textbf{Total}                 & \textbf{2,816} & --- & \textbf{10,160} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The weighting scheme reflects the intended role of the judge. It increases data
-coverage and supplies clear negative examples, but it does not override human
-feedback. If the judge and a human vote disagree in similar regions of the level
-space, the human vote dominates the gradient through repeated sampling or
-example weighting.
+\subsection{DPO alignment}
+\label{subsec:dpo-align}
 
 \section[DPO Fine-Tuning and Inference-Time Filtering]{\changed{DPO Fine-Tuning and Inference-Time Filtering}}
 \label{subsec:dpo-training-details}
@@ -2223,11 +2221,12 @@ model corpora.
 
 \begin{table}[H]
 \centering
-\caption{MarioDPO fine-tuning configuration.}
-\label{tab:dpo-training-config}
+\caption{MarioDPO training configuration. Both stages run in fp16 on a single
+$6$\,GB GPU.}
+\label{tab:dpo-config}
 \begin{tabular}{ll}
 \toprule
-\textbf{Parameter} & \textbf{Value} \\
+\textbf{Stage / parameter} & \textbf{Value} \\
 \midrule
 Base model & \changed{MarioGPT checkpoint (DistilGPT-2)} \\
 Vocabulary & 37 ASCII tile characters \\
@@ -2291,11 +2290,16 @@ architecture or training corpus, accounts for the difference. This places
 MarioDPO in the same top tier as the original SMB1 levels and above all other
 algorithmic generators evaluated in PCG Arena.}
 
-\section{Analysis and Discussion}
+\section{Discussion}
 \label{sec:dpo-discussion}
 
-MarioDPO's performance can be explained by the interaction of three design
-choices.
+Three design choices explain the outcome. The model begins from a strong prior,
+so DPO spends its capacity improving quality rather than rediscovering basic level
+syntax. The judge captures several dimensions of preference at once---reward
+content, structural variety, restrained hazards, similarity to the original
+style---rather than any single difficulty proxy, matching the multi-dimensional
+picture from the exploratory analysis. And the dataset keeps human votes dominant,
+so the judge broadens coverage without overriding the ground-truth signal.
 
 First, the base model starts from a strong structural prior. \changed{Reusing the
 MarioGPT checkpoint and a column-major representation gives the generator a bias
@@ -2334,6 +2338,12 @@ and DPO converts that signal into improved procedural content. The result is a
 generator that approaches human-authored quality more closely than the other PCG
 methods tested in this work.
 
+These limitations notwithstanding, MarioDPO closes the loop that the platform was
+built to enable. PCG Arena supplies human comparisons; the judge function turns
+them into a scalable learning signal; and DPO converts that signal into a
+generator whose levels reach human-authored quality. The exported levels are
+packaged in the platform's seed format, ready for redeployment to gather the
+fresh votes that would drive the next iteration of the same loop.
 
 
 \chapter{Conclusions and Future Work}
