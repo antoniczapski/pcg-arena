@@ -1590,7 +1590,7 @@ remaining sections address the metrics question (RQ2):
 Sections~\ref{sec:eda-static-expressive-range}--\ref{sec:eda-tag-semantics}
 test whether static level structure, gameplay trajectories, and subjective
 tags can explain or replace the ranking, and Section~\ref{sec:dpo-judge}
-builds a pragmatic judge that Chapter~\ref{ch:mariodpo} uses to label
+builds a pragmatic judge function that Chapter~\ref{ch:mariodpo} uses to label
 additional training pairs.
 
 The analysis is exploratory: its conclusions rely on patterns observed in the data and its visualisations rather than on formal hypothesis testing. The aim is to demonstrate what PCG Arena can measure---preference, structure, gameplay behaviour, user heterogeneity, and qualitative failure modes---while acknowledging that the current dataset is still too small to support claims of universal design laws.
@@ -1599,7 +1599,7 @@ The analysis is exploratory: its conclusions rely on patterns observed in the da
 \section{Study Protocol and Dataset}
 \label{sec:eda-study-design}
 
-Participants were recruited through university social-media channels, word of mouth among game-development and computer-science communities, and a small promoted Reddit campaign targeting game-development and procedural-generation communities. Participation was anonymous. The platform assigned browser-based anonymous player identifiers and session identifiers, persisted through cookies or local browser storage. Consequently, ``players'' in this analysis should be interpreted as anonymous browser/player IDs rather than verified unique humans; clearing cookies or changing device/browser could create a new ID.
+Participants were recruited through university social-media channels, word of mouth among game-development and computer-science communities, as well as a small promoted Reddit campaign targeting game-development and procedural-generation communities. Participation was anonymous. The platform assigned browser-based anonymous player identifiers and session identifiers, persisted through cookies or local browser storage. Consequently, ``players'' in this analysis should be interpreted as anonymous browser/player IDs rather than verified unique humans; clearing cookies or changing device/browser could create a new ID.
 
 Each battle used a blind A/B protocol. A player saw two levels from different generators, played one attempt on each side, and then selected the preferred side, a tie, or skip. Optional tags could be attached to either side. Restricting each side to a single attempt was a deliberate system-design decision. A protocol allowing multiple attempts per level was also implemented and tested, but limiting play to one attempt per side collects substantially more pairwise comparisons per unit of player time, directly serving the platform's main goal of building a leaderboard from a large number of A/B comparisons.
 
@@ -1615,9 +1615,8 @@ The May 2026 analysis export contains the data summarized in Table~\ref{tab:eda-
 \midrule
 Vote rows analyzed & 1,000 \\
 Anonymous player IDs in vote table & 77 \\
-Session IDs in vote table & 213 \\
 Level-stat records exported & 1,104 \\
-Generator IDs in research plots & 14 \\
+Generator IDs & 14 \\
 Per-side telemetry records & 2,000 \\
 Played side records & 1,968 \\
 Embedded trajectory records & 1,968 \\
@@ -1652,8 +1651,7 @@ unchanged; the May export therefore evaluates the same frozen model.}
 
 Two clarifications are important for interpreting the analyses that
 follow. First, MarioDPO (Chapter~\ref{ch:mariodpo}) was trained once, on the
-January training snapshot, and deployed unchanged thereafter; every MarioDPO
-result reported in this thesis therefore measures the same model. Second, the
+January training snapshot, and deployed unchanged thereafter. Second, the
 analyses in this chapter use the May export rather than the training snapshot
 because it is strictly larger and therefore yields tighter uncertainty
 estimates; since neither the platform nor the deployed MarioDPO changed
@@ -1817,7 +1815,7 @@ structural metrics cannot substitute for human votes, consistent with the
 metric--experience misalignment reported by
 \citet{marino2015empirical}. Figure~\ref{fig:eda-expressive-range} makes the
 same point visually: each generator occupies a recognisable region of the
-linearity--leniency plane, so the metrics do \emph{characterise}
+linearity--leniency plane, so the metrics do characterise
 generators---but neither the location nor the spread of these footprints
 follows the preference ranking.
 
@@ -1869,7 +1867,7 @@ Figure~\ref{fig:eda-tag-semantics} summarizes tag frequency, tag rate by generat
 Positive tags are strongly aligned with preference outcomes. Sides tagged \texttt{creative} win 87\% of the time and sides tagged \texttt{fun} win 71\% of the time. Negative tags behave differently: \texttt{impossible}, \texttt{too\_hard}, and \texttt{boring} are much more common on losing sides than winning sides. The tag-by-generator heatmap also makes generator failure modes interpretable: some generators lose because they are marked as impossible or too hard, while others are rejected as boring or visually broken.
 
 Trajectories and tags converge on the same conclusion. The dominant,
-diagnosable driver of lost battles is \emph{frustration}: levels that kill the
+diagnosable driver of lost battles is frustration: levels that kill the
 player early and repeatedly in the same places are the levels tagged
 \texttt{impossible} and \texttt{too\_hard}, and they lose. Positive quality
 behaves differently: \texttt{fun} and \texttt{creative} align with winning,
@@ -1888,7 +1886,7 @@ We therefore need an automatic way to label additional level pairs. The
 preceding sections dictate what such a labeller can and cannot be: no
 combination of static metrics reproduces the human ranking
 (Section~\ref{sec:eda-static-expressive-range}), so we do not attempt to model
-enjoyment. What \emph{is} reliably measurable is failure
+enjoyment. What is reliably measurable is failure
 (Section~\ref{sec:eda-tag-semantics}). The judge function $J_{final}$ is
 therefore a deliberately coarse filter: it separates obviously flawed levels
 from plausible ones rather than scoring how much fun a level is.
@@ -1982,9 +1980,9 @@ The chapter's findings form a single argument:
 \end{enumerate}
 
 Two properties of the vote signal matter for what follows. It is
-\emph{reliable}: anonymous players largely agree on which generators are good
+reliable: anonymous players largely agree on which generators are good
 (Section~\ref{sec:eda-user-heterogeneity}), so the aggregate ranking is not an
-artefact of individual taste. It is also \emph{sparse}: the
+artefact of individual taste. It is also sparse: the
 January training snapshot contains only 473 usable non-tie votes
 (Table~\ref{tab:eda-timeline}), far too few to fine-tune a sequence model
 directly. The next chapter therefore trains on the human votes as the primary
@@ -2009,7 +2007,7 @@ MarioDPO is trained on the preferences themselves rather than on a
 hand-crafted fitness function. Third, although enjoyment resists measurement,
 failure does not: frustrating, uncompletable structure is reliably
 identifiable, and the judge function of Section~\ref{sec:dpo-judge} labels it
-cheaply and at scale. What the arena does \emph{not} deliver is volume: the
+cheaply and at scale. What the arena does not deliver is volume: the
 January 2026 training snapshot contains only 473 usable non-tie
 votes---orders of magnitude below the preference datasets used to align
 language models (e.g., the 64K comparisons of \citet{stiennon2020learning})
@@ -2030,7 +2028,7 @@ The method has three stages. First, a \emph{judge function} learns to predict,
 from a level's tiles alone, which of two levels a player would prefer; this turns
 a few hundred sparse votes into a scorer that can be applied to any freshly
 generated level. Second, a pretrained Mario language model is
-\emph{continue-pretrained} on the arena level corpus so that it speaks the
+continue-pretrained on the arena level corpus so that it speaks the
 platform's exact $16$-row, $37$-tile representation. Third, the model is aligned
 with \emph{Direct Preference Optimisation} (DPO; Section~\ref{subsec:bg-dpo}) on
 the human votes, augmented by additional pairs that the judge labels
@@ -2105,7 +2103,7 @@ c_t = (x_{1,t}, x_{2,t}, \ldots, x_{16,t}),
 \end{equation}
 %
 where $x_{r,t}$ is the tile at row $r$ and column $t$. The autoregressive model
-then predicts the next column or the next tile in a flattened column-major
+then predicts the next column in a flattened column-major
 sequence. This preserves vertical locality while still allowing standard
 left-to-right generation.
 
@@ -2174,8 +2172,8 @@ synthetic pairs with a mean score difference of 0.441. Synthetic examples receiv
 unit weight.
 
 The resulting dataset is summarised in Table~\ref{tab:dpo-dataset}. The total
-number of stored pairs is 3,079, but after applying the human-data weight the
-effective dataset size is 7,336 comparisons.
+number of stored pairs is 2,816, but after applying the human-data weight the
+effective dataset size is 10,160 comparisons.
 
 \begin{table}[H]
 \centering
@@ -2207,7 +2205,7 @@ reference policy $\pi_{ref}$ is the MarioGPT checkpoint, and the trainable polic
 $\pi_\theta$ is initialised from it.
 
 The training configuration used in the experiments is shown in
-Table~\ref{tab:dpo-training-config}. The value $\beta=0.1$ controls how strongly
+Table~\ref{tab:dpo-config}. The value $\beta=0.1$ controls how strongly
 DPO penalises divergence from the reference policy. A small learning rate is used
 because the dataset is preference-rich but small relative to typical language
 model corpora.
