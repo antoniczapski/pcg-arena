@@ -59,27 +59,26 @@
 \contentsline {section}{\numberline {3.7}Builder Profile and Generator Submission}{41}{section.3.7}%
 \contentsline {section}{\numberline {3.8}Authentication}{42}{section.3.8}%
 \contentsline {section}{\numberline {3.9}Deployment and Infrastructure}{43}{section.3.9}%
-\contentsline {chapter}{\numberline {4}User Study: Measuring and Modelling Player Preference}{45}{chapter.4}%
+\contentsline {chapter}{\numberline {4}User Study: Measuring Player Preference}{45}{chapter.4}%
 \contentsline {section}{\numberline {4.1}Study Protocol and Dataset}{45}{section.4.1}%
 \contentsline {section}{\numberline {4.2}Generator Preference Ranking}{47}{section.4.2}%
 \contentsline {section}{\numberline {4.3}Player Engagement and Preference Consistency}{49}{section.4.3}%
-\contentsline {section}{\numberline {4.4}Static Structure: A Coarse Filter, Not a Ranking}{52}{section.4.4}%
-\contentsline {section}{\numberline {4.5}Diagnosing Failure: Trajectories and Tags}{54}{section.4.5}%
-\contentsline {section}{\numberline {4.6}A Pragmatic Judge for Sparse Votes}{56}{section.4.6}%
+\contentsline {section}{\numberline {4.4}What Static Metrics Can and Cannot Tell Us}{52}{section.4.4}%
+\contentsline {section}{\numberline {4.5}Why Levels Lose: Trajectories and Tags}{54}{section.4.5}%
+\contentsline {section}{\numberline {4.6}The Judge Function}{56}{section.4.6}%
 \contentsline {section}{\numberline {4.7}Summary: A Reliable but Sparse Signal}{58}{section.4.7}%
 \contentsline {chapter}{\numberline {5}MarioDPO --- Preference-Aligned Level Generation}{59}{chapter.5}%
 \contentsline {section}{\numberline {5.1}Motivation: From Sparse Votes to a Training Signal}{59}{section.5.1}%
-\contentsline {section}{\numberline {5.2}Level Representation and Base Model}{61}{section.5.2}%
-\contentsline {subsection}{\numberline {5.2.1}Column-Major Tokenisation}{61}{subsection.5.2.1}%
-\contentsline {subsection}{\numberline {5.2.2}Base Model}{62}{subsection.5.2.2}%
+\contentsline {section}{\numberline {5.2}Level Representation and Base Model}{60}{section.5.2}%
+\contentsline {subsection}{\numberline {5.2.1}Column-Major Tokenisation}{60}{subsection.5.2.1}%
+\contentsline {subsection}{\numberline {5.2.2}Base Model}{61}{subsection.5.2.2}%
 \contentsline {section}{\numberline {5.3}Preference Dataset Construction}{62}{section.5.3}%
 \contentsline {paragraph}{Human pairs.}{62}{section*.33}%
 \contentsline {paragraph}{Synthetic pairs.}{62}{section*.34}%
-\contentsline {subsection}{\numberline {5.3.1}DPO alignment}{63}{subsection.5.3.1}%
-\contentsline {section}{\numberline {5.4}DPO Fine-Tuning and Inference-Time Filtering}{63}{section.5.4}%
+\contentsline {section}{\numberline {5.4}DPO Fine-Tuning and Inference-Time Filtering}{62}{section.5.4}%
 \contentsline {paragraph}{Inference-time filtering.}{63}{section*.37}%
-\contentsline {section}{\numberline {5.5}Results}{64}{section.5.5}%
-\contentsline {section}{\numberline {5.6}Discussion}{65}{section.5.6}%
+\contentsline {section}{\numberline {5.5}Results}{63}{section.5.5}%
+\contentsline {section}{\numberline {5.6}Discussion}{64}{section.5.6}%
 \contentsline {chapter}{\numberline {6}Conclusions and Future Work}{67}{chapter.6}%
 \contentsline {section}{\numberline {6.1}Summary of Contributions}{67}{section.6.1}%
 \contentsline {section}{\numberline {6.2}Limitations}{68}{section.6.2}%

@@ -81,7 +81,7 @@ Building on the collected data, we conduct an exploratory analysis that characte
 
 \author         {Antoni Czapski}
 \advisor        {dr Jakub Kowalski}
-\date          {March 2026}
+\date          {September 2026}
 \transcriptnum {317214}
 \advisorgen    {dr. Jakub Kowalski}
 
@@ -269,10 +269,7 @@ nearly all experimental subjects already understand the controls and goals
 Procedural Content Generation (PCG) is the algorithmic creation of game content
 with limited or indirect human input~\citep{togelius2011search}. \changed{Drawing on the
 taxonomies presented by \citet{togelius2011search} and \citet{summerville2018pcgml},}
-% AC: Złagodzone sformułowanie --- te 5 paradygmatów to nasza synteza
-% na podstawie obu prac, nie bezpośredni cytat z nich. "Drawing on"
-% zamiast "The most common taxonomy" lepiej oddaje, że to nasza
-% interpretacja inspirowana tymi źródłami.
+
 \changed{we distinguish five broad generation paradigms:}
 \KOT{trche nie wiem jak z tych obu paperów można powiedzieć że jest takich 5 paradygmatów generacji... przejrzałem je teraz tylko żeby sobie przypomnieć ale mi się to tochę nie spina z tekstami źródłowymi}
 
@@ -708,8 +705,6 @@ human judgment and thereby reduce the cost of future evaluations}---and
 PCG Arena uses pairwise comparisons as its primary data collection protocol.
 This section reviews the mathematical foundations underlying the platform's
 rating engine.
-% KH: A player quality rating (evaluator reliability) could complement
-% the generator ratings; discussed in Limitations (Section~\ref{sec:conc-limitations}).
 
 \subsection{The Elo Rating System}
 \label{subsec:bg-elo}
@@ -1576,7 +1571,7 @@ are performed via a scheduled script that copies the SQLite file to a timestampe
 
 
 
-\chapter{User Study: Measuring and Modelling Player Preference}
+\chapter{User Study: Measuring Player Preference}
 \label{ch:eda}
 
 This chapter presents the PCG Arena data as a user study of player
@@ -1721,18 +1716,14 @@ plot is exploratory because many player-generator combinations are sparse.}
 The heatmap suggests that, despite some variation, players largely agree on
 which generators are good and which are bad: most rows score the top-ranked
 generators highly and the bottom-ranked generators poorly, with only mild
-disagreement on the mid-table generators. This consistency across an anonymous
-and otherwise undescribed player population is itself a useful finding: it
-suggests that Super Mario Bros is a strong benchmark for PCG evaluation,
-because player preferences over levels are stable enough to produce a
-repeatable ranking rather than being dominated by individual taste.
-This agreement is what justifies the two uses the rest of the thesis
-makes of the votes: combining them into a single preference ranking
-(Section~\ref{sec:eda-rankings}), and using them as a training signal for
-preference-aligned generation (Chapter~\ref{ch:mariodpo}).
+disagreement on the mid-table generators. That agreement matters for the rest
+of the thesis. It means the votes measure something shared rather than
+individual taste, which is what makes it sound to combine them into a single
+ranking (Section~\ref{sec:eda-rankings}) and to use them as a training signal
+in Chapter~\ref{ch:mariodpo}.
 
 % ===================================================================
-\section[Static Structure: A Coarse Filter, Not a Ranking]{Static Structure: A Coarse Filter, Not a Ranking}
+\section{What Static Metrics Can and Cannot Tell Us}
 \label{sec:eda-static-expressive-range}
 
 This section asks what we can learn about a generator by
@@ -1800,7 +1791,7 @@ gap density between 0.14 and 0.22, enemy density between 0.06 and
 0.09---yet their preference scores span 0.64 to 0.83; nothing in the static
 columns anticipates that players prefer \texttt{original} and
 \texttt{mariodpo} over \texttt{ore} and \texttt{mariogpt} by almost 0.2.
-Conversely, no column separates strong from weak generators: the highest
+No column separates strong from weak generators either: the highest
 leniency belongs to \texttt{notchParamRand} (0.74, score 0.37), the highest
 structural diversity by NCD to \texttt{patternWeightCount} and
 \texttt{patternOccur} (0.87, scores 0.38 and 0.28), and the lowest-ranked
@@ -1810,9 +1801,9 @@ triple that of any top-tier generator, and \texttt{marioDiffusion}'s leniency
 (0.44) is the lowest in the corpus---but such red flags identify obvious
 failures rather than order the plausible generators.
 
-This answers RQ2 in the negative for ranking purposes: automated
-structural metrics cannot substitute for human votes, consistent with the
-metric--experience misalignment reported by
+The answer to RQ2 is therefore negative: structural metrics cannot
+replace human votes when the goal is to rank generators. This matches the gap
+between metrics and player experience reported by
 \citet{marino2015empirical}. Figure~\ref{fig:eda-expressive-range} makes the
 same point visually: each generator occupies a recognisable region of the
 linearity--leniency plane, so the metrics do characterise
@@ -1827,7 +1818,7 @@ follows the preference ranking.
 \end{figure}
 
 % ===================================================================
-\section[Diagnosing Failure: Trajectories and Tags]{Diagnosing Failure: Trajectories and Tags}
+\section{Why Levels Lose: Trajectories and Tags}
 \label{sec:eda-trajectory-fingerprints}
 \label{sec:eda-tag-semantics}
 
@@ -1876,7 +1867,7 @@ for them. This asymmetry---failure is easy to detect, enjoyment is
 not---shapes the judge function of the next section.
 
 % ===================================================================
-\section[A Pragmatic Judge for Sparse Votes]{A Pragmatic Judge for Sparse Votes}
+\section{The Judge Function}
 \label{sec:dpo-judge}
 
 Chapter~\ref{ch:mariodpo} trains a generator on preference pairs, and
@@ -1959,12 +1950,13 @@ the judge reproduces the coarse quality tiering---it reliably places the
 degenerate, frustrating generators below the plausible ones. It catches
 easy-to-spot failures; it does not measure the fun of playing.
 
-That, however, is exactly the granularity Chapter~\ref{ch:mariodpo}
-needs: the judge is used only to label clearly-unequal level pairs, supplying
-broad negative coverage against known failure modes, while the sparse human
-votes---strongly upweighted---remain the sole carrier of the preference
-signal. The judge's real test is therefore downstream: whether the generator
-trained with its labels wins blind human votes it has never seen.
+This limited ability is enough for the way Chapter~\ref{ch:mariodpo}
+uses the judge. It is asked only one easy question at a time---which of two
+clearly unequal levels is worse---so that training can include many examples
+of what to avoid. The human votes, strongly upweighted, remain the only source
+of information about what players actually enjoy. The judge's real test is
+therefore downstream: whether the generator trained with its labels wins blind
+human votes it has never seen.
 
 % ===================================================================
 \section[Summary: A Reliable but Sparse Signal]{Summary: A Reliable but Sparse Signal}
@@ -1997,7 +1989,7 @@ coverage---closing the loop from measurement to generation.
 \section[Motivation: From Sparse Votes to a Training Signal]{Motivation: From Sparse Votes to a Training Signal}
 \label{sec:dpo-motivation}
 
-The previous chapter delivered three results. First, blind pairwise
+The previous chapter established three results. First, blind pairwise
 votes produce a reliable ranking signal: anonymous players largely agree on
 which generators are good (Section~\ref{sec:eda-user-heterogeneity}). Second,
 no automated metric substitutes for that signal---player enjoyment has no
@@ -2013,26 +2005,14 @@ votes---orders of magnitude below the preference datasets used to align
 language models (e.g., the 64K comparisons of \citet{stiennon2020learning})
 and far too few to fine-tune a level generator on preference alone.
 
-MarioDPO therefore combines three ingredients. A strong supervised
-prior trained on the original Nintendo levels ensures the model already speaks
-MarioDPO therefore combines three ingredients. Reusing the published
-MarioGPT checkpoint ensures the model already speaks
-valid Mario syntax before any preference optimisation begins. The 473 human
+MarioDPO therefore combines three ingredients. The base model is the
+published MarioGPT checkpoint, so the generator already produces valid Mario
+structure before any preference optimisation begins. The 473 human
 pairs, upweighted $10\times$, anchor training to genuine human
 judgement---they are the only carrier of the ``fun'' signal. And the judge
 function labels 2,606 additional synthetic pairs, providing the broad negative
 coverage needed to steer the model away from known failure modes without
 diluting the human preference objective.
-
-The method has three stages. First, a \emph{judge function} learns to predict,
-from a level's tiles alone, which of two levels a player would prefer; this turns
-a few hundred sparse votes into a scorer that can be applied to any freshly
-generated level. Second, a pretrained Mario language model is
-continue-pretrained on the arena level corpus so that it speaks the
-platform's exact $16$-row, $37$-tile representation. Third, the model is aligned
-with \emph{Direct Preference Optimisation} (DPO; Section~\ref{subsec:bg-dpo}) on
-the human votes, augmented by additional pairs that the judge labels
-automatically.
 
 MarioDPO consists of four components:
 \begin{enumerate}[nosep]
@@ -2172,8 +2152,8 @@ synthetic pairs with a mean score difference of 0.441. Synthetic examples receiv
 unit weight.
 
 The resulting dataset is summarised in Table~\ref{tab:dpo-dataset}. The total
-number of stored pairs is 2,816, but after applying the human-data weight the
-effective dataset size is 10,160 comparisons.
+number of stored pairs is 3,079, but after applying the human-data weight the
+effective dataset size is 7,336 comparisons.
 
 \begin{table}[H]
 \centering
@@ -2184,16 +2164,13 @@ ten-fold relative to the judge-labelled synthetic pairs.}
 \toprule
 \textbf{Source} & \textbf{Pairs} & \textbf{Weight} & \textbf{Records} \\
 \midrule
-Human PCG Arena votes          & 816   & $10\times$ & 8,160 \\
-Judge-labelled synthetic pairs & 2,000 & $1\times$  & 2,000 \\
+Human PCG Arena votes          & 473   & $10\times$ & 4,730 \\
+Judge-labelled synthetic pairs & 2,606 & $1\times$  & 2,606 \\
 \midrule
-\textbf{Total}                 & \textbf{2,816} & --- & \textbf{10,160} \\
+\textbf{Total}                 & \textbf{3,079} & --- & \textbf{7,336} \\
 \bottomrule
 \end{tabular}
 \end{table}
-
-\subsection{DPO alignment}
-\label{subsec:dpo-align}
 
 \section[DPO Fine-Tuning and Inference-Time Filtering]{DPO Fine-Tuning and Inference-Time Filtering}
 \label{subsec:dpo-training-details}
@@ -2284,13 +2261,7 @@ algorithmic generators evaluated in PCG Arena.
 \section{Discussion}
 \label{sec:dpo-discussion}
 
-Three design choices explain the outcome. The model begins from a strong prior,
-so DPO spends its capacity improving quality rather than rediscovering basic level
-syntax. The judge captures several dimensions of preference at once---reward
-content, structural variety, restrained hazards, similarity to the original
-style---rather than any single difficulty proxy, matching the multi-dimensional
-picture from the exploratory analysis. And the dataset keeps human votes dominant,
-so the judge broadens coverage without overriding the ground-truth signal.
+Three design choices explain the outcome.
 
 First, the base model starts from a strong structural prior. Reusing the
 MarioGPT checkpoint and a column-major representation gives the generator a bias
@@ -2321,15 +2292,7 @@ innovative generators whose quality lies outside the original SMB1 style
 manifold. Finally, some potentially useful signals, such as death entropy and
 fine-grained tag usage, are limited by data sparsity.
 
-Despite these limitations, MarioDPO demonstrates the main claim of this thesis:
-a persistent blind evaluation platform can do more than rank generators. It can
-produce the preference data needed to train better generators. PCG Arena supplies
-human comparisons, the judge function turns them into a scalable learning signal,
-and DPO converts that signal into improved procedural content. The result is a
-generator that approaches human-authored quality more closely than the other PCG
-methods tested in this work.
-
-These limitations notwithstanding, MarioDPO closes the loop that the platform was
+Despite these limitations, MarioDPO closes the loop that the platform was
 built to enable. PCG Arena supplies human comparisons; the judge function turns
 them into a scalable learning signal; and DPO converts that signal into a
 generator whose levels reach human-authored quality. The exported levels are
