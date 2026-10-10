@@ -1,0 +1,56 @@
+
+# Local database files (bind-mounted or volume-mounted)
+# Keep the directory but ignore all database files
+db/local/*.sqlite
+db/local/*.sqlite-journal
+db/local/*.sqlite-wal
+db/local/*.sqlite-shm
+db/backups/*.sqlite
+
+# Client build artifacts
+client-java/dist/
+
+# Frontend
+node_modules/
+frontend/dist/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+.pytest_cache/
+
+# Java
+*.class
+*.jar
+*.war
+*.ear
+.gradle/
+build/
+out/
+target/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Environment variables
+.env
+.env.local
+
+# External Mario AI Framework checkout (used to generate baseline levels)
+/Mario-AI-Framework-PCG/
