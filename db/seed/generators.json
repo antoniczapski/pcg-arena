@@ -1,0 +1,123 @@
+{
+  "generators": [
+    {
+      "generator_id": "genetic",
+      "name": "Grammatical Evolution (GE) Generator",
+      "version": "1.0.0",
+      "description": "Evolutionary generator using design grammars: levels are encoded as grammar-expansion instructions; fitness favors many placed items while minimizing placement conflicts. (Mapped to the GE generator described in the FDG2014 comparative evaluation.)",
+      "tags": ["evolutionary", "grammatical-evolution", "grammar-based", "search-based", "mario-ai"],
+      "documentation_url": "https://www.um.edu.mt/library/oar/bitstream/123456789/22937/1/Evolving_Levels_for_Super_Mario_Bros_Using_Grammat.pdf"
+    },
+    {
+      "generator_id": "hopper",
+      "name": "Hopper Level Generator",
+      "version": "1.0.0",
+      "description": "Constructive left-to-right generator placing features with probabilities; designed for adaptivity so probabilities can change based on player performance; alternates generated parts with pre-designed parts.",
+      "tags": ["constructive", "probabilistic", "adaptive", "mario-ai-2010", "hybrid"],
+      "documentation_url": "https://julian.togelius.com/Shaker2011The.pdf"
+    },
+    {
+      "generator_id": "notch",
+      "name": "Notch (Infinite Mario Bros) Generator",
+      "version": "1.0.0",
+      "description": "Default Infinite Mario Bros generator: writes levels left-to-right by placing components according to probabilities, with basic playability checks.",
+      "tags": ["constructive", "probabilistic", "baseline", "infinite-mario-bros", "mario-ai"],
+      "documentation_url": "https://github.com/amidos2006/Mario-AI-Framework"
+    },
+    {
+      "generator_id": "notchParam",
+      "name": "Parameterized Notch Generator",
+      "version": "1.0.0",
+      "description": "Parameterized variant of the Notch generator. Parameters bias generation such as number/width of gaps, enemies and their placement, powerups, and boxes (often explored via combinations of high/low settings).",
+      "tags": ["constructive", "probabilistic", "parameterized", "difficulty-control", "mario-ai"],
+      "documentation_url": "https://julian.togelius.com/Shaker2011Feature.pdf"
+    },
+    {
+      "generator_id": "notchParamRand",
+      "name": "Parameterized Notch (Randomized Params) Generator",
+      "version": "1.0.0",
+      "description": "Same as Parameterized Notch, but parameter values are chosen at random (a randomized parameter configuration set).",
+      "tags": ["constructive", "probabilistic", "parameterized", "randomized-params", "mario-ai"],
+      "documentation_url": "https://julian.togelius.com/Shaker2011Feature.pdf"
+    },
+    {
+      "generator_id": "ore",
+      "name": "Occupancy-Regulated Extension (ORE) Generator",
+      "version": "1.0.0",
+      "description": "Chunk-based generator that assembles small hand-authored level pieces using anchor points to determine how chunks connect; can produce complex levels stylistically different from original Mario.",
+      "tags": ["chunk-based", "assembly", "anchor-points", "mario-ai-2010", "case-based"],
+      "documentation_url": "https://www.cs.hmc.edu/~pmawhorter/research/papers/procedural_level_generation_using_occupancy_regulated_extension-Mawhorter_Mateas-2010.pdf"
+    },
+    {
+      "generator_id": "original",
+      "name": "Original Super Mario Bros (SMB1) Levels",
+      "version": "1.0.0",
+      "description": "Hand-authored levels from Super Mario Bros (1985), transcribed into the benchmark’s representation as faithfully as possible (excluding unsupported elements such as water levels in that framework).",
+      "tags": ["human-authored", "super-mario-bros", "baseline", "reference-levels"],
+      "documentation_url": "https://en.wikipedia.org/wiki/Super_Mario_Bros."
+    },
+    {
+      "generator_id": "patternCount",
+      "name": "Pattern-based Generator (Pattern Count Fitness)",
+      "version": "1.0.0",
+      "description": "Evolutionary pattern-based generator: represents a level as a sequence of 1-tile-wide slices (micro-patterns) taken from original Mario; fitness counts each occurrence of specified meso-patterns (counting repeats).",
+      "tags": ["evolutionary", "pattern-based", "slices", "micro-patterns", "meso-patterns", "fitness-pattern-count"],
+      "documentation_url": "https://julian.togelius.com/Dahlskog2013Patterns.pdf"
+    },
+    {
+      "generator_id": "patternOccur",
+      "name": "Pattern-based Generator (Pattern Occurrence Fitness)",
+      "version": "1.0.0",
+      "description": "Pattern-based evolutionary generator variant where fitness rewards unique meso-pattern occurrence (counts each meso-pattern at most once, emphasizing diversity over repetition).",
+      "tags": ["evolutionary", "pattern-based", "pattern-diversity", "unique-occurrence", "meso-patterns"],
+      "documentation_url": "https://julian.togelius.com/Dahlskog2013Patterns.pdf"
+    },
+    {
+      "generator_id": "patternWeightCount",
+      "name": "Pattern-based Generator (Weighted Pattern Count Fitness)",
+      "version": "1.0.0",
+      "description": "Pattern-based evolutionary generator variant where meso-pattern counts are weighted by rarity, rewarding inclusion of rarer patterns more strongly than common ones.",
+      "tags": ["evolutionary", "pattern-based", "rarity-weighted", "meso-patterns", "fitness-weighted-count"],
+      "documentation_url": "https://julian.togelius.com/Dahlskog2013Patterns.pdf"
+    },
+    {
+      "generator_id": "mariogpt",
+      "name": "MarioGPT (Text2Level via GPT-2)",
+      "version": "1.0.0",
+      "description": "LLM-based, text-promptable level generator for Super Mario Bros. Uses a fine-tuned GPT-2 (distilgpt2) to generate tile-based levels from short natural-language prompts; designed for controllable generation and diversity (paper: NeurIPS 2023). Reference implementation: https://github.com/shyamsn97/mario-gpt",
+      "tags": [
+        "llm",
+        "gpt-2",
+        "text-to-level",
+        "promptable",
+        "neural",
+        "neurips-2023"
+      ],
+      "documentation_url": "https://openreview.net/attachment?id=dcA1jWmVX5&name=pdf"
+    },
+    {
+      "generator_id": "mariogan",
+      "name": "MarioGAN (DCGAN + CMA-ES Latent-Space Generator)",
+      "version": "1.0.0",
+      "description": "GAN-based Mario level generator from Volz et al. (GECCO 2018). Trains a Deep Convolutional GAN (DCGAN) on real Super Mario Bros level segments (Video Game Level Corpus), then generates new segments from latent vectors; optionally uses CMA-ES to search the latent space for segments optimizing tile-distribution goals or agent-performance objectives. Reference implementation (includes pretrained netG model + tooling): https://github.com/CIGbalance/DagstuhlGAN",
+      "tags": [
+        "gan",
+        "deep-learning",
+        "dcgan",
+        "latent-space",
+        "cma-es",
+        "evolutionary",
+        "gecco-2018"
+      ],
+      "documentation_url": "https://dl.acm.org/doi/10.1145/3205455.3205517"
+    },
+    {
+      "generator_id": "marioDiffusion",
+      "name": "MarioDiffusion (Text-to-Level Diffusion)",
+      "version": "1.0.0",
+      "description": "Text-conditioned diffusion models for Super Mario Bros level scenes. Generates tile-based scenes guided by natural-language captions (with multiple text-encoder variants); includes pretrained models and tooling for sampling and interactive composition. Code: https://github.com/schrum2/MarioDiffusion",
+      "tags": ["diffusion", "text-conditioned", "deep-learning", "generative-model", "aiide-2025"],
+      "documentation_url": "https://arxiv.org/abs/2507.00184"
+    }
+  ]
+}

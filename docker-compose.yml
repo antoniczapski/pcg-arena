@@ -1,0 +1,49 @@
+# PCG Arena - Docker Compose Configuration
+# Protocol: arena/v0
+# 
+# Usage:
+#   docker compose up --build      # Start backend with persistent DB
+#   docker compose down            # Stop (keeps data)
+#   docker compose down -v         # Stop and remove volumes (DELETES DATA)
+#
+# Secrets:
+#   Create .env file in project root with your secrets (see .env.example)
+#   The .env file is automatically loaded by docker-compose
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      # Mount host db/local to container /data for SQLite persistence
+      - ./db/local:/data
+      # Mount seed data as read-only for ingestion
+      - ./db/seed:/seed:ro
+      # Mount migrations as read-only
+      - ./db/migrations:/migrations:ro
+    env_file:
+      - ./backend/config/settings.env
+      - .env  # Load secrets from .env file
+    environment:
+      # Override or extend settings.env here if needed
+      - ARENA_DB_PATH=/data/arena.sqlite
+      # Enable debug endpoints and dev auth for local testing
+      - ARENA_DEBUG=true
+      - ARENA_DEV_AUTH=true
+      # CORS: Allow frontend origins (required for credentials/cookies)
+      - ARENA_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001,http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:3001
+      # Frontend URL (for email verification links)
+      - ARENA_FRONTEND_URL=http://localhost:3000
+      # Map secrets from .env file to ARENA_ prefixed variables
+      - ARENA_GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
